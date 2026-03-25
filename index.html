@@ -60,8 +60,8 @@
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
 
-    <!-- NEAT & CENTRED METRIC TILES (exactly as in your screenshot) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <!-- 5-TILE GRID (Indoor removed – now perfectly balanced) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
 
       <!-- Wind -->
       <div class="glass rounded-3xl p-6 border border-white/10 flex flex-col min-h-[190px]">
@@ -108,7 +108,7 @@
         <div class="text-xs text-white/60 text-center">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span></div>
       </div>
 
-      <!-- Solar & UV (now perfectly centred, no overlap) -->
+      <!-- Solar & UV (perfectly centred) -->
       <div class="glass rounded-3xl p-6 border border-white/10 flex flex-col min-h-[190px]">
         <div class="text-orange-400 text-sm font-medium flex items-center gap-x-1 mb-4"><i class="fa-solid fa-sun"></i> SOLAR &amp; UV</div>
         <div class="flex-1 grid grid-cols-2 gap-8 items-center">
@@ -123,21 +123,9 @@
         </div>
       </div>
 
-      <!-- Indoor -->
-      <div class="glass rounded-3xl p-6 border border-white/10 flex flex-col min-h-[190px]">
-        <div class="text-purple-400 text-sm font-medium mb-4 text-center">INDOOR</div>
-        <div class="flex-1 flex items-end justify-between text-center">
-          <div class="flex-1">
-            <div id="indoor-temp" class="text-5xl font-light tabular-nums">60°C</div>
-          </div>
-          <div class="flex-1">
-            <div id="indoor-hum" class="text-5xl font-light tabular-nums">67%</div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- TODAY'S EXTREMES & HISTORY (kept exactly as before) -->
+    <!-- TODAY'S EXTREMES & 24h TRENDS -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -193,7 +181,7 @@
     const FIELD = {
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72, solarW: 123,
-      uvIndex: 124, indoorTempC: 152, indoorHum: 153, gustKnots: 14
+      uvIndex: 124, gustKnots: 14
     };
 
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
@@ -232,12 +220,6 @@
 
         document.getElementById('solar').textContent = parseFloat(data[FIELD.solarW] || 452).toFixed(0);
         document.getElementById('uv').textContent = parseFloat(data[FIELD.uvIndex] || 0).toFixed(1);
-
-        document.getElementById('indoor-temp').textContent = (data[FIELD.indoorTempC] || 60) + '°C';
-        document.getElementById('indoor-hum').textContent = (data[FIELD.indoorHum] || 67) + '%';
-
-        document.getElementById('day-high').textContent = (data[FIELD.dayHighC] || 31.0) + '°C';
-        document.getElementById('day-low').textContent = (data[FIELD.dayLowC] || 16.3) + '°C';
 
         const now = new Date();
         document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
