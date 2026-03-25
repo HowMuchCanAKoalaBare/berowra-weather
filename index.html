@@ -39,33 +39,17 @@
     </div>
   </nav>
 
-  <!-- HERO – Symmetrical 3-column layout with larger central Sun & Moon tile -->
-  <div id="hero" class="hero-gradient text-white py-20 px-6 relative overflow-hidden">
+  <!-- HERO – Temperature in middle, Sun & Moon on left, fully responsive -->
+  <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
 
-        <!-- LEFT: Current weather -->
-        <div>
-          <div class="flex items-baseline gap-x-3">
-            <div id="current-temp" class="text-8xl font-light tabular-nums">20.8</div>
-            <div class="text-5xl font-light">°C</div>
-          </div>
-          <div id="condition" class="mt-2 text-2xl font-medium uppercase tracking-[2.5px] opacity-95">OVERCAST • DRY</div>
-          <div class="flex justify-between lg:justify-start gap-x-12 mt-8 text-lg">
-            <div>Feels like <span id="feels-like" class="font-medium">22.1°C</span></div>
-            <div>Heat index <span id="heat-index" class="font-medium">26.8°C</span></div>
-          </div>
-          <div class="mt-10 text-sm opacity-75">
-            Berowra, NSW • Lat -33.62° • Lon 151.15°
-          </div>
-        </div>
-
-        <!-- CENTRE: Larger Sun & Moon tile -->
-        <div class="glass rounded-3xl p-10 text-center">
-          <div class="grid grid-cols-2 gap-10">
+        <!-- LEFT: Sun & Moon (larger, responsive tile) -->
+        <div class="glass rounded-3xl p-8 lg:p-10 text-center">
+          <div class="grid grid-cols-2 gap-8">
             <!-- Sun -->
             <div>
-              <div class="flex items-center justify-center gap-x-3 mb-5">
+              <div class="flex items-center justify-center gap-x-3 mb-4">
                 <i class="fa-solid fa-sun text-amber-400 text-4xl"></i>
                 <span class="font-medium text-2xl">Sun</span>
               </div>
@@ -76,7 +60,7 @@
             </div>
             <!-- Moon -->
             <div>
-              <div class="flex items-center justify-center gap-x-3 mb-5">
+              <div class="flex items-center justify-center gap-x-3 mb-4">
                 <span id="moon-icon-hero" class="text-7xl">🌕</span>
                 <span class="font-medium text-2xl">Moon</span>
               </div>
@@ -85,6 +69,22 @@
                 <span class="text-base font-medium text-white/70">• <span id="moon-age-hero">8.1 days</span></span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- MIDDLE: Temperature (most prominent) -->
+        <div class="text-center lg:text-left">
+          <div class="flex items-baseline gap-x-3 justify-center lg:justify-start">
+            <div id="current-temp" class="text-8xl font-light tabular-nums">20.8</div>
+            <div class="text-5xl font-light">°C</div>
+          </div>
+          <div id="condition" class="mt-2 text-2xl font-medium uppercase tracking-[2.5px] opacity-95">OVERCAST • DRY</div>
+          <div class="flex justify-center lg:justify-start gap-x-12 mt-8 text-lg">
+            <div>Feels like <span id="feels-like" class="font-medium">22.1°C</span></div>
+            <div>Heat index <span id="heat-index" class="font-medium">26.8°C</span></div>
+          </div>
+          <div class="mt-10 text-sm opacity-75">
+            Berowra, NSW • Lat -33.62° • Lon 151.15°
           </div>
         </div>
 
@@ -260,10 +260,10 @@
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
     let tempChart, windChart, pressureChart, rain31Chart, temp24Chart, wind24Chart, baro24Chart;
 
-    // Permanent accurate moon age calculation
+    // Accurate moon age (permanent fix for 2026+)
     function getMoonAge() {
       const now = new Date();
-      const knownNewMoon = new Date(2025, 1, 27, 20, 5); // Feb 27 2025 new moon
+      const knownNewMoon = new Date(2026, 2, 19, 20, 5);
       const diffDays = (now - knownNewMoon) / (1000 * 60 * 60 * 24);
       let age = diffDays % 29.530588853;
       if (age < 0) age += 29.530588853;
@@ -280,16 +280,6 @@
       if (p < 68.75) return '🌖';
       if (p < 81.25) return '🌗';
       return '🌘';
-    }
-
-    function calculateDaylight(sunriseStr, sunsetStr) {
-      if (!sunriseStr || !sunsetStr) return '—';
-      const toMinutes = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-      let diff = toMinutes(sunsetStr) - toMinutes(sunriseStr);
-      if (diff < 0) diff += 1440;
-      const hours = Math.floor(diff / 60);
-      const mins = diff % 60;
-      return `${hours}h ${mins}m`;
     }
 
     function parse12hTime(timeStr) {
