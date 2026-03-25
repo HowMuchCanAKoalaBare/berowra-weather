@@ -143,7 +143,7 @@
 
     </div>
 
-    <!-- TODAY TILE (Sun from sunrise-sunset.org + Moon from Farmsense API) -->
+    <!-- TODAY TILE (Sun from sunrise-sunset.org API + Moon from station) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -156,13 +156,13 @@
             <div class="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <div class="font-medium text-white/80">Sun</div>
-                <div>Rise <span id="sunrise" class="font-light">--:--</span></div>
-                <div>Set <span id="sunset" class="font-light">--:--</span></div>
+                <div>Rise <span id="sunrise" class="font-light">07:02</span></div>
+                <div>Set <span id="sunset" class="font-light">19:00</span></div>
               </div>
               <div>
                 <div class="font-medium text-white/80">Moon</div>
-                <div>Rise <span id="moonrise" class="font-light">--:--</span></div>
-                <div>Set <span id="moonset" class="font-light">--:--</span></div>
+                <div>Rise <span id="moonrise" class="font-light">13:53</span></div>
+                <div>Set <span id="moonset" class="font-light">23:25</span></div>
                 <div>Phase <span id="moon-phase" class="font-light">44%</span> • Age <span id="moon-age" class="font-light">6</span></div>
               </div>
             </div>
@@ -218,14 +218,15 @@
     const FIELD = {
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
-      uvIndex: 124, gustKnots: 14
+      uvIndex: 124, gustKnots: 14,
+      moonPhase: 92, moonAge: 93
     };
 
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
 
     let tempChart, windChart, pressureChart, rain31Chart, temp24Chart, wind24Chart, baro24Chart;
 
-    // Parse 12h AM/PM time from sunrise-sunset.org
+    // Parse sunrise-sunset.org 12h AM/PM string to 24h HH:MM
     function parse12hTime(timeStr) {
       if (!timeStr) return '--:--';
       const [time, period] = timeStr.split(' ');
@@ -237,7 +238,7 @@
 
     async function loadSunData() {
       try {
-        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15&formatted=0')}`;
+        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15&formatted=1')}`;
         const res = await fetch(proxy);
         const json = await res.json();
         const r = json.results;
@@ -247,21 +248,6 @@
         console.log("Sun API fallback");
         document.getElementById('sunrise').textContent = '07:02';
         document.getElementById('sunset').textContent = '19:00';
-      }
-    }
-
-    async function loadMoonData() {
-      try {
-        const timestamp = Math.floor(Date.now() / 1000);
-        const proxy = `https://corsproxy.io/?${encodeURIComponent(`http://api.farmsense.net/v1/moonphases/?d=${timestamp}`)}`;
-        const res = await fetch(proxy);
-        const json = await res.json();
-        const moon = json[0];
-        document.getElementById('moon-phase').textContent = Math.round(moon.Illumination * 100) + '%';
-        document.getElementById('moon-age').textContent = moon.Age.toFixed(1);
-        // Farmsense does not provide rise/set, so we keep station values for those
-      } catch (e) {
-        console.log("Moon API fallback");
       }
     }
 
@@ -296,9 +282,11 @@
 
         document.getElementById('uv').textContent = parseFloat(data[FIELD.uvIndex] || 0).toFixed(1);
 
-        // Moon rise/set from station (stable raw strings)
+        // Moon from station (stable raw strings)
         document.getElementById('moonrise').textContent = data[90] || '13:53';
         document.getElementById('moonset').textContent = data[91] || '23:25';
+        document.getElementById('moon-phase').textContent = parseFloat(data[92] || 0).toFixed(1) + '%';
+        document.getElementById('moon-age').textContent = parseFloat(data[93] || 0).toFixed(1);
 
         const now = new Date();
         document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
@@ -333,8 +321,7 @@
     window.onload = () => {
       initTailwind();
       loadLiveData();
-      loadSunData();   // sunrise-sunset.org API
-      loadMoonData();  // Farmsense API from the GitHub repo you linked
+      loadSunData();          // sunrise-sunset.org API (formatted=1)
       createMainCharts();
       loadHistoryData();
       setInterval(loadLiveData, 60000);
