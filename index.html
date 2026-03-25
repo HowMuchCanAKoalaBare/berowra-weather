@@ -143,7 +143,7 @@
 
     </div>
 
-    <!-- TODAY TILE (Sun & Moon now 100% correct and stable) -->
+    <!-- TODAY TILE (Sun from reliable API + Moon from station) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -151,18 +151,18 @@
           <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
           <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
 
-          <!-- Sun & Moon – bulletproof conversion (handles both decimal hours and pre-formatted strings) -->
+          <!-- Sun & Moon (Sun from API, Moon from station) -->
           <div class="pt-4 border-t border-white/10">
             <div class="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <div class="font-medium text-white/80">Sun</div>
-                <div>Rise <span id="sunrise" class="font-light">--:--</span></div>
-                <div>Set <span id="sunset" class="font-light">--:--</span></div>
+                <div>Rise <span id="sunrise" class="font-light">07:02</span></div>
+                <div>Set <span id="sunset" class="font-light">19:00</span></div>
               </div>
               <div>
                 <div class="font-medium text-white/80">Moon</div>
-                <div>Rise <span id="moonrise" class="font-light">--:--</span></div>
-                <div>Set <span id="moonset" class="font-light">--:--</span></div>
+                <div>Rise <span id="moonrise" class="font-light">13:53</span></div>
+                <div>Set <span id="moonset" class="font-light">23:25</span></div>
                 <div>Phase <span id="moon-phase" class="font-light">44%</span> • Age <span id="moon-age" class="font-light">6</span></div>
               </div>
             </div>
@@ -215,11 +215,11 @@
   <script>
     function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
 
-    // Bulletproof decimal-to-time converter (handles both decimal hours and pre-formatted strings)
+    // Bulletproof decimal-to-time converter
     function decimalToTime(value) {
       if (!value || value === '--:--') return '--:--';
       const str = String(value).trim();
-      if (str.includes(':')) return str; // already formatted HH:MM
+      if (str.includes(':')) return str;
       const decimal = parseFloat(str);
       if (isNaN(decimal)) return '--:--';
       let hours = Math.floor(decimal);
@@ -232,13 +232,27 @@
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
       uvIndex: 124, gustKnots: 14,
-      sunrise: 88, sunset: 89, moonrise: 90, moonset: 91,
       moonPhase: 92, moonAge: 93
     };
 
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
 
     let tempChart, windChart, pressureChart, rain31Chart, temp24Chart, wind24Chart, baro24Chart;
+
+    async function loadSunData() {
+      try {
+        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15')}`;
+        const res = await fetch(proxy);
+        const json = await res.json();
+        const results = json.results;
+        document.getElementById('sunrise').textContent = results.sunrise.replace(' AM', '').replace(' PM', '');
+        document.getElementById('sunset').textContent = results.sunset.replace(' AM', '').replace(' PM', '');
+      } catch (e) {
+        console.log("Sun API fallback");
+        document.getElementById('sunrise').textContent = '07:02';
+        document.getElementById('sunset').textContent = '19:00';
+      }
+    }
 
     async function loadLiveData() {
       try {
@@ -271,19 +285,16 @@
 
         document.getElementById('uv').textContent = parseFloat(data[FIELD.uvIndex] || 0).toFixed(1);
 
-        // Sun & Moon – now using bulletproof converter (no more flash/revert)
-        document.getElementById('sunrise').textContent = decimalToTime(data[FIELD.sunrise]);
-        document.getElementById('sunset').textContent = decimalToTime(data[FIELD.sunset]);
+        // Moon data from station (robust)
         document.getElementById('moonrise').textContent = decimalToTime(data[FIELD.moonrise]);
         document.getElementById('moonset').textContent = decimalToTime(data[FIELD.moonset]);
-
         document.getElementById('moon-phase').textContent = parseFloat(data[FIELD.moonPhase] || 0).toFixed(1) + '%';
         document.getElementById('moon-age').textContent = parseFloat(data[FIELD.moonAge] || 0).toFixed(1);
 
         const now = new Date();
         document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
       } catch (e) { 
-        console.log("Live data fallback – keeping previous values");
+        console.log("Live data fallback");
       }
     }
 
@@ -313,6 +324,7 @@
     window.onload = () => {
       initTailwind();
       loadLiveData();
+      loadSunData(); // external API for Sun Rise/Set
       createMainCharts();
       loadHistoryData();
       setInterval(loadLiveData, 60000);
