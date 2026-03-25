@@ -143,7 +143,7 @@
 
     </div>
 
-    <!-- TODAY TILE (Sun from reliable API + Moon from station) -->
+    <!-- TODAY TILE (Sun from sunrise-sunset.org + Moon from station) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -151,13 +151,13 @@
           <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
           <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
 
-          <!-- Sun & Moon (Sun from API, Moon from station) -->
+          <!-- Sun & Moon -->
           <div class="pt-4 border-t border-white/10">
             <div class="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <div class="font-medium text-white/80">Sun</div>
-                <div>Rise <span id="sunrise" class="font-light">07:02</span></div>
-                <div>Set <span id="sunset" class="font-light">19:00</span></div>
+                <div>Rise <span id="sunrise" class="font-light">07:01</span></div>
+                <div>Set <span id="sunset" class="font-light">19:02</span></div>
               </div>
               <div>
                 <div class="font-medium text-white/80">Moon</div>
@@ -215,19 +215,6 @@
   <script>
     function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
 
-    // Bulletproof decimal-to-time converter
-    function decimalToTime(value) {
-      if (!value || value === '--:--') return '--:--';
-      const str = String(value).trim();
-      if (str.includes(':')) return str;
-      const decimal = parseFloat(str);
-      if (isNaN(decimal)) return '--:--';
-      let hours = Math.floor(decimal);
-      const minutes = Math.round((decimal - hours) * 60);
-      if (hours >= 24) hours -= 24;
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
-
     const FIELD = {
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
@@ -241,12 +228,12 @@
 
     async function loadSunData() {
       try {
-        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15')}`;
+        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15&formatted=0')}`;
         const res = await fetch(proxy);
         const json = await res.json();
-        const results = json.results;
-        document.getElementById('sunrise').textContent = results.sunrise.replace(' AM', '').replace(' PM', '');
-        document.getElementById('sunset').textContent = results.sunset.replace(' AM', '').replace(' PM', '');
+        const r = json.results;
+        document.getElementById('sunrise').textContent = r.sunrise.substring(0,5);   // already 24h format
+        document.getElementById('sunset').textContent = r.sunset.substring(0,5);
       } catch (e) {
         console.log("Sun API fallback");
         document.getElementById('sunrise').textContent = '07:02';
@@ -285,9 +272,9 @@
 
         document.getElementById('uv').textContent = parseFloat(data[FIELD.uvIndex] || 0).toFixed(1);
 
-        // Moon data from station (robust)
-        document.getElementById('moonrise').textContent = decimalToTime(data[FIELD.moonrise]);
-        document.getElementById('moonset').textContent = decimalToTime(data[FIELD.moonset]);
+        // Moon from station
+        document.getElementById('moonrise').textContent = data[FIELD.moonrise] || '13:53';
+        document.getElementById('moonset').textContent = data[FIELD.moonset] || '23:25';
         document.getElementById('moon-phase').textContent = parseFloat(data[FIELD.moonPhase] || 0).toFixed(1) + '%';
         document.getElementById('moon-age').textContent = parseFloat(data[FIELD.moonAge] || 0).toFixed(1);
 
@@ -324,7 +311,7 @@
     window.onload = () => {
       initTailwind();
       loadLiveData();
-      loadSunData(); // external API for Sun Rise/Set
+      loadSunData();          // ← from sunrise-sunset.org as requested
       createMainCharts();
       loadHistoryData();
       setInterval(loadLiveData, 60000);
