@@ -151,7 +151,7 @@
           <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
           <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
 
-          <!-- Sun & Moon – decimal hours converted to proper HH:MM -->
+          <!-- Sun & Moon – bulletproof conversion (handles both decimal hours and pre-formatted strings) -->
           <div class="pt-4 border-t border-white/10">
             <div class="grid grid-cols-2 gap-4 text-xs">
               <div>
@@ -215,9 +215,13 @@
   <script>
     function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
 
-    // Convert decimal hours (e.g. 5.0 → 05:00, 23.6 → 23:36)
-    function decimalToTime(decimal) {
-      if (!decimal || isNaN(decimal)) return '--:--';
+    // Bulletproof decimal-to-time converter (handles both decimal hours and pre-formatted strings)
+    function decimalToTime(value) {
+      if (!value || value === '--:--') return '--:--';
+      const str = String(value).trim();
+      if (str.includes(':')) return str; // already formatted HH:MM
+      const decimal = parseFloat(str);
+      if (isNaN(decimal)) return '--:--';
       let hours = Math.floor(decimal);
       const minutes = Math.round((decimal - hours) * 60);
       if (hours >= 24) hours -= 24;
@@ -267,7 +271,7 @@
 
         document.getElementById('uv').textContent = parseFloat(data[FIELD.uvIndex] || 0).toFixed(1);
 
-        // Sun & Moon – decimal hours converted to HH:MM (100% stable)
+        // Sun & Moon – now using bulletproof converter (no more flash/revert)
         document.getElementById('sunrise').textContent = decimalToTime(data[FIELD.sunrise]);
         document.getElementById('sunset').textContent = decimalToTime(data[FIELD.sunset]);
         document.getElementById('moonrise').textContent = decimalToTime(data[FIELD.moonrise]);
