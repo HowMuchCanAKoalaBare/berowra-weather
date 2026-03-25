@@ -39,13 +39,13 @@
     </div>
   </nav>
 
-  <!-- HERO – Now with Sun & Moon in the centre -->
-  <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
+  <!-- HERO – Symmetrical 3-column layout with larger central Sun & Moon tile -->
+  <div id="hero" class="hero-gradient text-white py-20 px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
-      <div class="flex flex-col lg:flex-row gap-10 lg:items-start">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
 
         <!-- LEFT: Current weather -->
-        <div class="flex-1">
+        <div>
           <div class="flex items-baseline gap-x-3">
             <div id="current-temp" class="text-8xl font-light tabular-nums">20.8</div>
             <div class="text-5xl font-light">°C</div>
@@ -60,37 +60,36 @@
           </div>
         </div>
 
-        <!-- CENTRE: Sun & Moon (moved here as requested) -->
-        <div class="flex-1 lg:flex-none lg:w-80 glass rounded-3xl p-6 bg-white/10">
-          <div class="grid grid-cols-2 gap-8">
+        <!-- CENTRE: Larger Sun & Moon tile -->
+        <div class="glass rounded-3xl p-10 text-center">
+          <div class="grid grid-cols-2 gap-10">
             <!-- Sun -->
             <div>
-              <div class="flex items-center gap-x-2 mb-3">
-                <i class="fa-solid fa-sun text-amber-400 text-xl"></i>
-                <span class="font-medium">Sun</span>
+              <div class="flex items-center justify-center gap-x-3 mb-5">
+                <i class="fa-solid fa-sun text-amber-400 text-4xl"></i>
+                <span class="font-medium text-2xl">Sun</span>
               </div>
-              <div class="space-y-3">
-                <div class="flex justify-between"><span class="text-emerald-300">Rise</span><span id="sunrise-hero" class="font-light tabular-nums">07:02</span></div>
-                <div class="flex justify-between"><span class="text-orange-300">Set</span><span id="sunset-hero" class="font-light tabular-nums">19:00</span></div>
+              <div class="space-y-5">
+                <div class="flex justify-between items-baseline text-xl"><span class="text-emerald-300">Rise</span><span id="sunrise-hero" class="font-light tabular-nums text-5xl">07:02</span></div>
+                <div class="flex justify-between items-baseline text-xl"><span class="text-orange-300">Set</span><span id="sunset-hero" class="font-light tabular-nums text-5xl">19:00</span></div>
               </div>
             </div>
-
             <!-- Moon -->
             <div>
-              <div class="flex items-center gap-x-2 mb-3">
-                <span id="moon-icon-hero" class="text-4xl">🌕</span>
-                <span class="font-medium">Moon</span>
+              <div class="flex items-center justify-center gap-x-3 mb-5">
+                <span id="moon-icon-hero" class="text-7xl">🌕</span>
+                <span class="font-medium text-2xl">Moon</span>
               </div>
-              <div class="text-4xl font-light tabular-nums flex items-baseline gap-x-2">
+              <div class="text-5xl font-light tabular-nums flex items-baseline justify-center gap-x-3">
                 <span id="moon-phase-hero">44%</span>
-                <span class="text-sm font-medium text-white/70">• <span id="moon-age-hero">8.2 days</span></span>
+                <span class="text-base font-medium text-white/70">• <span id="moon-age-hero">8.1 days</span></span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- RIGHT: 3-Day Forecast -->
-        <div class="flex-1 lg:max-w-md">
+        <div>
           <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">3-DAY FORECAST</h3>
           <div id="forecast-container" class="grid grid-cols-3 gap-4 text-center"></div>
         </div>
@@ -176,7 +175,7 @@
       </div>
     </div>
 
-    <!-- TODAY TILE (kept for daily highs/lows – sun/moon now also in hero) -->
+    <!-- TODAY TILE + 24h trends -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -186,7 +185,6 @@
         </div>
       </div>
 
-      <!-- 24h trends -->
       <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
         <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div class="flex-1 h-64 lg:h-72"><h3 class="text-sm font-medium mb-3">Temperature Trend</h3><div class="relative h-[calc(100%-2.75rem)]"><canvas id="tempChart" class="absolute inset-0"></canvas></div></div>
@@ -257,18 +255,15 @@
     const FIELD = {
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
-      uvIndex: 79,
-      gustKnots: 20,
-      moonPhase: 92
+      uvIndex: 79, gustKnots: 20, moonPhase: 92
     };
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
     let tempChart, windChart, pressureChart, rain31Chart, temp24Chart, wind24Chart, baro24Chart;
 
-    // Automatic moon age (replaces station's broken value)
+    // Permanent accurate moon age calculation
     function getMoonAge() {
       const now = new Date();
-      // Reference: known new moon on 29 Feb 2024 (adjusts automatically)
-      const knownNewMoon = new Date(2024, 1, 29); // Feb 29 2024
+      const knownNewMoon = new Date(2025, 1, 27, 20, 5); // Feb 27 2025 new moon
       const diffDays = (now - knownNewMoon) / (1000 * 60 * 60 * 24);
       let age = diffDays % 29.530588853;
       if (age < 0) age += 29.530588853;
