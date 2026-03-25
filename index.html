@@ -61,10 +61,10 @@
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
 
-    <!-- COMPACT TILES – UV-only tile + dynamic alignment -->
+    <!-- COMPACT TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
 
-      <!-- Wind -->
+      <!-- Wind (with N E S W on compass) -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-wind"></i>
@@ -78,6 +78,11 @@
         <div class="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
           <svg id="compass" width="56" height="56" viewBox="0 0 80 80" class="compass">
             <circle cx="40" cy="40" r="36" fill="none" stroke="#334155" stroke-width="8"/>
+            <!-- Compass labels -->
+            <text x="40" y="14" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">N</text>
+            <text x="66" y="40" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">E</text>
+            <text x="40" y="66" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">S</text>
+            <text x="14" y="40" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">W</text>
             <polygon id="wind-arrow" points="40,12 34,40 40,48 46,40" fill="#10b981"/>
           </svg>
         </div>
@@ -125,7 +130,7 @@
         </div>
       </div>
 
-      <!-- UV Index ONLY (Solar W/m² removed) -->
+      <!-- UV Index ONLY -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-sun"></i>
@@ -139,17 +144,36 @@
 
     </div>
 
-    <!-- TODAY'S EXTREMES & 24h TRENDS -->
+    <!-- TODAY TILE (now with Sun + Moon info from original page) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
         <div class="space-y-6">
           <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
           <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
+
+          <!-- Sun & Moon info (live from station) -->
+          <div class="pt-4 border-t border-white/10">
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <div class="font-medium text-white/80">Sun</div>
+                <div>Rise <span id="sunrise" class="font-light">07:02</span></div>
+                <div>Set <span id="sunset" class="font-light">19:00</span></div>
+              </div>
+              <div>
+                <div class="font-medium text-white/80">Moon</div>
+                <div>Rise <span id="moonrise" class="font-light">13:53</span></div>
+                <div>Set <span id="moonset" class="font-light">23:25</span></div>
+                <div>Phase <span id="moon-phase" class="font-light">44%</span> • Age <span id="moon-age" class="font-light">6</span></div>
+              </div>
+            </div>
+          </div>
+
           <div class="pt-4 border-t border-white/10 text-xs text-white/70">Sunshine today: 7h 14m • Overcast</div>
         </div>
       </div>
 
+      <!-- 24h trends -->
       <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
         <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div class="flex-1 h-64 lg:h-72"><h3 class="text-sm font-medium mb-3">Temperature Trend</h3><div class="relative h-[calc(100%-2.75rem)]"><canvas id="tempChart" class="absolute inset-0"></canvas></div></div>
@@ -159,7 +183,7 @@
       </div>
     </div>
 
-    <!-- RECENT HISTORY – FIXED TIME SCALE -->
+    <!-- RECENT HISTORY (correct time scale) -->
     <div class="mt-12">
       <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -195,7 +219,9 @@
     const FIELD = {
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
-      uvIndex: 124, gustKnots: 14
+      uvIndex: 124, gustKnots: 14,
+      sunrise: 29, sunset: 30, moonrise: 31, moonset: 32,
+      moonPhase: 33, moonAge: 34
     };
 
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
@@ -233,6 +259,14 @@
         document.getElementById('rain-month').textContent = parseFloat(data[8] || 127.8).toFixed(1) + ' mm';
 
         document.getElementById('uv').textContent = parseFloat(data[FIELD.uvIndex] || 0).toFixed(1);
+
+        // Sun & Moon (live from station)
+        document.getElementById('sunrise').textContent = data[FIELD.sunrise] || '07:02';
+        document.getElementById('sunset').textContent = data[FIELD.sunset] || '19:00';
+        document.getElementById('moonrise').textContent = data[FIELD.moonrise] || '13:53';
+        document.getElementById('moonset').textContent = data[FIELD.moonset] || '23:25';
+        document.getElementById('moon-phase').textContent = (data[FIELD.moonPhase] || 44) + '%';
+        document.getElementById('moon-age').textContent = data[FIELD.moonAge] || 6;
 
         const now = new Date();
         document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
