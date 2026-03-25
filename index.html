@@ -131,7 +131,7 @@
       </div>
     </div>
 
-    <!-- TODAY'S EXTREMES & RESPONSIVE CHARTS -->
+    <!-- TODAY'S EXTREMES & RESPONSIVE CHARTS (FIXED) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <!-- Extremes -->
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
@@ -143,20 +143,29 @@
         </div>
       </div>
 
-      <!-- Charts (now fully responsive) -->
+      <!-- Charts (now with strict heights – no more growth) -->
       <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
         <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <div class="flex-1 min-h-[280px]">
+          <!-- Temperature -->
+          <div class="flex-1 h-64 lg:h-72">
             <h3 class="text-sm font-medium mb-3">Temperature Trend</h3>
-            <canvas id="tempChart" class="w-full h-full"></canvas>
+            <div class="relative flex-1 h-[calc(100%-2.75rem)]">
+              <canvas id="tempChart" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
           </div>
-          <div class="flex-1 min-h-[280px]">
+          <!-- Wind -->
+          <div class="flex-1 h-64 lg:h-72">
             <h3 class="text-sm font-medium mb-3">Wind Speed</h3>
-            <canvas id="windChart" class="w-full h-full"></canvas>
+            <div class="relative flex-1 h-[calc(100%-2.75rem)]">
+              <canvas id="windChart" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
           </div>
-          <div class="flex-1 min-h-[280px]">
+          <!-- Pressure -->
+          <div class="flex-1 h-64 lg:h-72">
             <h3 class="text-sm font-medium mb-3">Pressure</h3>
-            <canvas id="pressureChart" class="w-full h-full"></canvas>
+            <div class="relative flex-1 h-[calc(100%-2.75rem)]">
+              <canvas id="pressureChart" class="absolute inset-0 w-full h-full"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -194,7 +203,7 @@
 
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
 
-    let tempChart, windChart, pressureChart; // store instances for resize
+    let tempChart, windChart, pressureChart;
 
     async function loadLiveData() {
       try {
@@ -250,21 +259,18 @@
         scales: { y: { grid: { color: '#334155' } } }
       };
 
-      // Temperature
       tempChart = new Chart(document.getElementById('tempChart'), {
         type: 'line',
         data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ label: 'Temp °C', data: [19,24,29,31,27], borderColor: '#10b981', tension: 0.4 }] },
         options: commonOptions
       });
 
-      // Wind
       windChart = new Chart(document.getElementById('windChart'), {
         type: 'line',
         data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ label: 'Wind km/h', data: [8,12,18,26,13], borderColor: '#f59e0b', tension: 0.4 }] },
         options: commonOptions
       });
 
-      // Pressure
       pressureChart = new Chart(document.getElementById('pressureChart'), {
         type: 'line',
         data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ label: 'hPa', data: [1013.5,1013.2,1012.8,1012.4,1012.1], borderColor: '#eab308', tension: 0.4 }] },
@@ -272,7 +278,6 @@
       });
     }
 
-    // Force redraw on window resize
     function handleResize() {
       if (tempChart) tempChart.resize();
       if (windChart) windChart.resize();
