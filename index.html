@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Berowra Weather • Live (Mudie Family Station)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); }
+    .hero-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #f59e0b 100%); }
+    .compass { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+  </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen pb-12">
+
+  <!-- NAV -->
+  <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-x-3">
+        <i class="fa-solid fa-cloud-sun-rain text-3xl text-emerald-400"></i>
+        <div>
+          <h1 class="text-2xl font-semibold tracking-tight">Berowra Weather</h1>
+          <p class="text-xs text-emerald-400 -mt-1">Mudie Family Station • Sydney, NSW</p>
+        </div>
+      </div>
+      <div id="last-updated" class="text-sm text-white/70 flex items-center gap-x-2">
+        <i class="fa-solid fa-clock"></i>
+        <span>Last updated: just now</span>
+      </div>
+      <a href="http://www.mudiefamily.org/weather/" target="_blank" 
+         class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center gap-x-2 transition">
+        <i class="fa-solid fa-chart-line"></i> Original Station
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div id="hero" class="hero-gradient text-white py-16 px-6 text-center relative overflow-hidden">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex justify-center items-baseline gap-x-4">
+        <div id="current-temp" class="text-8xl font-light tabular-nums">27.7</div>
+        <div>
+          <span class="text-5xl">°C</span><br>
+          <span id="condition" class="text-xl uppercase tracking-[2px] opacity-90">Overcast • Dry</span>
+        </div>
+      </div>
+      <div class="flex justify-center gap-x-8 text-lg mt-2">
+        <div>Feels like <span id="feels-like" class="font-medium">29.0°C</span></div>
+        <div>Heat index <span id="heat-index" class="font-medium">29.6°C</span></div>
+      </div>
+      <div class="mt-6 text-sm opacity-75">Berowra, NSW • Lat -33.62° • Lon 151.15° • Data from Mudie Family Station</div>
+    </div>
+    <div class="absolute bottom-6 right-6 text-6xl opacity-10">🌿</div>
+  </div>
+
+  <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
+
+    <!-- METRICS GRID -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <!-- Wind Card -->
+      <div class="glass rounded-3xl p-6 border border-white/10">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-emerald-400 text-sm font-medium flex items-center gap-x-1"><i class="fa-solid fa-wind"></i> WIND</div>
+            <div id="wind-speed" class="text-5xl font-light tabular-nums">13.1</div>
+            <div class="text-xs text-white/60">km/h • ENE</div>
+          </div>
+          <div class="relative w-20 h-20 flex items-center justify-center">
+            <svg id="compass" width="80" height="80" viewBox="0 0 80 80" class="compass">
+              <circle cx="40" cy="40" r="36" fill="none" stroke="#334155" stroke-width="8"/>
+              <polygon id="wind-arrow" points="40,12 34,40 40,48 46,40" fill="#10b981"/>
+            </svg>
+          </div>
+        </div>
+        <div class="text-xs mt-4 text-white/60">Gusts to <span id="wind-gust" class="font-medium text-white">26.8 km/h</span></div>
+      </div>
+
+      <!-- Humidity Card -->
+      <div class="glass rounded-3xl p-6 border border-white/10">
+        <div class="text-sky-400 text-sm font-medium flex items-center gap-x-1"><i class="fa-solid fa-droplet"></i> HUMIDITY</div>
+        <div id="humidity" class="text-5xl font-light tabular-nums">67</div>
+        <div class="text-xs text-white/60">% • Dew point <span id="dewpoint" class="font-medium">21.0°C</span></div>
+        <div class="h-2 bg-white/10 rounded-full mt-4 overflow-hidden">
+          <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[67%]"></div>
+        </div>
+      </div>
+
+      <!-- Pressure Card -->
+      <div class="glass rounded-3xl p-6 border border-white/10">
+        <div class="text-amber-400 text-sm font-medium flex items-center gap-x-1"><i class="fa-solid fa-gauge-high"></i> PRESSURE</div>
+        <div id="pressure" class="text-5xl font-light tabular-nums">1012.1</div>
+        <div class="flex items-center gap-x-2 text-xs">
+          <span class="text-white/60">hPa</span>
+          <span id="pressure-trend" class="flex items-center text-emerald-400"><i class="fa-solid fa-arrow-trend-down mr-1"></i> -0.3</span>
+        </div>
+      </div>
+
+      <!-- Rain Card -->
+      <div class="glass rounded-3xl p-6 border border-white/10">
+        <div class="text-blue-400 text-sm font-medium flex items-center gap-x-1"><i class="fa-solid fa-cloud-rain"></i> RAIN</div>
+        <div id="rain-today" class="text-5xl font-light tabular-nums">0.0</div>
+        <div class="text-xs text-white/60">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span></div>
+      </div>
+
+      <!-- Solar / UV Card -->
+      <div class="glass rounded-3xl p-6 border border-white/10 col-span-2 md:col-span-1">
+        <div class="text-orange-400 text-sm font-medium flex items-center gap-x-1"><i class="fa-solid fa-sun"></i> SOLAR &amp; UV</div>
+        <div class="flex justify-between mt-4">
+          <div>
+            <div id="solar" class="text-4xl font-light tabular-nums">455</div>
+            <div class="text-xs text-white/60">W/m²</div>
+          </div>
+          <div>
+            <div id="uv" class="text-4xl font-light tabular-nums">1.7</div>
+            <div class="text-xs text-white/60">UV Index</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Indoor Card -->
+      <div class="glass rounded-3xl p-6 border border-white/10">
+        <div class="text-purple-400 text-sm font-medium">INDOOR</div>
+        <div class="flex justify-between text-3xl mt-4">
+          <div id="indoor-temp">28.6°C</div>
+          <div id="indoor-hum">40%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY'S EXTREMES & RESPONSIVE CHARTS -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
+      <!-- Extremes -->
+      <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
+        <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
+        <div class="space-y-6">
+          <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
+          <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
+          <div class="pt-4 border-t border-white/10 text-xs text-white/70">Sunshine today: 7h 14m • Overcast</div>
+        </div>
+      </div>
+
+      <!-- Charts (now fully responsive) -->
+      <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
+        <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          <div class="flex-1 min-h-[280px]">
+            <h3 class="text-sm font-medium mb-3">Temperature Trend</h3>
+            <canvas id="tempChart" class="w-full h-full"></canvas>
+          </div>
+          <div class="flex-1 min-h-[280px]">
+            <h3 class="text-sm font-medium mb-3">Wind Speed</h3>
+            <canvas id="windChart" class="w-full h-full"></canvas>
+          </div>
+          <div class="flex-1 min-h-[280px]">
+            <h3 class="text-sm font-medium mb-3">Pressure</h3>
+            <canvas id="pressureChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTRIBUTION -->
+    <div class="mt-8 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10">
+      Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • Public clientraw.txt feed
+    </div>
+
+  </div>
+
+  <script>
+    // Tailwind init
+    function initTailwind() {
+      tailwind.config = { content: [], theme: { extend: {} } };
+    }
+
+    const FIELD = {
+      currentWindKnots: 2,
+      windDirDeg: 3,
+      outTempC: 4,
+      humidity: 5,
+      baroHPa: 6,
+      rainTodayMM: 7,
+      dayHighC: 46,
+      dayLowC: 47,
+      dewpointC: 72,
+      solarW: 123,
+      uvIndex: 124,
+      indoorTempC: 152,
+      indoorHum: 153,
+      gustKnots: 14
+    };
+
+    const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
+
+    let tempChart, windChart, pressureChart; // store instances for resize
+
