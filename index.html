@@ -39,10 +39,11 @@
     </div>
   </nav>
 
-  <!-- HERO -->
+  <!-- HERO – Now with Sun & Moon in the centre -->
   <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
-      <div class="flex flex-col lg:flex-row gap-12 lg:items-start">
+      <div class="flex flex-col lg:flex-row gap-10 lg:items-start">
+
         <!-- LEFT: Current weather -->
         <div class="flex-1">
           <div class="flex items-baseline gap-x-3">
@@ -56,6 +57,35 @@
           </div>
           <div class="mt-10 text-sm opacity-75">
             Berowra, NSW • Lat -33.62° • Lon 151.15°
+          </div>
+        </div>
+
+        <!-- CENTRE: Sun & Moon (moved here as requested) -->
+        <div class="flex-1 lg:flex-none lg:w-80 glass rounded-3xl p-6 bg-white/10">
+          <div class="grid grid-cols-2 gap-8">
+            <!-- Sun -->
+            <div>
+              <div class="flex items-center gap-x-2 mb-3">
+                <i class="fa-solid fa-sun text-amber-400 text-xl"></i>
+                <span class="font-medium">Sun</span>
+              </div>
+              <div class="space-y-3">
+                <div class="flex justify-between"><span class="text-emerald-300">Rise</span><span id="sunrise-hero" class="font-light tabular-nums">07:02</span></div>
+                <div class="flex justify-between"><span class="text-orange-300">Set</span><span id="sunset-hero" class="font-light tabular-nums">19:00</span></div>
+              </div>
+            </div>
+
+            <!-- Moon -->
+            <div>
+              <div class="flex items-center gap-x-2 mb-3">
+                <span id="moon-icon-hero" class="text-4xl">🌕</span>
+                <span class="font-medium">Moon</span>
+              </div>
+              <div class="text-4xl font-light tabular-nums flex items-baseline gap-x-2">
+                <span id="moon-phase-hero">44%</span>
+                <span class="text-sm font-medium text-white/70">• <span id="moon-age-hero">8.2 days</span></span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -146,46 +176,13 @@
       </div>
     </div>
 
-    <!-- TODAY TILE -->
+    <!-- TODAY TILE (kept for daily highs/lows – sun/moon now also in hero) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
         <div class="space-y-6">
           <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
           <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
-          <div class="pt-4 border-t border-white/10">
-            <div class="grid grid-cols-2 gap-6">
-              <div>
-                <div class="flex items-center gap-x-2 mb-3">
-                  <i class="fa-solid fa-sun text-amber-400 text-lg"></i>
-                  <span class="font-medium text-white/90">Sun</span>
-                </div>
-                <div class="space-y-4">
-                  <div class="flex justify-between items-baseline">
-                    <span class="text-emerald-300 text-sm font-medium">RISE</span>
-                    <span id="sunrise" class="text-3xl font-light tabular-nums">07:02</span>
-                  </div>
-                  <div class="flex justify-between items-baseline">
-                    <span class="text-orange-300 text-sm font-medium">SET</span>
-                    <span id="sunset" class="text-3xl font-light tabular-nums">19:00</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div class="flex items-center gap-x-2 mb-3">
-                  <span id="moon-icon" class="text-5xl">🌕</span>
-                  <span class="font-medium text-white/90">Moon</span>
-                </div>
-                <div class="text-4xl font-light tabular-nums flex items-baseline gap-x-3">
-                  <span id="moon-phase">44%</span>
-                  <span class="text-xs font-medium text-white/70">• <span id="moon-age">6 days</span></span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-white/10 text-xs text-white/70">
-            Daylight today: <span id="daylight-hours" class="font-medium text-white">7h 14m</span> • Overcast
-          </div>
         </div>
       </div>
 
@@ -262,10 +259,21 @@
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
       uvIndex: 79,
       gustKnots: 20,
-      moonPhase: 92, moonAge: 93
+      moonPhase: 92
     };
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
     let tempChart, windChart, pressureChart, rain31Chart, temp24Chart, wind24Chart, baro24Chart;
+
+    // Automatic moon age (replaces station's broken value)
+    function getMoonAge() {
+      const now = new Date();
+      // Reference: known new moon on 29 Feb 2024 (adjusts automatically)
+      const knownNewMoon = new Date(2024, 1, 29); // Feb 29 2024
+      const diffDays = (now - knownNewMoon) / (1000 * 60 * 60 * 24);
+      let age = diffDays % 29.530588853;
+      if (age < 0) age += 29.530588853;
+      return age.toFixed(1);
+    }
 
     function getMoonEmoji(phasePercent) {
       const p = parseFloat(phasePercent);
@@ -311,14 +319,12 @@
         const r = json.results;
         const sunrise = parse12hTime(r.sunrise);
         const sunset = parse12hTime(r.sunset);
-        document.getElementById('sunrise').textContent = sunrise;
-        document.getElementById('sunset').textContent = sunset;
-        document.getElementById('daylight-hours').textContent = calculateDaylight(sunrise, sunset);
+        document.getElementById('sunrise-hero').textContent = sunrise;
+        document.getElementById('sunset-hero').textContent = sunset;
       } catch (e) {
         console.log("Sun API fallback");
-        document.getElementById('sunrise').textContent = '07:02';
-        document.getElementById('sunset').textContent = '19:00';
-        document.getElementById('daylight-hours').textContent = '11h 58m';
+        document.getElementById('sunrise-hero').textContent = '07:02';
+        document.getElementById('sunset-hero').textContent = '19:00';
       }
     }
 
@@ -351,17 +357,16 @@
         document.getElementById('pressure').textContent = parseFloat(data[FIELD.baroHPa] || 1012.2).toFixed(1);
         document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM] || 0).toFixed(1);
         document.getElementById('rain-month').textContent = parseFloat(data[8] || 127.8).toFixed(1) + ' mm';
-        document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 419.1).toFixed(1) + ' mm'; // YTD rainfall
+        document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 419.1).toFixed(1) + ' mm';
 
         let uv = parseFloat(data[FIELD.uvIndex] || 0);
         if (uv < 0) uv = 0;
         document.getElementById('uv').textContent = uv.toFixed(1);
 
         const phase = parseFloat(data[FIELD.moonPhase] || 0);
-        const age = parseFloat(data[FIELD.moonAge] || 0);
-        document.getElementById('moon-phase').textContent = phase.toFixed(0) + '%';
-        document.getElementById('moon-age').textContent = age.toFixed(0) + ' days';
-        document.getElementById('moon-icon').textContent = getMoonEmoji(phase);
+        document.getElementById('moon-phase-hero').textContent = phase.toFixed(0) + '%';
+        document.getElementById('moon-age-hero').textContent = getMoonAge() + ' days';
+        document.getElementById('moon-icon-hero').textContent = getMoonEmoji(phase);
 
         const now = new Date();
         document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
@@ -370,7 +375,6 @@
       }
     }
 
-    // 3-Day Forecast with Font Awesome icons
     async function loadForecast() {
       try {
         const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Australia%2FSydney')}`;
