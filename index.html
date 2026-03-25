@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <!-- RIGHT: 3-Day Forecast -->
+        <!-- RIGHT: 3-Day Forecast with Font Awesome icons -->
         <div class="flex-1 lg:max-w-md">
           <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">3-DAY FORECAST</h3>
           <div id="forecast-container" class="grid grid-cols-3 gap-4 text-center"></div>
@@ -146,7 +146,7 @@
       </div>
     </div>
 
-    <!-- TODAY TILE + 24h trends (unchanged) -->
+    <!-- TODAY TILE + 24h trends -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -343,7 +343,7 @@
       }
     }
 
-    // 3-DAY FORECAST (Open-Meteo)
+    // 3-DAY FORECAST with Font Awesome icons (matching tile style)
     async function loadForecast() {
       try {
         const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Australia%2FSydney')}`;
@@ -356,14 +356,14 @@
         for (let i = 0; i < 3; i++) {
           const date = new Date(daily.time[i]);
           const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-AU', { weekday: 'short' });
-          const icon = getWeatherIcon(daily.weather_code[i]);
+          const { icon, color } = getWeatherIcon(daily.weather_code[i]);
           const high = Math.round(daily.temperature_2m_max[i]);
           const low = Math.round(daily.temperature_2m_min[i]);
 
           const card = `
             <div class="glass rounded-3xl p-4">
               <div class="text-xs opacity-75">${dayName}</div>
-              <div class="text-4xl my-3">${icon}</div>
+              <div class="text-4xl my-3 ${color}">${icon}</div>
               <div class="text-lg font-medium">${high}°</div>
               <div class="text-xs opacity-60">${low}°</div>
             </div>`;
@@ -376,12 +376,12 @@
     }
 
     function getWeatherIcon(code) {
-      if ([0,1].includes(code)) return '☀️';
-      if ([2,3].includes(code)) return '⛅';
-      if ([45,48].includes(code)) return '🌫️';
-      if ([51,53,55,61,63,65,80,81,82].includes(code)) return '🌧️';
-      if ([71,73,75,77,85,86].includes(code)) return '❄️';
-      return '☁️';
+      if ([0, 1].includes(code)) return { icon: '<i class="fa-solid fa-sun"></i>', color: 'text-amber-400' };
+      if ([2, 3].includes(code)) return { icon: '<i class="fa-solid fa-cloud-sun"></i>', color: 'text-amber-300' };
+      if ([45, 48].includes(code)) return { icon: '<i class="fa-solid fa-smog"></i>', color: 'text-slate-400' };
+      if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { icon: '<i class="fa-solid fa-cloud-rain"></i>', color: 'text-sky-400' };
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: '<i class="fa-solid fa-snowflake"></i>', color: 'text-slate-200' };
+      return { icon: '<i class="fa-solid fa-cloud"></i>', color: 'text-slate-300' }; // overcast / default
     }
 
     async function loadHistoryData() {
