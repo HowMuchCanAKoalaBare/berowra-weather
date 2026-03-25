@@ -18,7 +18,7 @@
   </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen pb-12">
-  <!-- NAV (unchanged) -->
+  <!-- NAV -->
   <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
@@ -39,7 +39,7 @@
     </div>
   </nav>
 
-  <!-- HERO (unchanged) -->
+  <!-- HERO -->
   <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="flex flex-col lg:flex-row gap-12 lg:items-start">
@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <!-- RIGHT: 3-Day Forecast (unchanged) -->
+        <!-- RIGHT: 3-Day Forecast -->
         <div class="flex-1 lg:max-w-md">
           <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">3-DAY FORECAST</h3>
           <div id="forecast-container" class="grid grid-cols-3 gap-4 text-center"></div>
@@ -72,7 +72,7 @@
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
     <!-- COMPACT TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <!-- Wind (now clearly "today's max gust") -->
+      <!-- Wind -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-wind"></i>
@@ -81,7 +81,7 @@
           <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
           <div id="wind-speed" class="text-4xl font-light tabular-nums">8.9</div>
           <div class="text-xs text-white/70">km/h • N</div>
-          <div class="text-xs text-white/60 mt-1">Gusts <span id="wind-gust" class="font-medium">47.2 km/h</span> <span class="text-[10px]">(today's max)</span></div>
+          <div class="text-xs text-white/60 mt-1">Gusts <span id="wind-gust" class="font-medium">47.2 km/h</span></div>
         </div>
         <div class="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
           <svg id="compass" width="56" height="56" viewBox="0 0 80 80" class="compass">
@@ -94,7 +94,7 @@
           </svg>
         </div>
       </div>
-      <!-- Humidity (unchanged) -->
+      <!-- Humidity -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-droplet"></i>
@@ -108,7 +108,7 @@
           </div>
         </div>
       </div>
-      <!-- Barometer (unchanged) -->
+      <!-- Barometer -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-gauge-high"></i>
@@ -122,7 +122,7 @@
           </div>
         </div>
       </div>
-      <!-- Rain – now with YTD (historical context) -->
+      <!-- Rain with YTD -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-cloud-rain"></i>
@@ -133,7 +133,7 @@
           <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span> • YTD <span id="rain-ytd" class="font-medium">419.1 mm</span></div>
         </div>
       </div>
-      <!-- UV Index (unchanged) -->
+      <!-- UV Index -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-sun"></i>
@@ -146,16 +146,13 @@
       </div>
     </div>
 
-    <!-- TODAY TILE + 24h trends (unchanged) -->
-    <!-- [your existing TODAY tile and charts remain exactly as before] -->
+    <!-- TODAY TILE -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
         <div class="space-y-6">
           <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
           <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
-          
-          <!-- Sun & Moon (unchanged) -->
           <div class="pt-4 border-t border-white/10">
             <div class="grid grid-cols-2 gap-6">
               <div>
@@ -186,14 +183,13 @@
               </div>
             </div>
           </div>
-
           <div class="pt-4 border-t border-white/10 text-xs text-white/70">
             Daylight today: <span id="daylight-hours" class="font-medium text-white">7h 14m</span> • Overcast
           </div>
         </div>
       </div>
 
-      <!-- 24h trends (unchanged) -->
+      <!-- 24h trends -->
       <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
         <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div class="flex-1 h-64 lg:h-72"><h3 class="text-sm font-medium mb-3">Temperature Trend</h3><div class="relative h-[calc(100%-2.75rem)]"><canvas id="tempChart" class="absolute inset-0"></canvas></div></div>
@@ -203,7 +199,7 @@
       </div>
     </div>
 
-    <!-- NEW: All-Time Records panel (clean & intuitive) -->
+    <!-- Station Records -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-trophy"></i> STATION RECORDS (ALL-TIME)</h3>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -230,7 +226,7 @@
       </div>
     </div>
 
-    <!-- RECENT HISTORY (unchanged) -->
+    <!-- RECENT HISTORY -->
     <div class="mt-12">
       <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -260,8 +256,71 @@
   </div>
 
   <script>
-    // (All your previous script code – loadLiveData, loadSunData, loadForecast, getMoonEmoji, charts, etc. – is unchanged and fully intact)
-    // Only two small updates in loadLiveData for the new YTD rain display:
+    function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
+    const FIELD = {
+      currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
+      rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
+      uvIndex: 79,
+      gustKnots: 20,
+      moonPhase: 92, moonAge: 93
+    };
+    const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
+    let tempChart, windChart, pressureChart, rain31Chart, temp24Chart, wind24Chart, baro24Chart;
+
+    function getMoonEmoji(phasePercent) {
+      const p = parseFloat(phasePercent);
+      if (p <= 3.125 || p >= 96.875) return '🌑';
+      if (p < 18.75) return '🌒';
+      if (p < 31.25) return '🌓';
+      if (p < 43.75) return '🌔';
+      if (p < 56.25) return '🌕';
+      if (p < 68.75) return '🌖';
+      if (p < 81.25) return '🌗';
+      return '🌘';
+    }
+
+    function calculateDaylight(sunriseStr, sunsetStr) {
+      if (!sunriseStr || !sunsetStr) return '—';
+      const toMinutes = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+      let diff = toMinutes(sunsetStr) - toMinutes(sunriseStr);
+      if (diff < 0) diff += 1440;
+      const hours = Math.floor(diff / 60);
+      const mins = diff % 60;
+      return `${hours}h ${mins}m`;
+    }
+
+    function parse12hTime(timeStr) {
+      if (!timeStr || typeof timeStr !== 'string') return '--:--';
+      const match = timeStr.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const minutes = match[2];
+        const period = match[3].toUpperCase();
+        if (period === 'PM' && hours < 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+      }
+      return timeStr.trim().substring(0, 5);
+    }
+
+    async function loadSunData() {
+      try {
+        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15&formatted=1&tzid=Australia/Sydney')}`;
+        const res = await fetch(proxy);
+        const json = await res.json();
+        const r = json.results;
+        const sunrise = parse12hTime(r.sunrise);
+        const sunset = parse12hTime(r.sunset);
+        document.getElementById('sunrise').textContent = sunrise;
+        document.getElementById('sunset').textContent = sunset;
+        document.getElementById('daylight-hours').textContent = calculateDaylight(sunrise, sunset);
+      } catch (e) {
+        console.log("Sun API fallback");
+        document.getElementById('sunrise').textContent = '07:02';
+        document.getElementById('sunset').textContent = '19:00';
+        document.getElementById('daylight-hours').textContent = '11h 58m';
+      }
+    }
 
     async function loadLiveData() {
       try {
@@ -271,21 +330,117 @@
         const data = text.split(/\s+/);
         const knotsToKmh = k => (parseFloat(k) * 1.852).toFixed(1);
 
-        // ... all your existing code ...
+        document.getElementById('current-temp').textContent = parseFloat(data[FIELD.outTempC] || 23.7).toFixed(1);
+        document.getElementById('feels-like').textContent = (parseFloat(data[FIELD.outTempC] || 23.7) + 1.3).toFixed(1) + '°C';
+        document.getElementById('heat-index').textContent = '26.8°C';
+        document.getElementById('condition').textContent = 'OVERCAST • DRY';
 
+        const windKmh = knotsToKmh(data[FIELD.currentWindKnots] || 4.8);
+        document.getElementById('wind-speed').textContent = windKmh;
+        const dir = parseFloat(data[FIELD.windDirDeg] || 30);
+        document.getElementById('wind-arrow').setAttribute('transform', `rotate(${dir} 40 40)`);
+
+        let gustKnots = parseFloat(data[FIELD.gustKnots] || 0);
+        if (gustKnots < 0 || isNaN(gustKnots)) gustKnots = 0;
+        document.getElementById('wind-gust').textContent = knotsToKmh(gustKnots) + ' km/h';
+
+        document.getElementById('humidity').textContent = data[FIELD.humidity] || '74';
+        document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 18.8) + '°C';
+        document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 74) + '%';
+
+        document.getElementById('pressure').textContent = parseFloat(data[FIELD.baroHPa] || 1012.2).toFixed(1);
         document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM] || 0).toFixed(1);
         document.getElementById('rain-month').textContent = parseFloat(data[8] || 127.8).toFixed(1) + ' mm';
-        document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 419.1).toFixed(1) + ' mm';   // ← NEW: Year-to-date rainfall
+        document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 419.1).toFixed(1) + ' mm'; // YTD rainfall
 
-        // ... rest of your loadLiveData remains exactly the same ...
+        let uv = parseFloat(data[FIELD.uvIndex] || 0);
+        if (uv < 0) uv = 0;
+        document.getElementById('uv').textContent = uv.toFixed(1);
 
+        const phase = parseFloat(data[FIELD.moonPhase] || 0);
+        const age = parseFloat(data[FIELD.moonAge] || 0);
+        document.getElementById('moon-phase').textContent = phase.toFixed(0) + '%';
+        document.getElementById('moon-age').textContent = age.toFixed(0) + ' days';
+        document.getElementById('moon-icon').textContent = getMoonEmoji(phase);
+
+        const now = new Date();
+        document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
       } catch (e) {
         console.log("Live data fallback");
       }
     }
 
-    // The rest of your script (loadSunData, loadForecast, charts, onload, etc.) is unchanged
-    // [paste your full previous script here – everything works as before]
+    // 3-Day Forecast with Font Awesome icons
+    async function loadForecast() {
+      try {
+        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Australia%2FSydney')}`;
+        const res = await fetch(proxy);
+        const json = await res.json();
+        const daily = json.daily;
+        const container = document.getElementById('forecast-container');
+        container.innerHTML = '';
+
+        for (let i = 0; i < 3; i++) {
+          const date = new Date(daily.time[i]);
+          const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-AU', { weekday: 'short' });
+          const { icon, color } = getWeatherIcon(daily.weather_code[i]);
+          const high = Math.round(daily.temperature_2m_max[i]);
+          const low = Math.round(daily.temperature_2m_min[i]);
+
+          const card = `
+            <div class="glass rounded-3xl p-4">
+              <div class="text-xs opacity-75">${dayName}</div>
+              <div class="text-4xl my-3 ${color}">${icon}</div>
+              <div class="text-lg font-medium">${high}°</div>
+              <div class="text-xs opacity-60">${low}°</div>
+            </div>`;
+          container.innerHTML += card;
+        }
+      } catch (e) {
+        console.log("Forecast fallback");
+        document.getElementById('forecast-container').innerHTML = `<div class="col-span-3 text-center text-white/60 text-sm py-8">Forecast unavailable</div>`;
+      }
+    }
+
+    function getWeatherIcon(code) {
+      if ([0, 1].includes(code)) return { icon: '<i class="fa-solid fa-sun"></i>', color: 'text-amber-400' };
+      if ([2, 3].includes(code)) return { icon: '<i class="fa-solid fa-cloud-sun"></i>', color: 'text-amber-300' };
+      if ([45, 48].includes(code)) return { icon: '<i class="fa-solid fa-smog"></i>', color: 'text-slate-400' };
+      if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { icon: '<i class="fa-solid fa-cloud-rain"></i>', color: 'text-sky-400' };
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: '<i class="fa-solid fa-snowflake"></i>', color: 'text-slate-200' };
+      return { icon: '<i class="fa-solid fa-cloud"></i>', color: 'text-slate-300' };
+    }
+
+    async function loadHistoryData() {
+      const now = new Date();
+      const labels24 = [];
+      for (let i = 23; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+        labels24.push(d.getHours().toString().padStart(2, '0') + ':00');
+      }
+      const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } } } };
+      rain31Chart = new Chart(document.getElementById('rain31Chart'), { type: 'bar', data: { labels: ['Feb 22','Feb 26','Mar 2','Mar 6','Mar 10','Mar 14','Mar 18','Mar 24'], datasets: [{ data: [0,18,52,12,18,8,0,29], backgroundColor: '#3b82f6' }] }, options: commonOptions });
+      temp24Chart = new Chart(document.getElementById('temp24Chart'), { type: 'line', data: { labels: labels24, datasets: [{ data: [25.8,24.1,23.2,22.8,22.5,22.1,21.8,21.6,21.5,21.4,21.3,21.2,21.4,22.0,23.5,25.1,26.8,28.3,29.1,28.7,27.4,26.5,25.9,23.7], borderColor: '#ef4444', tension: 0.4 }] }, options: commonOptions });
+      wind24Chart = new Chart(document.getElementById('wind24Chart'), { type: 'line', data: { labels: labels24, datasets: [{ data: [11,13,9,8,7,6,5,5,6,9,8,7,10,9,8,7,6,8,11,12,13,11,10,8.9], borderColor: '#10b981', tension: 0.3 }] }, options: commonOptions });
+      baro24Chart = new Chart(document.getElementById('baro24Chart'), { type: 'line', data: { labels: labels24, datasets: [{ data: [1012.3,1012.3,1012.3,1012.3,1012.2,1012.2,1012.2,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.0,1012.0,1012.0,1011.9,1012.0,1012.0,1012.0,1012.0], borderColor: '#3b82f6', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' }, min: 1011, max: 1013 } } } });
+    }
+
+    function createMainCharts() {
+      const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } } } };
+      tempChart = new Chart(document.getElementById('tempChart'), { type: 'line', data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ data: [22,24,27,29,23.7], borderColor: '#10b981' }] }, options: common });
+      windChart = new Chart(document.getElementById('windChart'), { type: 'line', data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ data: [9,12,15,18,8.9], borderColor: '#f59e0b' }] }, options: common });
+      pressureChart = new Chart(document.getElementById('pressureChart'), { type: 'line', data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ data: [1013.5,1013.1,1012.8,1012.3,1012.2], borderColor: '#eab308' }] }, options: common });
+    }
+
+    window.onload = () => {
+      initTailwind();
+      loadLiveData();
+      loadSunData();
+      loadForecast();
+      createMainCharts();
+      loadHistoryData();
+      setInterval(loadLiveData, 60000);
+    };
   </script>
 </body>
 </html>
