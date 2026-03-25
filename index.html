@@ -13,7 +13,7 @@
     .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); }
     .hero-gradient { background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 100%); }
     .compass { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .tile-icon-circle { width: 56px; height: 56px; }
+    .icon-square { width: 48px; height: 48px; }
     .chart-container { height: 220px; }
   </style>
 </head>
@@ -61,22 +61,22 @@
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
 
-    <!-- REFACTORED 5-TILE WIDGETS (fresh horizontal modern style) -->
+    <!-- COMPACT TILES – smaller text + dynamic alignment (matches your screenshot) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
 
       <!-- Wind -->
-      <div class="glass rounded-3xl p-6 border border-white/10 flex items-center gap-5 hover:scale-[1.02] transition-all">
-        <div class="tile-icon-circle bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0">
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-wind"></i>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
-          <div id="wind-speed" class="text-5xl font-light tabular-nums">8.9</div>
-          <div class="text-xs text-white/60">km/h • N</div>
-          <div class="mt-3 text-xs text-white/60">Gusts <span id="wind-gust" class="font-medium">52 km/h</span></div>
+          <div id="wind-speed" class="text-4xl font-light tabular-nums">8.9</div>
+          <div class="text-xs text-white/70">km/h • N</div>
+          <div class="text-xs text-white/60 mt-1">Gusts <span id="wind-gust" class="font-medium">185.2 km/h</span></div>
         </div>
-        <div class="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
-          <svg id="compass" width="64" height="64" viewBox="0 0 80 80" class="compass">
+        <div class="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
+          <svg id="compass" width="56" height="56" viewBox="0 0 80 80" class="compass">
             <circle cx="40" cy="40" r="36" fill="none" stroke="#334155" stroke-width="8"/>
             <polygon id="wind-arrow" points="40,12 34,40 40,48 46,40" fill="#10b981"/>
           </svg>
@@ -84,29 +84,29 @@
       </div>
 
       <!-- Humidity -->
-      <div class="glass rounded-3xl p-6 border border-white/10 flex items-center gap-5 hover:scale-[1.02] transition-all">
-        <div class="tile-icon-circle bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0">
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-droplet"></i>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
-          <div id="humidity" class="text-5xl font-light tabular-nums">71</div>
-          <div class="text-xs text-white/60">% • Dew point <span id="dewpoint" class="font-medium">18.9°C</span></div>
-          <div class="mt-4 h-2 bg-white/10 rounded-full overflow-hidden">
-            <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[71%]"></div>
+          <div id="humidity" class="text-4xl font-light tabular-nums">74</div>
+          <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">18.8°C</span></div>
+          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden">
+            <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[74%]"></div>
           </div>
         </div>
       </div>
 
       <!-- Barometer -->
-      <div class="glass rounded-3xl p-6 border border-white/10 flex items-center gap-5 hover:scale-[1.02] transition-all">
-        <div class="tile-icon-circle bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0">
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-gauge-high"></i>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
-          <div id="pressure" class="text-5xl font-light tabular-nums">1012.1</div>
-          <div class="flex items-center gap-x-2 text-xs text-white/60">
+          <div id="pressure" class="text-4xl font-light tabular-nums">1012.2</div>
+          <div class="flex items-center gap-x-2 text-xs text-white/70">
             <span>hPa</span>
             <span id="pressure-trend" class="flex items-center text-emerald-400"><i class="fa-solid fa-arrow-trend-down mr-1"></i> -0.2</span>
           </div>
@@ -114,39 +114,39 @@
       </div>
 
       <!-- Rain -->
-      <div class="glass rounded-3xl p-6 border border-white/10 flex items-center gap-5 hover:scale-[1.02] transition-all">
-        <div class="tile-icon-circle bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0">
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-cloud-rain"></i>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
-          <div id="rain-today" class="text-5xl font-light tabular-nums">0.0</div>
-          <div class="text-xs text-white/60">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span></div>
+          <div id="rain-today" class="text-4xl font-light tabular-nums">0.0</div>
+          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span></div>
         </div>
       </div>
 
       <!-- Solar & UV -->
-      <div class="glass rounded-3xl p-6 border border-white/10 flex items-center gap-5 hover:scale-[1.02] transition-all">
-        <div class="tile-icon-circle bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0">
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-sun"></i>
         </div>
-        <div class="flex-1 grid grid-cols-2 gap-4">
-          <div>
+        <div class="flex-1 grid grid-cols-2 gap-6">
+          <div class="min-w-0">
             <div class="text-orange-400 text-xs font-medium tracking-widest">SOLAR</div>
-            <div id="solar" class="text-5xl font-light tabular-nums">255</div>
-            <div class="text-xs text-white/60">W/m²</div>
+            <div id="solar" class="text-4xl font-light tabular-nums">452</div>
+            <div class="text-xs text-white/70">W/m²</div>
           </div>
-          <div>
+          <div class="min-w-0">
             <div class="text-orange-400 text-xs font-medium tracking-widest">UV</div>
-            <div id="uv" class="text-5xl font-light tabular-nums">0.0</div>
-            <div class="text-xs text-white/60">Index</div>
+            <div id="uv" class="text-4xl font-light tabular-nums">0.0</div>
+            <div class="text-xs text-white/70">Index</div>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- TODAY'S EXTREMES & 24h TRENDS (unchanged) -->
+    <!-- TODAY'S EXTREMES & 24h TRENDS -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -166,7 +166,7 @@
       </div>
     </div>
 
-    <!-- HISTORY SECTION (unchanged) -->
+    <!-- HISTORY SECTION -->
     <div class="mt-12">
       <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -228,18 +228,18 @@
         document.getElementById('wind-speed').textContent = windKmh;
         const dir = parseFloat(data[FIELD.windDirDeg] || 30);
         document.getElementById('wind-arrow').setAttribute('transform', `rotate(${dir} 40 40)`);
-        document.getElementById('wind-gust').textContent = knotsToKmh(data[FIELD.gustKnots] || 28) + ' km/h';
+        document.getElementById('wind-gust').textContent = knotsToKmh(data[FIELD.gustKnots] || 100) + ' km/h';
 
-        document.getElementById('humidity').textContent = data[FIELD.humidity] || '71';
-        document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 18.9) + '°C';
-        document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 71) + '%';
+        document.getElementById('humidity').textContent = data[FIELD.humidity] || '74';
+        document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 18.8) + '°C';
+        document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 74) + '%';
 
-        document.getElementById('pressure').textContent = parseFloat(data[FIELD.baroHPa] || 1012.1).toFixed(1);
+        document.getElementById('pressure').textContent = parseFloat(data[FIELD.baroHPa] || 1012.2).toFixed(1);
 
         document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM] || 0).toFixed(1);
         document.getElementById('rain-month').textContent = parseFloat(data[8] || 127.8).toFixed(1) + ' mm';
 
-        document.getElementById('solar').textContent = parseFloat(data[FIELD.solarW] || 255).toFixed(0);
+        document.getElementById('solar').textContent = parseFloat(data[FIELD.solarW] || 452).toFixed(0);
         document.getElementById('uv').textContent = parseFloat(data[FIELD.uvIndex] || 0).toFixed(1);
 
         const now = new Date();
@@ -261,7 +261,7 @@
       const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } } } };
       tempChart = new Chart(document.getElementById('tempChart'), { type: 'line', data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ data: [22,24,27,29,24.5], borderColor: '#10b981' }] }, options: common });
       windChart = new Chart(document.getElementById('windChart'), { type: 'line', data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ data: [9,12,15,18,8.9], borderColor: '#f59e0b' }] }, options: common });
-      pressureChart = new Chart(document.getElementById('pressureChart'), { type: 'line', data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ data: [1013.5,1013.1,1012.8,1012.3,1012.1], borderColor: '#eab308' }] }, options: common });
+      pressureChart = new Chart(document.getElementById('pressureChart'), { type: 'line', data: { labels: ['9am','11am','1pm','3pm','5pm'], datasets: [{ data: [1013.5,1013.1,1012.8,1012.3,1012.2], borderColor: '#eab308' }] }, options: common });
     }
 
     window.onload = () => {
