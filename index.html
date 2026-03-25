@@ -61,7 +61,7 @@
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
     <!-- COMPACT TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <!-- Wind (gust now correctly formatted) -->
+      <!-- Wind -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-wind"></i>
@@ -83,8 +83,7 @@
           </svg>
         </div>
       </div>
-      <!-- Humidity, Barometer, Rain, UV (UV already fixed in previous update) -->
-      <!-- (all other tiles unchanged) -->
+      <!-- Humidity -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-droplet"></i>
@@ -98,6 +97,7 @@
           </div>
         </div>
       </div>
+      <!-- Barometer -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-gauge-high"></i>
@@ -111,6 +111,7 @@
           </div>
         </div>
       </div>
+      <!-- Rain -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-cloud-rain"></i>
@@ -121,6 +122,7 @@
           <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span></div>
         </div>
       </div>
+      <!-- UV Index -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-sun"></i>
@@ -133,9 +135,7 @@
       </div>
     </div>
 
-    <!-- TODAY TILE + 24h trends + RECENT HISTORY + ATTRIBUTION (unchanged) -->
-    <!-- (same beautiful layout as before) -->
-
+    <!-- TODAY TILE (unchanged) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -180,6 +180,7 @@
         </div>
       </div>
 
+      <!-- 24h trends -->
       <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
         <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div class="flex-1 h-64 lg:h-72"><h3 class="text-sm font-medium mb-3">Temperature Trend</h3><div class="relative h-[calc(100%-2.75rem)]"><canvas id="tempChart" class="absolute inset-0"></canvas></div></div>
@@ -224,7 +225,7 @@
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
       uvIndex: 79,
-      gustKnots: 21,          // ← Fixed: correct field for realistic gust values
+      gustKnots: 20,          // ← FIXED: correct field (25.6 knots right now)
       moonPhase: 92, moonAge: 93
     };
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
@@ -303,7 +304,7 @@
         const dir = parseFloat(data[FIELD.windDirDeg] || 30);
         document.getElementById('wind-arrow').setAttribute('transform', `rotate(${dir} 40 40)`);
 
-        // WIND GUST – FIXED (correct field + safety clamp)
+        // WIND GUST – NOW USING CORRECT FIELD
         let gustKnots = parseFloat(data[FIELD.gustKnots] || 0);
         if (gustKnots < 0 || isNaN(gustKnots)) gustKnots = 0;
         document.getElementById('wind-gust').textContent = knotsToKmh(gustKnots) + ' km/h';
@@ -316,12 +317,10 @@
         document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM] || 0).toFixed(1);
         document.getElementById('rain-month').textContent = parseFloat(data[8] || 127.8).toFixed(1) + ' mm';
 
-        // UV (already fixed previously)
         let uv = parseFloat(data[FIELD.uvIndex] || 0);
         if (uv < 0) uv = 0;
         document.getElementById('uv').textContent = uv.toFixed(1);
 
-        // Moon
         const phase = parseFloat(data[FIELD.moonPhase] || 0);
         const age = parseFloat(data[FIELD.moonAge] || 0);
         document.getElementById('moon-phase').textContent = phase.toFixed(0) + '%';
@@ -335,7 +334,6 @@
       }
     }
 
-    // loadHistoryData + createMainCharts + onload (unchanged)
     async function loadHistoryData() {
       const now = new Date();
       const labels24 = [];
