@@ -44,29 +44,36 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
 
-        <!-- LEFT: Sun & Moon (larger, responsive tile) -->
-        <div class="glass rounded-3xl p-8 lg:p-10 text-center">
+        <!-- LEFT: Sun & Moon (much cleaner, larger, better aligned) -->
+        <div class="glass rounded-3xl p-8 lg:p-10">
           <div class="grid grid-cols-2 gap-8">
             <!-- Sun -->
-            <div>
-              <div class="flex items-center justify-center gap-x-3 mb-4">
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-x-2 mb-3">
                 <i class="fa-solid fa-sun text-amber-400 text-4xl"></i>
-                <span class="font-medium text-2xl">Sun</span>
+                <span class="font-medium text-xl">Sun</span>
               </div>
-              <div class="space-y-5">
-                <div class="flex justify-between items-baseline text-xl"><span class="text-emerald-300">Rise</span><span id="sunrise-hero" class="font-light tabular-nums text-5xl">07:02</span></div>
-                <div class="flex justify-between items-baseline text-xl"><span class="text-orange-300">Set</span><span id="sunset-hero" class="font-light tabular-nums text-5xl">19:00</span></div>
+              <div class="space-y-4">
+                <div class="flex justify-between items-baseline">
+                  <span class="text-emerald-300 text-sm font-medium">Rise</span>
+                  <span id="sunrise-hero" class="font-light tabular-nums text-4xl">07:01</span>
+                </div>
+                <div class="flex justify-between items-baseline">
+                  <span class="text-orange-300 text-sm font-medium">Set</span>
+                  <span id="sunset-hero" class="font-light tabular-nums text-4xl">19:00</span>
+                </div>
               </div>
             </div>
+
             <!-- Moon -->
-            <div>
-              <div class="flex items-center justify-center gap-x-3 mb-4">
-                <span id="moon-icon-hero" class="text-7xl">🌕</span>
-                <span class="font-medium text-2xl">Moon</span>
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-x-2 mb-3">
+                <span id="moon-icon-hero" class="text-6xl">🌕</span>
+                <span class="font-medium text-xl">Moon</span>
               </div>
-              <div class="text-5xl font-light tabular-nums flex items-baseline justify-center gap-x-3">
-                <span id="moon-phase-hero">44%</span>
-                <span class="text-base font-medium text-white/70">• <span id="moon-age-hero">8.1 days</span></span>
+              <div class="text-5xl font-light tabular-nums flex items-baseline justify-center gap-x-2">
+                <span id="moon-phase-hero">24%</span>
+                <span class="text-sm font-medium text-white/70">• <span id="moon-age-hero">6.6 days</span></span>
               </div>
             </div>
           </div>
@@ -75,12 +82,12 @@
         <!-- MIDDLE: Temperature (most prominent) -->
         <div class="text-center lg:text-left">
           <div class="flex items-baseline gap-x-3 justify-center lg:justify-start">
-            <div id="current-temp" class="text-8xl font-light tabular-nums">20.8</div>
+            <div id="current-temp" class="text-8xl font-light tabular-nums">23.9</div>
             <div class="text-5xl font-light">°C</div>
           </div>
           <div id="condition" class="mt-2 text-2xl font-medium uppercase tracking-[2.5px] opacity-95">OVERCAST • DRY</div>
           <div class="flex justify-center lg:justify-start gap-x-12 mt-8 text-lg">
-            <div>Feels like <span id="feels-like" class="font-medium">22.1°C</span></div>
+            <div>Feels like <span id="feels-like" class="font-medium">25.2°C</span></div>
             <div>Heat index <span id="heat-index" class="font-medium">26.8°C</span></div>
           </div>
           <div class="mt-10 text-sm opacity-75">
@@ -260,7 +267,6 @@
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
     let tempChart, windChart, pressureChart, rain31Chart, temp24Chart, wind24Chart, baro24Chart;
 
-    // Accurate moon age (permanent fix for 2026+)
     function getMoonAge() {
       const now = new Date();
       const knownNewMoon = new Date(2026, 2, 19, 20, 5);
@@ -308,7 +314,7 @@
         document.getElementById('sunset-hero').textContent = sunset;
       } catch (e) {
         console.log("Sun API fallback");
-        document.getElementById('sunrise-hero').textContent = '07:02';
+        document.getElementById('sunrise-hero').textContent = '07:01';
         document.getElementById('sunset-hero').textContent = '19:00';
       }
     }
