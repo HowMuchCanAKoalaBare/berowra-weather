@@ -44,7 +44,7 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
         
-        <!-- NEW SUN & MOON TILE – PORTRAIT-SAFE + SCREENSHOT-PERFECT -->
+        <!-- SUN & MOON TILE (portrait-safe) -->
         <div class="glass rounded-3xl p-6 sm:p-8 lg:p-12">
           <div class="grid grid-cols-2 divide-x divide-white/10">
             <!-- Sun -->
@@ -64,7 +64,6 @@
                 </div>
               </div>
             </div>
-
             <!-- Moon -->
             <div class="pl-6 sm:pl-8 lg:pl-12">
               <div class="flex items-center gap-x-3 mb-6">
@@ -186,7 +185,7 @@
       </div>
     </div>
 
-    <!-- TODAY + LAST 24 HOURS -->
+    <!-- LAST 24 HOURS – NOW WITH COLOURED TREND LABELS -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
       <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
@@ -198,10 +197,42 @@
       <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
         <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
-          <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
-          <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
-          <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
+          
+          <!-- Temperature Chart + Label -->
+          <div>
+            <div class="flex items-center gap-x-2 mb-3">
+              <i class="fa-solid fa-temperature-high text-red-400"></i>
+              <span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span>
+            </div>
+            <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
+          </div>
+
+          <!-- Wind Chart + Label -->
+          <div>
+            <div class="flex items-center gap-x-2 mb-3">
+              <i class="fa-solid fa-wind text-emerald-400"></i>
+              <span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span>
+            </div>
+            <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
+          </div>
+
+          <!-- Pressure Chart + Label -->
+          <div>
+            <div class="flex items-center gap-x-2 mb-3">
+              <i class="fa-solid fa-gauge-high text-blue-400"></i>
+              <span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span>
+            </div>
+            <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
+          </div>
+
+          <!-- Rain Chart + Label -->
+          <div>
+            <div class="flex items-center gap-x-2 mb-3">
+              <i class="fa-solid fa-cloud-rain text-sky-400"></i>
+              <span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span>
+            </div>
+            <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
+          </div>
         </div>
       </div>
     </div>
