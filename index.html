@@ -39,12 +39,12 @@
     </div>
   </nav>
 
-  <!-- HERO – PERFECT SYMMETRY -->
+  <!-- HERO – PERFECT SYMMETRY (rise/set now perfectly horizontally aligned with moon % and age) -->
   <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
         
-        <!-- LEFT: SUN/MOON + TODAY (moon % now matches all other values) -->
+        <!-- LEFT: SUN/MOON + TODAY (horizontal alignment fixed) -->
         <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
           <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
             <!-- Sun -->
@@ -64,19 +64,22 @@
                 </div>
               </div>
             </div>
-            <!-- Moon -->
+            <!-- Moon (now matches Sun vertical spacing) -->
             <div class="pl-6 sm:pl-8">
               <div class="flex items-center gap-x-3 mb-6">
                 <span id="moon-icon-hero" class="text-4xl">🌗</span>
                 <span class="text-xl font-medium">Moon</span>
               </div>
-              <div>
-                <!-- Moon illumination now same size as all other big values -->
-                <div id="moon-phase-hero" class="text-4xl font-light tabular-nums">21%</div>
-                <div class="text-white/60 text-xs font-medium tracking-widest mt-1">ILLUMINATION</div>
-                <div class="mt-8 flex items-baseline gap-x-2">
-                  <span id="moon-age-hero" class="text-4xl font-light tabular-nums">8.7</span>
-                  <span class="text-white/60 text-xs font-medium">days</span>
+              <div class="space-y-7">
+                <div>
+                  <div id="moon-phase-hero" class="text-4xl font-light tabular-nums">21%</div>
+                  <div class="text-white/60 text-xs font-medium tracking-widest mt-1">ILLUMINATION</div>
+                </div>
+                <div>
+                  <div class="flex items-baseline gap-x-2">
+                    <span id="moon-age-hero" class="text-4xl font-light tabular-nums">8.7</span>
+                    <span class="text-white/60 text-xs font-medium">days</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,15 +129,112 @@
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
     <!-- COMPACT TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <!-- Wind, Humidity, Barometer, Rain, UV tiles (unchanged) -->
-      <!-- [Paste your 5 tile divs here – identical to previous version] -->
+      <!-- Wind -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-wind"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
+          <div id="wind-speed" class="text-4xl font-light tabular-nums">8.9</div>
+          <div class="text-xs text-white/70">km/h • N</div>
+          <div class="text-xs text-white/60 mt-1">Gusts <span id="wind-gust" class="font-medium">47.2 km/h</span></div>
+        </div>
+        <div class="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
+          <svg id="compass" width="56" height="56" viewBox="0 0 80 80" class="compass">
+            <circle cx="40" cy="40" r="36" fill="none" stroke="#334155" stroke-width="8"/>
+            <text x="40" y="14" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">N</text>
+            <text x="66" y="40" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">E</text>
+            <text x="40" y="66" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">S</text>
+            <text x="14" y="40" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">W</text>
+            <polygon id="wind-arrow" points="40,12 34,40 40,48 46,40" fill="#10b981"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Humidity -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-droplet"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
+          <div id="humidity" class="text-4xl font-light tabular-nums">74</div>
+          <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">18.8°C</span></div>
+          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden">
+            <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[74%]"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Barometer -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-gauge-high"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
+          <div id="pressure" class="text-4xl font-light tabular-nums">1012.2</div>
+          <div class="flex items-center gap-x-2 text-xs text-white/70">
+            <span>hPa</span>
+            <span id="pressure-trend" class="flex items-center text-emerald-400"><i class="fa-solid fa-arrow-trend-down mr-1"></i> -0.2</span>
+          </div>
+        </div>
+      </div>
+      <!-- Rain -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-cloud-rain"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
+          <div id="rain-today" class="text-4xl font-light tabular-nums">0.0</div>
+          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span> • YTD <span id="rain-ytd" class="font-medium">419.1 mm</span></div>
+        </div>
+      </div>
+      <!-- UV -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-sun"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-orange-400 text-xs font-medium tracking-widest">UV INDEX</div>
+          <div id="uv" class="text-4xl font-light tabular-nums">0.0</div>
+          <div class="text-xs text-white/70">Index</div>
+        </div>
+      </div>
     </div>
 
     <!-- LAST 24 HOURS -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <!-- [All 4 chart blocks identical to previous version] -->
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-temperature-high text-red-400"></i>
+            <span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span>
+          </div>
+          <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-wind text-emerald-400"></i>
+            <span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span>
+          </div>
+          <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-gauge-high text-blue-400"></i>
+            <span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span>
+          </div>
+          <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-cloud-rain text-sky-400"></i>
+            <span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span>
+          </div>
+          <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
+        </div>
       </div>
     </div>
 
