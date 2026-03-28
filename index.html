@@ -117,10 +117,10 @@
           </div>
         </div>
 
-        <!-- RIGHT: 3-DAY FORECAST -->
+        <!-- RIGHT: 6-DAY FORECAST (two rows of three tiles) -->
         <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
-          <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">3-DAY FORECAST</h3>
-          <div id="forecast-container" class="grid grid-cols-3 gap-3 text-center flex-1"></div>
+          <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST</h3>
+          <div id="forecast-container" class="grid grid-cols-3 grid-rows-2 gap-3 text-center flex-1"></div>
         </div>
       </div>
     </div>
@@ -128,7 +128,7 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
-    <!-- COMPACT TILES – ALL 5 FULLY RESTORED -->
+    <!-- COMPACT TILES (all 5 fully restored) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <!-- Wind -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
@@ -409,7 +409,7 @@
         const daily = json.daily;
         const container = document.getElementById('forecast-container');
         container.innerHTML = '';
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 6; i++) {
           const date = new Date(daily.time[i]);
           const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-AU', { weekday: 'short' });
           const { icon, color } = getWeatherIcon(daily.weather_code[i]);
@@ -431,12 +431,13 @@
     }
 
     function getWeatherIcon(code) {
+      // Consistent set: sun always yellow/amber, clouds grey/slate for overcast/partly-cloudy
       if ([0, 1].includes(code)) return { icon: '<i class="fa-solid fa-sun"></i>', color: 'text-amber-400' };
-      if ([2, 3].includes(code)) return { icon: '<i class="fa-solid fa-cloud-sun"></i>', color: 'text-amber-300' };
-      if ([45, 48].includes(code)) return { icon: '<i class="fa-solid fa-smog"></i>', color: 'text-slate-400' };
+      if ([2, 3].includes(code)) return { icon: '<i class="fa-solid fa-cloud-sun"></i>', color: 'text-amber-300' }; // partly cloudy
+      if ([45, 48].includes(code)) return { icon: '<i class="fa-solid fa-smog"></i>', color: 'text-slate-400' }; // grey fog/overcast
       if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { icon: '<i class="fa-solid fa-cloud-rain"></i>', color: 'text-sky-400' };
       if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: '<i class="fa-solid fa-snowflake"></i>', color: 'text-slate-200' };
-      return { icon: '<i class="fa-solid fa-cloud"></i>', color: 'text-slate-300' };
+      return { icon: '<i class="fa-solid fa-cloud"></i>', color: 'text-slate-400' }; // default grey cloud
     }
 
     function loadHistoryData() {
@@ -535,7 +536,7 @@
       loadSunData();
       loadForecast();
       loadHistoryData();
-      setInterval(loadLiveData, 30000);
+      setInterval(loadLiveData, 60000);
     };
   </script>
 </body>
