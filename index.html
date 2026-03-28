@@ -44,7 +44,7 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
         
-        <!-- LEFT: SUN/MOON + TODAY (MOON AGE label now above age value) -->
+        <!-- LEFT: SUN/MOON + TODAY -->
         <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
           <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
             <!-- Sun -->
@@ -128,7 +128,7 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
-    <!-- COMPACT TILES -->
+    <!-- COMPACT TILES – ALL 5 FULLY RESTORED -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <!-- Wind -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
@@ -152,7 +152,56 @@
           </svg>
         </div>
       </div>
-      <!-- Humidity, Barometer, Rain, UV tiles identical to previous version -->
+      <!-- Humidity -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-droplet"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
+          <div id="humidity" class="text-4xl font-light tabular-nums">74</div>
+          <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">18.8°C</span></div>
+          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden">
+            <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[74%]"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Barometer -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-gauge-high"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
+          <div id="pressure" class="text-4xl font-light tabular-nums">1012.2</div>
+          <div class="flex items-center gap-x-2 text-xs text-white/70">
+            <span>hPa</span>
+            <span id="pressure-trend" class="flex items-center text-emerald-400"><i class="fa-solid fa-arrow-trend-down mr-1"></i> -0.2</span>
+          </div>
+        </div>
+      </div>
+      <!-- Rain -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-cloud-rain"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
+          <div id="rain-today" class="text-4xl font-light tabular-nums">0.0</div>
+          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span> • YTD <span id="rain-ytd" class="font-medium">419.1 mm</span></div>
+        </div>
+      </div>
+      <!-- UV -->
+      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+        <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
+          <i class="fa-solid fa-sun"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-orange-400 text-xs font-medium tracking-widest">UV INDEX</div>
+          <div id="uv" class="text-4xl font-light tabular-nums">0.0</div>
+          <div class="text-xs text-white/70">Index</div>
+        </div>
+      </div>
     </div>
 
     <!-- LAST 24 HOURS -->
@@ -202,7 +251,7 @@
       </div>
     </div>
 
-    <!-- ALL TIME RECORDS (new tile from your screenshot) -->
+    <!-- ALL TIME RECORDS -->
     <div class="mt-12 glass rounded-3xl p-6 border border-white/10">
       <h2 class="text-xl font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-trophy text-amber-400"></i> ALL TIME RECORDS</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
@@ -486,7 +535,7 @@
       loadSunData();
       loadForecast();
       loadHistoryData();
-      setInterval(loadLiveData, 60000);
+      setInterval(loadLiveData, 30000);
     };
   </script>
 </body>
