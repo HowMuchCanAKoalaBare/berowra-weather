@@ -44,7 +44,7 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
         
-        <!-- LEFT: SUN/MOON + TODAY (rise/set now perfectly horizontally aligned with moon % and age) -->
+        <!-- LEFT: SUN/MOON + TODAY (Illumination label now ABOVE the % – perfect alignment) -->
         <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
           <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
             <!-- Sun -->
@@ -53,7 +53,7 @@
                 <i class="fa-solid fa-sun text-3xl text-amber-400"></i>
                 <span class="text-xl font-medium">Sun</span>
               </div>
-              <div class="grid grid-rows-2 gap-y-7">
+              <div class="space-y-7">
                 <div>
                   <div class="text-emerald-300 text-xs font-medium tracking-widest mb-1">RISE</div>
                   <div id="sunrise-hero" class="text-4xl font-light tabular-nums">07:03</div>
@@ -70,10 +70,11 @@
                 <span id="moon-icon-hero" class="text-4xl">🌗</span>
                 <span class="text-xl font-medium">Moon</span>
               </div>
-              <div class="grid grid-rows-2 gap-y-7">
+              <div class="space-y-7">
+                <!-- Illumination label NOW ABOVE the % -->
                 <div>
+                  <div class="text-white/60 text-xs font-medium tracking-widest">ILLUMINATION</div>
                   <div id="moon-phase-hero" class="text-4xl font-light tabular-nums">21%</div>
-                  <div class="text-white/60 text-xs font-medium tracking-widest mt-1">ILLUMINATION</div>
                 </div>
                 <div>
                   <div class="flex items-baseline gap-x-2">
