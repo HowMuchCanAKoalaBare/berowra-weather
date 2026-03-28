@@ -44,9 +44,9 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-start">
         
-        <!-- SUN & MOON TILE (portrait-safe) -->
+        <!-- NEW COMBINED SUN/MOON + TODAY TILE (replaces old Sun/Moon) -->
         <div class="glass rounded-3xl p-6 sm:p-8 lg:p-12">
-          <div class="grid grid-cols-2 divide-x divide-white/10">
+          <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
             <!-- Sun -->
             <div class="pr-6 sm:pr-8 lg:pr-12">
               <div class="flex items-center gap-x-3 mb-6">
@@ -78,6 +78,20 @@
                   <span class="text-white/60 text-sm">days</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- TODAY SECTION (amalgamated) -->
+          <div class="pt-6 border-t border-white/10 grid grid-cols-2 gap-8">
+            <div class="text-center">
+              <div class="text-emerald-400 text-xs tracking-widest mb-1">HIGH</div>
+              <div id="day-high" class="text-4xl sm:text-5xl font-light tabular-nums">31.0°C</div>
+              <div class="text-xs text-white/60 mt-1">14:25</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sky-400 text-xs tracking-widest mb-1">LOW</div>
+              <div id="day-low" class="text-4xl sm:text-5xl font-light tabular-nums">16.3°C</div>
+              <div class="text-xs text-white/60 mt-1">07:30</div>
             </div>
           </div>
         </div>
@@ -185,54 +199,45 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS – NOW WITH COLOURED TREND LABELS -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
-      <div class="lg:col-span-3 glass rounded-3xl p-6 border border-white/10">
-        <h3 class="text-lg font-medium mb-4 flex items-center gap-x-2"><i class="fa-solid fa-temperature-high"></i> TODAY</h3>
-        <div class="space-y-6">
-          <div class="flex justify-between"><span class="text-emerald-400">High</span><span id="day-high" class="text-3xl font-light">31.0°C</span><span class="text-xs text-white/60">14:25</span></div>
-          <div class="flex justify-between"><span class="text-sky-400">Low</span><span id="day-low" class="text-3xl font-light">16.3°C</span><span class="text-xs text-white/60">07:30</span></div>
+    <!-- LAST 24 HOURS – NOW FULL WIDTH (stretched left) -->
+    <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
+      <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        
+        <!-- Temperature Chart + Label -->
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-temperature-high text-red-400"></i>
+            <span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span>
+          </div>
+          <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
         </div>
-      </div>
-      <div class="lg:col-span-9 glass rounded-3xl p-6 border border-white/10">
-        <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          
-          <!-- Temperature Chart + Label -->
-          <div>
-            <div class="flex items-center gap-x-2 mb-3">
-              <i class="fa-solid fa-temperature-high text-red-400"></i>
-              <span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span>
-            </div>
-            <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
-          </div>
 
-          <!-- Wind Chart + Label -->
-          <div>
-            <div class="flex items-center gap-x-2 mb-3">
-              <i class="fa-solid fa-wind text-emerald-400"></i>
-              <span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span>
-            </div>
-            <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
+        <!-- Wind Chart + Label -->
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-wind text-emerald-400"></i>
+            <span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span>
           </div>
+          <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
+        </div>
 
-          <!-- Pressure Chart + Label -->
-          <div>
-            <div class="flex items-center gap-x-2 mb-3">
-              <i class="fa-solid fa-gauge-high text-blue-400"></i>
-              <span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span>
-            </div>
-            <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
+        <!-- Pressure Chart + Label -->
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-gauge-high text-blue-400"></i>
+            <span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span>
           </div>
+          <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
+        </div>
 
-          <!-- Rain Chart + Label -->
-          <div>
-            <div class="flex items-center gap-x-2 mb-3">
-              <i class="fa-solid fa-cloud-rain text-sky-400"></i>
-              <span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span>
-            </div>
-            <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
+        <!-- Rain Chart + Label -->
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-cloud-rain text-sky-400"></i>
+            <span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span>
           </div>
+          <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
         </div>
       </div>
     </div>
