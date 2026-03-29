@@ -126,7 +126,7 @@
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
     <!-- COMPACT TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <!-- Wind Tile – Now uses Maximum Gust (last hour) from field 133 -->
+      <!-- Wind Tile – Max gust last hour (Field 133) -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-wind"></i>
@@ -166,17 +166,17 @@
         </div>
       </div>
 
-      <!-- Barometer -->
+      <!-- Barometer – Now uses correct Field 50 for last-hour change -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-gauge-high"></i>
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
-          <div id="pressure" class="text-4xl font-light tabular-nums">1012.2</div>
+          <div id="pressure" class="text-4xl font-light tabular-nums">1025.4</div>
           <div class="flex items-center gap-x-2 text-xs text-white/70">
             <span>hPa</span>
-            <span id="pressure-trend" class="flex items-center text-emerald-400"><i class="fa-solid fa-arrow-trend-down mr-1"></i> -0.2</span>
+            <span id="pressure-trend" class="flex items-center font-medium"></span>
           </div>
         </div>
       </div>
@@ -206,42 +206,17 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS -->
+    <!-- LAST 24 HOURS, RECENT HISTORY, ALL TIME RECORDS, ATTRIBUTION (unchanged) -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-temperature-high text-red-400"></i>
-            <span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span>
-          </div>
-          <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
-        </div>
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-wind text-emerald-400"></i>
-            <span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span>
-          </div>
-          <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
-        </div>
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-gauge-high text-blue-400"></i>
-            <span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span>
-          </div>
-          <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
-        </div>
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-cloud-rain text-sky-400"></i>
-            <span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span>
-          </div>
-          <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
-        </div>
+        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-temperature-high text-red-400"></i><span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span></div><div class="chart-container"><canvas id="temp24Chart"></canvas></div></div>
+        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-wind text-emerald-400"></i><span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span></div><div class="chart-container"><canvas id="wind24Chart"></canvas></div></div>
+        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-gauge-high text-blue-400"></i><span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span></div><div class="chart-container"><canvas id="baro24Chart"></canvas></div></div>
+        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-cloud-rain text-sky-400"></i><span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span></div><div class="chart-container"><canvas id="rain24Chart"></canvas></div></div>
       </div>
     </div>
 
-    <!-- RECENT HISTORY -->
     <div class="mt-12">
       <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
       <div class="glass rounded-3xl p-6 border border-white/10">
@@ -253,7 +228,6 @@
       </div>
     </div>
 
-    <!-- ALL TIME RECORDS -->
     <div class="mt-12 glass rounded-3xl p-6 border border-white/10">
       <h2 class="text-xl font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-trophy text-amber-400"></i> ALL TIME RECORDS</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
@@ -285,7 +259,6 @@
       </div>
     </div>
 
-    <!-- ATTRIBUTION -->
     <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10">
       Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • Public clientraw.txt feed
     </div>
@@ -296,7 +269,8 @@
     const FIELD = {
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dewpointC: 72, uvIndex: 79,
-      maxGustLastHourKnots: 133,   // Maximum Gust (last hour) – matches original site
+      maxGustLastHourKnots: 133,
+      baroTrendLastHour: 50,   // Correct field for hPa change last hour
       moonPhase: 92
     };
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
@@ -344,6 +318,15 @@
       return directions[index];
     }
 
+    function formatPressureTrend(trend) {
+      const val = parseFloat(trend);
+      if (isNaN(val)) return '<span class="text-white/60">STEADY</span>';
+      const sign = val > 0 ? '+' : '';
+      let color = val > 0 ? 'text-emerald-400' : (val < 0 ? 'text-red-400' : 'text-white/60');
+      let icon = val > 0 ? 'fa-arrow-trend-up' : (val < 0 ? 'fa-arrow-trend-down' : 'fa-minus');
+      return `<span class="${color} flex items-center"><i class="fa-solid ${icon} mr-1"></i> ${sign}${val.toFixed(1)}</span>`;
+    }
+
     async function loadSunData() {
       try {
         const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15&formatted=1&tzid=Australia/Sydney')}`;
@@ -372,23 +355,28 @@
         document.getElementById('heat-index').textContent = '26.8°C';
         document.getElementById('condition').textContent = 'OVERCAST • DRY';
 
-        // Live wind speed + direction
+        // Live wind
         const windKmh = knotsToKmh(data[FIELD.currentWindKnots] || 3.0);
         document.getElementById('wind-speed').textContent = windKmh;
         const dirDeg = parseFloat(data[FIELD.windDirDeg] || 240);
         document.getElementById('wind-dir').textContent = getWindDirection(dirDeg);
         document.getElementById('wind-arrow').setAttribute('transform', `rotate(${dirDeg} 40 40)`);
 
-        // MAX GUST LAST HOUR (field 133) – now matches original site exactly
+        // Max gust last hour
         let maxGustLastHourKnots = parseFloat(data[FIELD.maxGustLastHourKnots] || 7.0);
         if (maxGustLastHourKnots < 0 || isNaN(maxGustLastHourKnots)) maxGustLastHourKnots = 0;
         document.getElementById('wind-gust').textContent = knotsToKmh(maxGustLastHourKnots) + ' km/h';
+
+        // Barometer – current + correct last-hour change (Field 50)
+        const currentPressure = parseFloat(data[FIELD.baroHPa] || 1025.4).toFixed(1);
+        document.getElementById('pressure').textContent = currentPressure;
+        const trendVal = data[FIELD.baroTrendLastHour] || "0";
+        document.getElementById('pressure-trend').innerHTML = formatPressureTrend(trendVal);
 
         // Other tiles
         document.getElementById('humidity').textContent = data[FIELD.humidity] || '74';
         document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 18.8) + '°C';
         document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 74) + '%';
-        document.getElementById('pressure').textContent = parseFloat(data[FIELD.baroHPa] || 1012.2).toFixed(1);
         document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM] || 0).toFixed(1);
         document.getElementById('rain-month').textContent = parseFloat(data[8] || 127.8).toFixed(1) + ' mm';
         document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 419.1).toFixed(1) + ' mm';
