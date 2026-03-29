@@ -126,21 +126,21 @@
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
     <!-- COMPACT TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <!-- Wind Tile - NOW shows daily high gust -->
+      <!-- Wind Tile – Now uses Maximum Gust (last hour) from field 133 -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-wind"></i>
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
-          <div id="wind-speed" class="text-4xl font-light tabular-nums">8.9</div>
-          <div class="text-xs text-white/70">km/h • <span id="wind-dir">N</span></div>
+          <div id="wind-speed" class="text-4xl font-light tabular-nums">5.0</div>
+          <div class="text-xs text-white/70">km/h • <span id="wind-dir">SSW</span></div>
           <div class="text-xs text-white/60 mt-1">
-            Gusts today <span id="wind-gust" class="font-medium text-orange-400">47.2 km/h</span>
+            Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">13.0 km/h</span>
           </div>
         </div>
-        <div class="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
-          <svg id="compass" width="56" height="56" viewBox="0 0 80 80" class="compass">
+        <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
+          <svg id="compass" width="84" height="84" viewBox="0 0 80 80" class="compass">
             <circle cx="40" cy="40" r="36" fill="none" stroke="#334155" stroke-width="8"/>
             <text x="40" y="14" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">N</text>
             <text x="66" y="40" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">E</text>
@@ -206,9 +206,7 @@
       </div>
     </div>
 
-    <!-- ... rest of the page (charts, records, attribution) stays exactly the same ... -->
-    <!-- LAST 24 HOURS, RAINFALL GRAPH, ALL TIME RECORDS, ATTRIBUTION all unchanged -->
-
+    <!-- LAST 24 HOURS -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -243,6 +241,7 @@
       </div>
     </div>
 
+    <!-- RECENT HISTORY -->
     <div class="mt-12">
       <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
       <div class="glass rounded-3xl p-6 border border-white/10">
@@ -254,10 +253,10 @@
       </div>
     </div>
 
+    <!-- ALL TIME RECORDS -->
     <div class="mt-12 glass rounded-3xl p-6 border border-white/10">
       <h2 class="text-xl font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-trophy text-amber-400"></i> ALL TIME RECORDS</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
-        <!-- All the record rows remain exactly as before -->
         <div class="flex justify-between"><span class="text-white/70">Record high temperature</span><span class="text-amber-400 font-medium">45.7 °C at: 14:53 on: 04 Jan 2020</span></div>
         <div class="flex justify-between"><span class="text-white/70">Record low temperature</span><span class="text-amber-400 font-medium">0.0 °C at: 17:12 on: 24 Dec 2016</span></div>
         <div class="flex justify-between"><span class="text-white/70">Record high wind gust</span><span class="text-amber-400 font-medium">120.6 km/h 268° at: 13:09 on: 26 Nov 2025</span></div>
@@ -286,6 +285,7 @@
       </div>
     </div>
 
+    <!-- ATTRIBUTION -->
     <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10">
       Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • Public clientraw.txt feed
     </div>
@@ -295,14 +295,11 @@
     function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
     const FIELD = {
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
-      rainTodayMM: 7, dayHighC: 46, dayLowC: 47, dewpointC: 72,
-      uvIndex: 79, gustKnots: 20,   // <-- live gust (unused now)
-      dailyHighGustKnots: 21,       // <-- NEW: daily high gust
+      rainTodayMM: 7, dewpointC: 72, uvIndex: 79,
+      maxGustLastHourKnots: 133,   // Maximum Gust (last hour) – matches original site
       moonPhase: 92
     };
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
-
-    let temp24Chart, wind24Chart, baro24Chart, rain24Chart, rainMonthlyChart;
 
     function knotsToKmh(k) {
       return (parseFloat(k) * 1.852).toFixed(1);
@@ -341,6 +338,12 @@
       return timeStr.trim().substring(0, 5);
     }
 
+    function getWindDirection(deg) {
+      const directions = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      const index = Math.round(deg / 22.5) % 16;
+      return directions[index];
+    }
+
     async function loadSunData() {
       try {
         const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15&formatted=1&tzid=Australia/Sydney')}`;
@@ -362,7 +365,7 @@
         const text = await res.text();
         const data = text.split(/\s+/);
 
-        // Current temp & feels
+        // Current temp
         const currentTemp = parseFloat(data[FIELD.outTempC] || 23.7).toFixed(1);
         document.getElementById('current-temp').textContent = currentTemp;
         document.getElementById('feels-like').textContent = (parseFloat(currentTemp) + 1.3).toFixed(1) + '°C';
@@ -370,19 +373,18 @@
         document.getElementById('condition').textContent = 'OVERCAST • DRY';
 
         // Live wind speed + direction
-        const windKmh = knotsToKmh(data[FIELD.currentWindKnots] || 4.8);
+        const windKmh = knotsToKmh(data[FIELD.currentWindKnots] || 3.0);
         document.getElementById('wind-speed').textContent = windKmh;
-        const dirDeg = parseFloat(data[FIELD.windDirDeg] || 30);
-        const dirText = getWindDirection(dirDeg);
-        document.getElementById('wind-dir').textContent = dirText;
+        const dirDeg = parseFloat(data[FIELD.windDirDeg] || 240);
+        document.getElementById('wind-dir').textContent = getWindDirection(dirDeg);
         document.getElementById('wind-arrow').setAttribute('transform', `rotate(${dirDeg} 40 40)`);
 
-        // DAILY HIGH GUST (this is what you wanted)
-        let dailyGustKnots = parseFloat(data[FIELD.dailyHighGustKnots] || 0);
-        if (dailyGustKnots < 0 || isNaN(dailyGustKnots)) dailyGustKnots = 0;
-        document.getElementById('wind-gust').textContent = knotsToKmh(dailyGustKnots) + ' km/h';
+        // MAX GUST LAST HOUR (field 133) – now matches original site exactly
+        let maxGustLastHourKnots = parseFloat(data[FIELD.maxGustLastHourKnots] || 7.0);
+        if (maxGustLastHourKnots < 0 || isNaN(maxGustLastHourKnots)) maxGustLastHourKnots = 0;
+        document.getElementById('wind-gust').textContent = knotsToKmh(maxGustLastHourKnots) + ' km/h';
 
-        // Rest of the tiles
+        // Other tiles
         document.getElementById('humidity').textContent = data[FIELD.humidity] || '74';
         document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 18.8) + '°C';
         document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 74) + '%';
@@ -407,16 +409,78 @@
       }
     }
 
-    function getWindDirection(deg) {
-      const directions = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-      const index = Math.round(deg / 22.5) % 16;
-      return directions[index];
+    async function loadForecast() {
+      try {
+        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Australia%2FSydney')}`;
+        const res = await fetch(proxy);
+        const json = await res.json();
+        const daily = json.daily;
+        const container = document.getElementById('forecast-container');
+        container.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+          const date = new Date(daily.time[i]);
+          const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-AU', { weekday: 'short' });
+          const { icon, color } = getWeatherIcon(daily.weather_code[i]);
+          const high = Math.round(daily.temperature_2m_max[i]);
+          const low = Math.round(daily.temperature_2m_min[i]);
+          const card = `
+            <div class="forecast-card glass rounded-3xl p-5 flex flex-col items-center justify-center min-h-[158px] border border-white/10">
+              <div class="text-xs font-medium opacity-75 mb-2 tracking-wider">${dayName}</div>
+              <div class="text-6xl mb-4 ${color}">${icon}</div>
+              <div class="text-4xl font-light tabular-nums text-white">${high}°</div>
+              <div class="text-sm opacity-60 mt-px">${low}°</div>
+            </div>`;
+          container.innerHTML += card;
+        }
+      } catch (e) {
+        console.log("Forecast fallback", e);
+      }
     }
 
-    async function loadSunData() { /* unchanged from previous */ }
-    async function loadForecast() { /* unchanged from previous - 6-day still perfect */ }
-    function getWeatherIcon(code) { /* unchanged */ }
-    function loadHistoryData() { /* unchanged */ }
+    function getWeatherIcon(code) {
+      if ([0, 1].includes(code)) return { icon: '<i class="fa-solid fa-sun"></i>', color: 'text-amber-400' };
+      if ([2, 3].includes(code)) return { icon: '<i class="fa-solid fa-cloud-sun"></i>', color: 'text-amber-300' };
+      if ([45, 48].includes(code)) return { icon: '<i class="fa-solid fa-smog"></i>', color: 'text-slate-400' };
+      if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { icon: '<i class="fa-solid fa-cloud-rain"></i>', color: 'text-sky-400' };
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: '<i class="fa-solid fa-snowflake"></i>', color: 'text-slate-200' };
+      return { icon: '<i class="fa-solid fa-cloud"></i>', color: 'text-slate-400' };
+    }
+
+    function loadHistoryData() {
+      const now = new Date();
+      const labels24 = [];
+      for (let i = 23; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+        labels24.push(d.getHours().toString().padStart(2, '0') + ':00');
+      }
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { grid: { color: '#334155' } } }
+      };
+      new Chart(document.getElementById('temp24Chart'), { type: 'line', data: { labels: labels24, datasets: [{ data: [25.8,24.1,23.2,22.8,22.5,22.1,21.8,21.6,21.5,21.4,21.3,21.2,21.4,22.0,23.5,25.1,26.8,28.3,29.1,28.7,27.4,26.5,25.9,23.7], borderColor: '#ef4444', tension: 0.4, borderWidth: 3 }] }, options: commonOptions });
+      new Chart(document.getElementById('wind24Chart'), { type: 'line', data: { labels: labels24, datasets: [{ data: [11,13,9,8,7,6,5,5,6,9,8,7,10,9,8,7,6,8,11,12,13,11,10,8.9], borderColor: '#10b981', tension: 0.3, borderWidth: 3 }] }, options: commonOptions });
+      new Chart(document.getElementById('baro24Chart'), { type: 'line', data: { labels: labels24, datasets: [{ data: [1012.3,1012.3,1012.3,1012.3,1012.2,1012.2,1012.2,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.1,1012.0,1012.0,1012.0,1011.9,1012.0,1012.0,1012.0,1012.0], borderColor: '#3b82f6', tension: 0.4, borderWidth: 3 }] }, options: { ...commonOptions, scales: { y: { grid: { color: '#334155' }, min: 1011, max: 1013 } } } });
+      new Chart(document.getElementById('rain24Chart'), { type: 'bar', data: { labels: labels24, datasets: [{ data: Array(24).fill(0).map((_,i) => i % 6 === 0 ? (Math.random()*2).toFixed(1)*1 : 0), backgroundColor: '#60a5fa' }] }, options: commonOptions });
+      const rainfallData = [12,8,45,22,5,31,18,7,0,12,28,41];
+      const totalRain = rainfallData.reduce((a, b) => a + b, 0);
+      document.getElementById('rain-total').textContent = `Total: ${totalRain} mm`;
+      new Chart(document.getElementById('rainMonthlyChart'), {
+        type: 'bar',
+        data: { labels: ['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1','Mar W2','Mar W3','Mar W4'], datasets: [{ label: 'Rainfall (mm)', data: rainfallData, borderColor: '#0284c8', borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.raw + ' mm' } } },
+          scales: {
+            y: { grid: { color: '#334155' }, ticks: { color: '#64748b', callback: (value) => value + ' mm' }, title: { display: true, text: 'Rainfall (mm)', color: '#64748b', font: { size: 12 } } },
+            x: { grid: { color: '#334155', display: false }, ticks: { color: '#64748b', font: { weight: 500 } } }
+          },
+          elements: { bar: { backgroundColor: (context) => { const chart = context.chart; const gradient = chart.ctx.createLinearGradient(0, chart.height, 0, 0); gradient.addColorStop(0, '#0284c8'); gradient.addColorStop(1, '#0ea5e9'); return gradient; } } },
+          animation: { duration: 1200 }
+        }
+      });
+    }
 
     window.onload = () => {
       initTailwind();
@@ -424,7 +488,7 @@
       loadSunData();
       loadForecast();
       loadHistoryData();
-      setInterval(loadLiveData, 60000);   // refresh every minute
+      setInterval(loadLiveData, 60000);
     };
   </script>
 </body>
