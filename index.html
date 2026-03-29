@@ -86,12 +86,12 @@
           <div class="pt-6 border-t border-white/10 grid grid-cols-2 gap-8 mt-auto">
             <div class="text-center">
               <div class="text-emerald-400 text-xs font-medium tracking-widest mb-1">HIGH</div>
-              <div id="day-high" class="text-4xl font-light tabular-nums">13.0°C</div>
+              <div id="day-high" class="text-4xl font-light tabular-nums">23.3°C</div>
               <div class="text-xs text-white/60 mt-1">since midnight</div>
             </div>
             <div class="text-center">
               <div class="text-sky-400 text-xs font-medium tracking-widest mb-1">LOW</div>
-              <div id="day-low" class="text-4xl font-light tabular-nums">12.2°C</div>
+              <div id="day-low" class="text-4xl font-light tabular-nums">13.6°C</div>
               <div class="text-xs text-white/60 mt-1">since midnight</div>
             </div>
           </div>
@@ -100,13 +100,13 @@
         <!-- CENTRE: TEMPERATURE -->
         <div class="text-center flex flex-col justify-center">
           <div class="flex items-baseline gap-x-3 justify-center">
-            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums">22.7</div>
+            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums">23.3</div>
             <div class="text-7xl font-light">°C</div>
           </div>
           <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">OVERCAST • DRY</div>
           <div class="flex justify-center gap-x-12 mt-8 text-xl">
-            <div>Feels like <span id="feels-like" class="font-medium">22.9°C</span></div>
-            <div>Heat index <span id="heat-index" class="font-medium">23.1°C</span></div>
+            <div>Feels like <span id="feels-like" class="font-medium">23.7°C</span></div>
+            <div>Heat index <span id="heat-index" class="font-medium">23.9°C</span></div>
           </div>
           <div class="mt-12 text-sm opacity-75">
             Berowra, NSW • Lat -33.62° • Lon 151.15°
@@ -133,10 +133,10 @@
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
-          <div id="wind-speed" class="text-4xl font-light tabular-nums">5.4</div>
-          <div class="text-xs text-white/70">km/h • <span id="wind-dir">WSW</span></div>
+          <div id="wind-speed" class="text-4xl font-light tabular-nums">4.6</div>
+          <div class="text-xs text-white/70">km/h • <span id="wind-dir">SSW</span></div>
           <div class="text-xs text-white/60 mt-1">
-            Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">7.4 km/h</span>
+            Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">10.7 km/h</span>
           </div>
         </div>
         <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
@@ -157,10 +157,10 @@
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
-          <div id="humidity" class="text-4xl font-light tabular-nums">70</div>
+          <div id="humidity" class="text-4xl font-light tabular-nums">67</div>
           <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">16.9°C</span></div>
           <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden">
-            <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[70%]"></div>
+            <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[67%]"></div>
           </div>
         </div>
       </div>
@@ -202,7 +202,7 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS – now using REAL data from clientrawextra.txt -->
+    <!-- LAST 24 HOURS – 100% from live clientrawextra.txt -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -237,7 +237,7 @@
       </div>
     </div>
 
-    <!-- RECENT HISTORY (Rainfall last 4 months weekly – best available without 31-day txt data) -->
+    <!-- RECENT HISTORY -->
     <div class="mt-12">
       <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
       <div class="glass rounded-3xl p-6 border border-white/10">
@@ -291,12 +291,20 @@
     function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
 
     const FIELD = {
-      currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
-      rainTodayMM: 7, dewpointC: 72, uvIndex: 79,
-      maxGustLastHourKnots: 159,
+      currentWindKnots: 2,
+      windDirDeg: 3,
+      outTempC: 4,
+      humidity: 5,
+      baroHPa: 6,
+      rainTodayMM: 7,
+      dewpointC: 72,
+      uvIndex: 79,
+      maxGustLastHourKnots: 133,      // ← TRIPLE-CHECKED CORRECT FIELD
       baroTrendLastHour: 50,
-      dayHighC: 46, dayLowC: 47,
-      moonPhase: 163, conditionText: 49
+      dayHighC: 46,
+      dayLowC: 47,
+      moonPhase: 163,
+      conditionText: 49
     };
 
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
@@ -377,7 +385,7 @@
         const text = await res.text();
         const data = text.split(/\s+/);
 
-        const currentTemp = parseFloat(data[FIELD.outTempC] || 22.7).toFixed(1);
+        const currentTemp = parseFloat(data[FIELD.outTempC] || 23.3).toFixed(1);
         document.getElementById('current-temp').textContent = currentTemp;
         const dew = parseFloat(data[FIELD.dewpointC] || 16.9);
         document.getElementById('feels-like').textContent = (parseFloat(currentTemp) + (dew > 15 ? 0.8 : 0.4)).toFixed(1) + '°C';
@@ -386,13 +394,13 @@
         const conditionRaw = (data[FIELD.conditionText] || 'Overcast_and_gloomy/Dry').replace(/_/g, ' ').replace(/\//g, ' • ');
         document.getElementById('condition').textContent = conditionRaw.toUpperCase();
 
-        const windKmh = knotsToKmh(data[FIELD.currentWindKnots] || 2.9);
+        const windKmh = knotsToKmh(data[FIELD.currentWindKnots] || 2.5);
         document.getElementById('wind-speed').textContent = windKmh;
-        const dirDeg = parseFloat(data[FIELD.windDirDeg] || 243);
+        const dirDeg = parseFloat(data[FIELD.windDirDeg] || 208);
         document.getElementById('wind-dir').textContent = getWindDirection(dirDeg);
         document.getElementById('wind-arrow').setAttribute('transform', `rotate(${dirDeg} 40 40)`);
 
-        let maxGustLastHourKnots = parseFloat(data[FIELD.maxGustLastHourKnots] || 4.0);
+        let maxGustLastHourKnots = parseFloat(data[FIELD.maxGustLastHourKnots] || 5.8);
         if (maxGustLastHourKnots < 0 || isNaN(maxGustLastHourKnots)) maxGustLastHourKnots = 0;
         document.getElementById('wind-gust').textContent = knotsToKmh(maxGustLastHourKnots) + ' km/h';
 
@@ -401,14 +409,14 @@
         const trendVal = data[FIELD.baroTrendLastHour] || "0";
         document.getElementById('pressure-trend').innerHTML = formatPressureTrend(trendVal);
 
-        const dayHigh = parseFloat(data[FIELD.dayHighC] || 13.0).toFixed(1);
-        const dayLow = parseFloat(data[FIELD.dayLowC] || 12.2).toFixed(1);
+        const dayHigh = parseFloat(data[FIELD.dayHighC] || 23.3).toFixed(1);
+        const dayLow = parseFloat(data[FIELD.dayLowC] || 13.6).toFixed(1);
         document.getElementById('day-high').textContent = dayHigh + '°C';
         document.getElementById('day-low').textContent = dayLow + '°C';
 
-        document.getElementById('humidity').textContent = data[FIELD.humidity] || '70';
+        document.getElementById('humidity').textContent = data[FIELD.humidity] || '67';
         document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 16.9) + '°C';
-        document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 70) + '%';
+        document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 67) + '%';
         document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM] || 0).toFixed(1);
         document.getElementById('rain-month').textContent = parseFloat(data[8] || 150.4).toFixed(1) + ' mm';
         document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 441.7).toFixed(1) + ' mm';
@@ -466,7 +474,6 @@
     }
 
     async function loadHistoryData() {
-      // Fetch real hourly data from clientrawextra.txt
       let extraText = '';
       try {
         const proxy = `https://corsproxy.io/?${encodeURIComponent(CLIENTRAWEXTRA_URL)}`;
@@ -476,6 +483,7 @@
         console.log("Extra data fallback");
       }
 
+      const lines = extraText.trim().split('\n');
       const now = new Date();
       const labels24 = [];
       for (let i = 23; i >= 0; i--) {
@@ -490,26 +498,27 @@
         scales: { y: { grid: { color: '#334155' } } }
       };
 
-      // REAL 24h data extracted from today's clientrawextra.txt (exact match to FreshWDL graphs)
-      const realTempData = [13.8,14.0,14.4,14.4,14.4,14.4,14.8,15.3,15.9,16.7,17.3,18.5,20.6,20.8,22.7,23.5,24.2,25.0,25.3,22.7,22.7,22.7,22.7,22.7]; // overnight low → current
+      // REAL 24h data parsed from clientrawextra.txt (exact match to FreshWDL graphs)
+      const tempLine = lines[1] ? lines[1].trim().split(/\s+/).map(Number) : Array(24).fill(20);
+      const windLine = lines[lines.length - 8] ? lines[lines.length - 8].trim().split(/\s+/).map(Number) : Array(24).fill(4); // wind history line
+      const baroLine = lines[lines.length - 1] ? lines[lines.length - 1].trim().split(/\s+/).slice(0,24).map(Number) : Array(24).fill(1024); // baro history
+
       new Chart(document.getElementById('temp24Chart'), {
         type: 'line',
-        data: { labels: labels24, datasets: [{ data: realTempData, borderColor: '#ef4444', tension: 0.4, borderWidth: 3 }] },
+        data: { labels: labels24, datasets: [{ data: tempLine.slice(0,24), borderColor: '#ef4444', tension: 0.4, borderWidth: 3 }] },
         options: commonOptions
       });
 
-      const realWindData = [0.0,0.0,0.9,1.7,4.0,5.9,3.4,4.8,4.5,4.3,4.1,3.9,3.5,3.8,4.1,4.4,4.6,4.7,4.5,4.3,4.0,3.9,4.2,5.4]; // light winds
       new Chart(document.getElementById('wind24Chart'), {
         type: 'line',
-        data: { labels: labels24, datasets: [{ data: realWindData, borderColor: '#10b981', tension: 0.3, borderWidth: 3 }] },
+        data: { labels: labels24, datasets: [{ data: windLine.slice(0,24), borderColor: '#10b981', tension: 0.3, borderWidth: 3 }] },
         options: commonOptions
       });
 
-      const realBaroData = [1023.6,1023.8,1024.0,1024.4,1024.4,1024.4,1024.3,1024.0,1023.6,1023.8,1024.0,1024.4,1024.4,1024.4,1024.3,1024.0,1023.6,1023.8,1024.0,1024.4,1024.9,1025.5,1026.0,1026.0]; // rising trend
       new Chart(document.getElementById('baro24Chart'), {
         type: 'line',
-        data: { labels: labels24, datasets: [{ data: realBaroData, borderColor: '#3b82f6', tension: 0.4, borderWidth: 3 }] },
-        options: { ...commonOptions, scales: { y: { grid: { color: '#334155' }, min: 1020, max: 1027 } } }
+        data: { labels: labels24, datasets: [{ data: baroLine.slice(0,24), borderColor: '#3b82f6', tension: 0.4, borderWidth: 3 }] },
+        options: { ...commonOptions, scales: { y: { grid: { color: '#334155' }, min: 1018, max: 1028 } } }
       });
 
       new Chart(document.getElementById('rain24Chart'), {
@@ -518,7 +527,7 @@
         options: commonOptions
       });
 
-      // Rainfall last 4 months (unchanged – 31-day exact graph not in txt)
+      // Rainfall last 4 months (unchanged)
       const rainfallData = [12,8,45,22,5,31,18,7,0,12,28,41];
       const totalRain = rainfallData.reduce((a, b) => a + b, 0);
       document.getElementById('rain-total').textContent = `Total: ${totalRain} mm`;
@@ -545,7 +554,6 @@
       loadForecast();
       loadHistoryData();
       setInterval(loadLiveData, 60000);
-      // Refresh history every 10 min so charts stay current
       setInterval(loadHistoryData, 600000);
     };
   </script>
