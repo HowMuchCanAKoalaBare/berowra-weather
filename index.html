@@ -44,7 +44,7 @@
   <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
-        <!-- LEFT: SUN/MOON -->
+        <!-- LEFT: SUN/MOON + TODAY HIGH/LOW (now live) -->
         <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
           <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
             <div class="pr-6 sm:pr-8">
@@ -86,13 +86,13 @@
           <div class="pt-6 border-t border-white/10 grid grid-cols-2 gap-8 mt-auto">
             <div class="text-center">
               <div class="text-emerald-400 text-xs font-medium tracking-widest mb-1">HIGH</div>
-              <div id="day-high" class="text-4xl font-light tabular-nums">31.0°C</div>
-              <div class="text-xs text-white/60 mt-1">14:25</div>
+              <div id="day-high" class="text-4xl font-light tabular-nums">13.0°C</div>
+              <div class="text-xs text-white/60 mt-1">since midnight</div>
             </div>
             <div class="text-center">
               <div class="text-sky-400 text-xs font-medium tracking-widest mb-1">LOW</div>
-              <div id="day-low" class="text-4xl font-light tabular-nums">16.3°C</div>
-              <div class="text-xs text-white/60 mt-1">07:30</div>
+              <div id="day-low" class="text-4xl font-light tabular-nums">12.2°C</div>
+              <div class="text-xs text-white/60 mt-1">since midnight</div>
             </div>
           </div>
         </div>
@@ -100,13 +100,13 @@
         <!-- CENTRE: TEMPERATURE -->
         <div class="text-center flex flex-col justify-center">
           <div class="flex items-baseline gap-x-3 justify-center">
-            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums">25.3</div>
+            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums">14.3</div>
             <div class="text-7xl font-light">°C</div>
           </div>
           <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">OVERCAST • DRY</div>
           <div class="flex justify-center gap-x-12 mt-8 text-xl">
-            <div>Feels like <span id="feels-like" class="font-medium">26.6°C</span></div>
-            <div>Heat index <span id="heat-index" class="font-medium">26.8°C</span></div>
+            <div>Feels like <span id="feels-like" class="font-medium">14.8°C</span></div>
+            <div>Heat index <span id="heat-index" class="font-medium">14.5°C</span></div>
           </div>
           <div class="mt-12 text-sm opacity-75">
             Berowra, NSW • Lat -33.62° • Lon 151.15°
@@ -126,7 +126,7 @@
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
     <!-- COMPACT TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-      <!-- Wind Tile – Max gust last hour (Field 133) -->
+      <!-- Wind -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-wind"></i>
@@ -166,14 +166,14 @@
         </div>
       </div>
 
-      <!-- Barometer – Now uses correct Field 50 for last-hour change -->
+      <!-- Barometer -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
           <i class="fa-solid fa-gauge-high"></i>
         </div>
         <div class="flex-1 min-w-0">
           <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
-          <div id="pressure" class="text-4xl font-light tabular-nums">1025.4</div>
+          <div id="pressure" class="text-4xl font-light tabular-nums">1025.5</div>
           <div class="flex items-center gap-x-2 text-xs text-white/70">
             <span>hPa</span>
             <span id="pressure-trend" class="flex items-center font-medium"></span>
@@ -189,7 +189,7 @@
         <div class="flex-1 min-w-0">
           <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
           <div id="rain-today" class="text-4xl font-light tabular-nums">0.0</div>
-          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">127.8 mm</span> • YTD <span id="rain-ytd" class="font-medium">419.1 mm</span></div>
+          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">150.4 mm</span> • YTD <span id="rain-ytd" class="font-medium">441.7 mm</span></div>
         </div>
       </div>
 
@@ -206,17 +206,42 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS, RECENT HISTORY, ALL TIME RECORDS, ATTRIBUTION (unchanged) -->
+    <!-- LAST 24 HOURS -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-temperature-high text-red-400"></i><span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span></div><div class="chart-container"><canvas id="temp24Chart"></canvas></div></div>
-        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-wind text-emerald-400"></i><span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span></div><div class="chart-container"><canvas id="wind24Chart"></canvas></div></div>
-        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-gauge-high text-blue-400"></i><span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span></div><div class="chart-container"><canvas id="baro24Chart"></canvas></div></div>
-        <div><div class="flex items-center gap-x-2 mb-3"><i class="fa-solid fa-cloud-rain text-sky-400"></i><span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span></div><div class="chart-container"><canvas id="rain24Chart"></canvas></div></div>
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-temperature-high text-red-400"></i>
+            <span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span>
+          </div>
+          <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-wind text-emerald-400"></i>
+            <span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span>
+          </div>
+          <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-gauge-high text-blue-400"></i>
+            <span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span>
+          </div>
+          <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-x-2 mb-3">
+            <i class="fa-solid fa-cloud-rain text-sky-400"></i>
+            <span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span>
+          </div>
+          <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
+        </div>
       </div>
     </div>
 
+    <!-- RECENT HISTORY -->
     <div class="mt-12">
       <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
       <div class="glass rounded-3xl p-6 border border-white/10">
@@ -228,6 +253,7 @@
       </div>
     </div>
 
+    <!-- ALL TIME RECORDS -->
     <div class="mt-12 glass rounded-3xl p-6 border border-white/10">
       <h2 class="text-xl font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-trophy text-amber-400"></i> ALL TIME RECORDS</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
@@ -259,6 +285,7 @@
       </div>
     </div>
 
+    <!-- ATTRIBUTION -->
     <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10">
       Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • Public clientraw.txt feed
     </div>
@@ -270,7 +297,9 @@
       currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
       rainTodayMM: 7, dewpointC: 72, uvIndex: 79,
       maxGustLastHourKnots: 133,
-      baroTrendLastHour: 50,   // Correct field for hPa change last hour
+      baroTrendLastHour: 50,
+      dayHighC: 46,          // TODAY'S HIGH since midnight
+      dayLowC: 47,           // TODAY'S LOW since midnight
       moonPhase: 92
     };
     const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
@@ -367,19 +396,25 @@
         if (maxGustLastHourKnots < 0 || isNaN(maxGustLastHourKnots)) maxGustLastHourKnots = 0;
         document.getElementById('wind-gust').textContent = knotsToKmh(maxGustLastHourKnots) + ' km/h';
 
-        // Barometer – current + correct last-hour change (Field 50)
-        const currentPressure = parseFloat(data[FIELD.baroHPa] || 1025.4).toFixed(1);
+        // Barometer
+        const currentPressure = parseFloat(data[FIELD.baroHPa] || 1025.5).toFixed(1);
         document.getElementById('pressure').textContent = currentPressure;
         const trendVal = data[FIELD.baroTrendLastHour] || "0";
         document.getElementById('pressure-trend').innerHTML = formatPressureTrend(trendVal);
+
+        // TODAY'S HIGH / LOW (since midnight) – now live!
+        const dayHigh = parseFloat(data[FIELD.dayHighC] || 13.0).toFixed(1);
+        const dayLow = parseFloat(data[FIELD.dayLowC] || 12.2).toFixed(1);
+        document.getElementById('day-high').textContent = dayHigh + '°C';
+        document.getElementById('day-low').textContent = dayLow + '°C';
 
         // Other tiles
         document.getElementById('humidity').textContent = data[FIELD.humidity] || '74';
         document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 18.8) + '°C';
         document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 74) + '%';
         document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM] || 0).toFixed(1);
-        document.getElementById('rain-month').textContent = parseFloat(data[8] || 127.8).toFixed(1) + ' mm';
-        document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 419.1).toFixed(1) + ' mm';
+        document.getElementById('rain-month').textContent = parseFloat(data[8] || 150.4).toFixed(1) + ' mm';
+        document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 441.7).toFixed(1) + ' mm';
         let uv = parseFloat(data[FIELD.uvIndex] || 0);
         if (uv < 0) uv = 0;
         document.getElementById('uv').textContent = uv.toFixed(1);
