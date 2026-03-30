@@ -124,7 +124,7 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
-    <!-- COMPACT TILES (exactly the style you liked) -->
+    <!-- COMPACT TILES (exactly the icons you loved) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <!-- Wind -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
@@ -206,7 +206,7 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS CHARTS (now 100% fixed from clientrawhour.txt) -->
+    <!-- LAST 24 HOURS CHARTS -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -253,12 +253,13 @@
     let tempChart, windChart, baroChart, rainChart;
 
     async function loadWeather() {
+      const proxy = 'https://corsproxy.io/?';
       try {
         const [rawRes, extraRes, hourRes, dailyRes] = await Promise.all([
-          fetch('https://www.mudiefamily.org/weather/clientraw.txt'),
-          fetch('https://www.mudiefamily.org/weather/clientrawextra.txt'),
-          fetch('https://www.mudiefamily.org/weather/clientrawhour.txt'),
-          fetch('https://www.mudiefamily.org/weather/clientrawdaily.txt')
+          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientraw.txt') + '?t=' + Date.now()),
+          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientrawextra.txt') + '?t=' + Date.now()),
+          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientrawhour.txt') + '?t=' + Date.now()),
+          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientrawdaily.txt') + '?t=' + Date.now())
         ]);
 
         const rawText = await rawRes.text();
@@ -271,7 +272,7 @@
         const hourData = hourText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
         const dailyData = dailyText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
 
-        // Current conditions (clientraw.txt)
+        // Current conditions
         const temp = parseFloat(data[4]) || 23.9;
         const humidity = parseFloat(data[5]) || 65;
         const baro = parseFloat(data[6]) || 1024.0;
@@ -300,7 +301,7 @@
 
         document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${data.slice(28,31).join(':') || 'just now'} (live)`;
 
-        // Hero updates
+        // Hero & tiles
         document.getElementById('current-temp').textContent = temp.toFixed(1);
         document.getElementById('condition').textContent = condition.toUpperCase();
         document.getElementById('feels-like').textContent = feelsLike.toFixed(1) + '°C';
@@ -313,7 +314,6 @@
         document.getElementById('moon-age-hero').textContent = moonAge.toFixed(1);
         document.getElementById('moon-icon-hero').textContent = moonIllum > 75 ? '🌕' : moonIllum > 50 ? '🌗' : '🌑';
 
-        // Compact tiles (your favourite style)
         document.getElementById('wind-speed').textContent = windSpeed;
         document.getElementById('wind-dir').textContent = windDirCard;
         document.getElementById('wind-gust').textContent = windGust + ' km/h';
@@ -330,7 +330,7 @@
         document.getElementById('rain-ytd').textContent = rainYTD.toFixed(1) + ' mm';
         document.getElementById('uv').textContent = uv.toFixed(1);
 
-        // 24h charts – FIXED with exact slices from live clientrawhour.txt
+        // 24h charts from clientrawhour.txt
         const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
 
         const hourlyTemps = hourData.slice(170, 194).reverse();
@@ -342,7 +342,7 @@
           });
         } else { tempChart.data.datasets[0].data = hourlyTemps; tempChart.update(); }
 
-        const hourlyWind = hourData.slice(380, 404).map(v => (v * 1.852)).reverse();
+        const hourlyWind = hourData.slice(380, 404).map(v => v * 1.852).reverse();
         if (!windChart) {
           windChart = new Chart(document.getElementById('wind24Chart'), {
             type: 'line',
@@ -369,7 +369,7 @@
           });
         } else { rainChart.data.datasets[0].data = hourlyRain; rainChart.update(); }
 
-        // Last 7 days from clientrawdaily.txt
+        // Last 7 days
         const tbody = document.getElementById('daily-table').querySelector('tbody');
         let dailyHTML = '';
         for (let i = 0; i < 7; i++) {
@@ -381,7 +381,7 @@
         }
         tbody.innerHTML = dailyHTML;
 
-        // Records & recent history
+        // Records & recent
         const recordsHTML = `
           <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${extra[20] || '33.4'}°C</span></div>
           <div class="flex justify-between"><span class="text-white/70">All-time low temp</span><span class="font-medium">${extra[25] || '13.7'}°C</span></div>
@@ -398,9 +398,9 @@
           <tr><td>Week ending 9 Mar</td><td class="text-right">41.3</td><td class="text-right">24.1</td></tr>
         `;
 
-        console.log('%c✅ Full dashboard with your favourite icons + all 4 files + 100% working charts', 'color:#10b981;font-weight:600');
+        console.log('%c✅ CORS fixed – all data + charts now live', 'color:#10b981;font-weight:600');
       } catch (e) {
-        console.error('Data fetch issue', e);
+        console.error('Fetch issue', e);
       }
     }
 
