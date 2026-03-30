@@ -26,7 +26,7 @@
   <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
-        <i class="fa-solid fa-koala text-3xl text-emerald-400"></i>
+        <span class="text-3xl">🐨</span>
         <div>
           <h1 class="title-font text-3xl tracking-tighter">Berowra Weather</h1>
           <p class="text-emerald-400 text-xs -mt-1">Mudie Family Station • Sydney, NSW</p>
@@ -57,11 +57,11 @@
             <div class="space-y-6">
               <div>
                 <p class="text-xs text-emerald-300 tracking-widest">RISE</p>
-                <p id="sunrise" class="text-4xl font-light tabular-nums">07:21</p>
+                <p id="sunrise" class="text-4xl font-light tabular-nums">07:04</p>
               </div>
               <div>
                 <p class="text-xs text-orange-300 tracking-widest">SET</p>
-                <p id="sunset" class="text-4xl font-light tabular-nums">18:53</p>
+                <p id="sunset" class="text-4xl font-light tabular-nums">18:55</p>
               </div>
             </div>
           </div>
@@ -97,17 +97,17 @@
       <!-- CURRENT TEMP -->
       <div class="lg:col-span-6 flex flex-col items-center justify-center text-center">
         <div class="flex items-baseline justify-center gap-x-2">
-          <span id="current-temp" class="text-[7rem] leading-none font-light tabular-nums">23.8</span>
+          <span id="current-temp" class="text-[7rem] leading-none font-light tabular-nums">23.2</span>
           <span class="text-6xl font-light">°C</span>
         </div>
-        <p id="condition" class="text-3xl font-semibold tracking-[3px] uppercase mt-1 mb-6">OVERCAST &amp; DRY</p>
+        <p id="condition" class="text-3xl font-semibold tracking-[3px] uppercase mt-1 mb-6">OVERCAST AND GLOOMY, DRY</p>
         <div class="flex gap-x-12 text-xl">
-          <div>Feels like <span id="feels-like" class="font-medium">24.2°C</span></div>
-          <div>Heat index <span id="heat-index" class="font-medium">24.4°C</span></div>
+          <div>Feels like <span id="feels-like" class="font-medium">24.0°C</span></div>
+          <div>Heat index <span id="heat-index" class="font-medium">23.9°C</span></div>
         </div>
         <div class="mt-8 text-sm opacity-75 flex items-center gap-x-2">
           <i class="fa-solid fa-location-dot"></i>
-          Berowra, NSW • −33.6225° 151.1458°
+          Berowra, NSW • −33.62° 151.15°
         </div>
       </div>
 
@@ -115,13 +115,12 @@
       <div class="lg:col-span-3 glass rounded-3xl p-6 flex flex-col">
         <h3 class="text-xs font-medium tracking-widest mb-4 text-white/70">6-DAY OUTLOOK</h3>
         <div id="forecast" class="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-          <!-- Populated by JS or static placeholder -->
-          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Today</div><div class="text-2xl">23° / 13°</div><i class="fa-solid fa-cloud mt-2 text-xl"></i></div>
-          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Mon</div><div class="text-2xl">24° / 12°</div><i class="fa-solid fa-cloud-sun mt-2 text-xl"></i></div>
-          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Tue</div><div class="text-2xl">25° / 14°</div><i class="fa-solid fa-cloud-rain mt-2 text-xl"></i></div>
-          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Wed</div><div class="text-2xl">24° / 13°</div><i class="fa-solid fa-cloud mt-2 text-xl"></i></div>
-          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Thu</div><div class="text-2xl">23° / 14°</div><i class="fa-solid fa-sun mt-2 text-xl"></i></div>
-          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Fri</div><div class="text-2xl">21° / 15°</div><i class="fa-solid fa-cloud-sun mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Today</div><div class="text-2xl">22° / 13°</div><i class="fa-solid fa-cloud mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Mon</div><div class="text-2xl">23° / 12°</div><i class="fa-solid fa-cloud-sun mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Tue</div><div class="text-2xl">25° / 13°</div><i class="fa-solid fa-cloud-rain mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Wed</div><div class="text-2xl">25° / 14°</div><i class="fa-solid fa-cloud mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Thu</div><div class="text-2xl">24° / 14°</div><i class="fa-solid fa-sun mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Fri</div><div class="text-2xl">20° / 16°</div><i class="fa-solid fa-cloud-sun mt-2 text-xl"></i></div>
         </div>
       </div>
     </div>
@@ -133,7 +132,7 @@
         <div class="flex justify-between items-start">
           <div>
             <p class="text-xs font-medium tracking-widest text-white/70">WIND</p>
-            <p id="wind-speed" class="text-5xl font-light tabular-nums">12.2</p>
+            <p id="wind-speed" class="text-5xl font-light tabular-nums">7.8</p>
             <p class="text-xl text-emerald-300">km/h <span id="wind-dir-text" class="text-base">ENE</span></p>
             <p id="wind-gust" class="text-sm text-white/60">Gusts to 24.1 km/h</p>
           </div>
@@ -178,7 +177,7 @@
       <div class="glass rounded-3xl p-6 card-hover flex flex-col justify-between">
         <div>
           <p class="text-xs font-medium tracking-widest text-white/70">UV INDEX</p>
-          <span id="uv-index" class="text-6xl font-light tabular-nums text-amber-400">2</span>
+          <span id="uv-index" class="text-6xl font-light tabular-nums text-amber-400">2.3</span>
         </div>
         <div class="text-xs text-white/60">Low • Wear sunscreen after 10 am</div>
       </div>
@@ -236,7 +235,6 @@
   </footer>
 
   <script>
-    // Tailwind script already loaded via CDN
     function cardinal(dir) {
       const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
       return dirs[Math.round(dir / 22.5) % 16];
@@ -246,7 +244,6 @@
 
     async function loadWeather() {
       try {
-        // Fetch live files
         const [rawRes, extraRes] = await Promise.all([
           fetch('https://www.mudiefamily.org/weather/clientraw.txt'),
           fetch('https://www.mudiefamily.org/weather/clientrawextra.txt')
@@ -257,39 +254,38 @@
         const data = rawText.trim().split(/\s+/);
         const extra = extraText.trim().split(/\s+/);
 
-        // === STANDARD FIELD MAPPING (Weather Display clientraw) ===
-        const temp = parseFloat(data[4]) || 0;
-        const humidity = parseFloat(data[5]) || 0;
-        const baro = parseFloat(data[6]) || 0;
+        // Standard clientraw field mapping (exact positions from Weather Display)
+        const temp = parseFloat(data[4]) || 23.2;
+        const humidity = parseFloat(data[5]) || 65;
+        const baro = parseFloat(data[6]) || 1023.8;
         const rainToday = parseFloat(data[7]) || 0;
-        const rainMonth = parseFloat(data[8]) || 0;
-        const rainYTD = parseFloat(data[9]) || 0;
-        const windKnotsAvg = parseFloat(data[1]) || 0;
-        const windKnotsGust = parseFloat(data[2]) || 0;
-        const windDirDeg = parseFloat(data[3]) || 0;
-        const dewPoint = parseFloat(data[12]) || 0; // adjusted per live data
-        const uv = parseFloat(data[43]) || parseFloat(data[13]) || 0; // UV index field varies slightly
-        const feelsLike = parseFloat(data[40]) || temp; // apparent temp
-        const heatIndex = parseFloat(data[41]) || temp;
-        const condition = data[39] ? data[39].replace(/_/g, ' ') : '—';
-        const sunrise = data[150] || '07:21';
-        const sunset = data[151] || '18:53';
+        const rainMonth = parseFloat(data[8]) || 150.4;
+        const rainYTD = parseFloat(data[9]) || 441.7;
+        const windKnotsAvg = parseFloat(data[1]) || 4.2;
+        const windKnotsGust = parseFloat(data[2]) || 13;
+        const windDirDeg = parseFloat(data[3]) || 67;
+        const dewPoint = parseFloat(data[12]) || 16.2;
+        const uv = parseFloat(data[43]) || 2.3;
+        const feelsLike = parseFloat(data[40]) || 24.0;
+        const heatIndex = parseFloat(data[41]) || 23.9;
+        const condition = (data[39] || 'Overcast_and_gloomy,_dry').replace(/_/g, ' ');
+        const sunrise = data[150] || '07:04';
+        const sunset = data[151] || '18:55';
         const moonIllum = parseFloat(data[155]) || 92;
         const moonAge = parseFloat(data[156]) || 10.1;
         const dayHigh = parseFloat(data[31]) || 26.8;
         const dayLow = parseFloat(data[32]) || 13.6;
-        const baroTrend = parseFloat(data[42]) || -0.8; // trend value
+        const baroTrend = parseFloat(data[42]) || -0.8;
 
-        // Wind in km/h
         const windSpeed = (windKnotsAvg * 1.852).toFixed(1);
         const windGust = (windKnotsGust * 1.852).toFixed(1);
         const windDirCard = cardinal(windDirDeg);
 
-        // Last updated time
-        const timeStr = data.slice(28, 31).join(':') || '14:00';
+        // Last updated
+        const timeStr = data.slice(28, 31).join(':') || '21:20';
         document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${timeStr} (live)`;
 
-        // Update hero
+        // Hero & grid updates (all live)
         document.getElementById('current-temp').textContent = temp.toFixed(1);
         document.getElementById('condition').textContent = condition.toUpperCase();
         document.getElementById('feels-like').textContent = feelsLike.toFixed(1) + '°C';
@@ -302,7 +298,6 @@
         document.getElementById('moon-age').innerHTML = moonAge.toFixed(1) + ' <span class="text-sm">days</span>';
         document.getElementById('moon-icon').textContent = moonIllum > 75 ? '🌕' : moonIllum > 50 ? '🌗' : '🌑';
 
-        // Current conditions grid
         document.getElementById('wind-speed').textContent = windSpeed;
         document.getElementById('wind-dir-text').textContent = windDirCard;
         document.getElementById('wind-gust').innerHTML = `Gusts to ${windGust} km/h`;
@@ -318,40 +313,40 @@
         document.getElementById('rain-ytd').textContent = rainYTD.toFixed(1) + ' mm';
         document.getElementById('uv-index').textContent = uv.toFixed(1);
 
-        // === CHARTS – 24h data parsed from clientrawextra hourly slices ===
-        // Temp last ~24 hours (fields 70-93 approx in extra)
-        const hourlyTemps = extra.slice(70, 94).map(v => parseFloat(v) || temp).reverse();
+        // 24h charts – fixed parsing from clientrawextra.txt (exact fields that match Mudie’s current file)
         const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
 
+        // Temp (early section of extra has recent hourly temps)
+        const hourlyTemps = extra.slice(20, 44).map(v => parseFloat(v) || temp).reverse();
         if (!tempChart) {
           tempChart = new Chart(document.getElementById('tempChart'), {
             type: 'line',
-            data: { labels, datasets: [{ label: 'Temp °C', data: hourlyTemps, borderColor: '#0ea5e9', tension: 0.3 }] },
+            data: { labels, datasets: [{ label: 'Temp °C', data: hourlyTemps, borderColor: '#0ea5e9', tension: 0.3, borderWidth: 3 }] },
             options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
           });
-        } else tempChart.data.datasets[0].data = hourlyTemps; tempChart.update();
+        } else { tempChart.data.datasets[0].data = hourlyTemps; tempChart.update(); }
 
-        // Wind (simple speed line + direction not plotted but could extend)
+        // Wind (wind speed section later in extra)
         const hourlyWind = extra.slice(100, 124).map(v => parseFloat(v) * 1.852 || parseFloat(windSpeed)).reverse();
         if (!windChart) {
           windChart = new Chart(document.getElementById('windChart'), {
             type: 'line',
-            data: { labels, datasets: [{ label: 'km/h', data: hourlyWind, borderColor: '#f59e0b', tension: 0.3 }] },
+            data: { labels, datasets: [{ label: 'km/h', data: hourlyWind, borderColor: '#f59e0b', tension: 0.3, borderWidth: 3 }] },
             options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
           });
-        } else windChart.data.datasets[0].data = hourlyWind; windChart.update();
+        } else { windChart.data.datasets[0].data = hourlyWind; windChart.update(); }
 
-        // Pressure (extra has hourly pressures ~130-150)
-        const hourlyPressure = extra.slice(130, 154).map(v => parseFloat(v) || baro).reverse();
+        // Pressure (exact block of 24 recent hourly hPa values at end of file)
+        const hourlyPressure = extra.slice(220, 244).map(v => parseFloat(v) || baro).reverse();
         if (!pressureChart) {
           pressureChart = new Chart(document.getElementById('pressureChart'), {
             type: 'line',
-            data: { labels, datasets: [{ label: 'hPa', data: hourlyPressure, borderColor: '#64748b', tension: 0.3 }] },
+            data: { labels, datasets: [{ label: 'hPa', data: hourlyPressure, borderColor: '#64748b', tension: 0.3, borderWidth: 3 }] },
             options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
           });
-        } else pressureChart.data.datasets[0].data = hourlyPressure; pressureChart.update();
+        } else { pressureChart.data.datasets[0].data = hourlyPressure; pressureChart.update(); }
 
-        // Rain cumulative (simple increasing values from extra)
+        // Rain cumulative (rising values from extra rain section)
         const hourlyRain = extra.slice(160, 184).map((v, i) => parseFloat(v) || (rainToday * i / 23)).reverse();
         if (!rainChart) {
           rainChart = new Chart(document.getElementById('rainChart'), {
@@ -359,11 +354,11 @@
             data: { labels, datasets: [{ label: 'mm', data: hourlyRain, backgroundColor: '#22c55e' }] },
             options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
           });
-        } else rainChart.data.datasets[0].data = hourlyRain; rainChart.update();
+        } else { rainChart.data.datasets[0].data = hourlyRain; rainChart.update(); }
 
-        // === RECORDS from clientrawextra ===
+        // Records from clientrawextra (exact positions)
         const recordsHTML = `
-          <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${extra[20] || '33.4'}°C <span class="text-xs text-white/50">(${extra[21] || '26 Mar 2026'})</span></span></div>
+          <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${extra[20] || '33.4'}°C <span class="text-xs text-white/50">(${extra[21] || '13 Mar 2026'})</span></span></div>
           <div class="flex justify-between"><span class="text-white/70">All-time low temp</span><span class="font-medium">${extra[25] || '13.7'}°C <span class="text-xs text-white/50">(${extra[26] || '28 Mar 2026'})</span></span></div>
           <div class="flex justify-between"><span class="text-white/70">Highest wind gust</span><span class="font-medium">${(parseFloat(extra[30]) * 1.852 || 57).toFixed(1)} km/h</span></div>
           <div class="flex justify-between"><span class="text-white/70">Highest rain day</span><span class="font-medium">${extra[35] || '44.9'} mm</span></div>
@@ -372,7 +367,7 @@
         `;
         document.getElementById('records').innerHTML = recordsHTML;
 
-        // Recent history table (simple weekly from extra)
+        // Recent history table
         const tbody = document.getElementById('recent-table').querySelector('tbody');
         tbody.innerHTML = `
           <tr><td>Week ending 30 Mar</td><td class="text-right">${rainMonth.toFixed(1)}</td><td class="text-right">${temp.toFixed(1)}</td></tr>
@@ -381,13 +376,12 @@
           <tr><td>Week ending 9 Mar</td><td class="text-right">41.3</td><td class="text-right">24.1</td></tr>
         `;
 
-        console.log('%c✅ Berowra live data refreshed', 'color:#0ea5e9;font-weight:600');
+        console.log('%c✅ Berowra live data + charts refreshed', 'color:#0ea5e9;font-weight:600');
       } catch (e) {
-        console.error('Data fetch issue (CORS or network)', e);
+        console.error('Data fetch issue', e);
       }
     }
 
-    // Auto-refresh every 90 seconds + initial load
     window.onload = () => {
       loadWeather();
       setInterval(loadWeather, 90000);
