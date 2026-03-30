@@ -222,12 +222,19 @@
             fetch(proxy + encodeURIComponent(base + 'clientrawhour.txt' + ts)),
             fetch(proxy + encodeURIComponent(base + 'clientrawdaily.txt' + ts))
           ]);
+
           if (!rawRes.ok) continue;
+
           rawText = await rawRes.text();
           extraText = await extraRes.text();
           hourText = await hourRes.text();
           dailyText = await dailyRes.text();
-          if (rawText.length > 200) break; // valid data check
+
+          // BULLETPROOF VALIDATION
+          if (rawText.length < 200 || rawText.includes('<html') || rawText.includes('<!DOCTYPE') || isNaN(parseFloat(rawText.trim()[0]))) {
+            continue; // bad data → try next proxy
+          }
+          break;
         } catch(e) {}
       }
 
@@ -238,7 +245,7 @@
       const hourData = hourText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
       const dailyData = dailyText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
 
-      // Correct indices for this station's clientraw files
+      // Correct indices from live station files
       const temp = parseFloat(data[4]) || 23.9;
       const humidity = parseFloat(data[5]) || 65;
       const baro = parseFloat(data[6]) || 1024.0;
@@ -322,7 +329,7 @@
       }
       tbody.innerHTML = dailyHTML;
 
-      // Records (exact match to official page)
+      // Records (exact match to official blue box)
       const recordsHTML = `
         <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${extra[20] || '33.4'}°C</span></div>
         <div class="flex justify-between"><span class="text-white/70">All-time low temp</span><span class="font-medium">${extra[25] || '13.7'}°C</span></div>
@@ -331,7 +338,7 @@
       `;
       document.getElementById('records').innerHTML = recordsHTML;
 
-      // Recent (kept as-is)
+      // Recent
       const recentTbody = document.getElementById('recent-table').querySelector('tbody');
       recentTbody.innerHTML = `
         <tr><td>Week ending 30 Mar</td><td class="text-right">${rainMonth.toFixed(1)}</td><td class="text-right">${temp.toFixed(1)}</td></tr>
