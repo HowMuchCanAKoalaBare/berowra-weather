@@ -92,7 +92,7 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
-    <!-- ICON TILES (unchanged) -->
+    <!-- ICON TILES + CHARTS + TABLES (unchanged) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind"></i></div>
@@ -148,7 +148,7 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS, LAST 7 DAYS, RECENT + RECORDS (unchanged) -->
+    <!-- LAST 24 HOURS -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -159,6 +159,7 @@
       </div>
     </div>
 
+    <!-- LAST 7 DAYS -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-calendar"></i> LAST 7 DAYS</h3>
       <table id="daily-table" class="w-full text-sm border-collapse">
@@ -167,6 +168,7 @@
       </table>
     </div>
 
+    <!-- RECENT + RECORDS -->
     <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div class="glass rounded-3xl p-6"><h3 class="font-semibold mb-4">RECENT HISTORY (last 4 weeks)</h3><table id="recent-table" class="w-full text-sm"><thead class="border-b border-white/20"><tr><th class="text-left py-2">Week</th><th class="text-right py-2">Rain mm</th><th class="text-right py-2">Avg Temp</th></tr></thead><tbody class="text-white/80"></tbody></table></div>
       <div class="glass rounded-3xl p-6"><h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3><div id="records" class="grid grid-cols-2 gap-4 text-sm"></div></div>
@@ -179,7 +181,7 @@
   </div>
 
   <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10 max-w-screen-2xl mx-auto">
-    Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> + BOM 6-day forecast via Open-Meteo
+    Modern dashboard • All 4 clientraw files + BOM forecast
   </div>
 
   <script>
@@ -194,13 +196,14 @@
 
     let tempChart, windChart, baroChart, rainChart;
 
-    // STATION DATA (with proxy fallback)
+    // Triple proxy fallback + http base URL for max reliability
     async function loadStationData() {
       const proxies = [
         'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?'
+        'https://corsproxy.io/?',
+        'https://api.codetabs.com/v1/proxy?quest='
       ];
-      const base = 'https://www.mudiefamily.org/weather/';
+      const base = 'http://www.mudiefamily.org/weather/';   // ← http works better for these txt files
       const ts = '?t=' + Date.now();
 
       let rawText = '', extraText = '', hourText = '', dailyText = '';
@@ -220,17 +223,18 @@
           hourText = await hourRes.text();
           dailyText = await dailyRes.text();
           break;
-        } catch(e) { /* try next proxy */ }
+        } catch(e) {}
       }
 
-      if (!rawText) throw new Error('Station offline');
+      if (!rawText) throw new Error('All proxies failed');
 
+      // Parse all four files (exactly as before)
       const data = rawText.trim().split(/\s+/);
       const extra = extraText.trim().split(/\s+/);
       const hourData = hourText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
       const dailyData = dailyText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
 
-      // (all your original parsing & DOM updates – identical to last version)
+      // Current conditions (all four files used)
       const temp = parseFloat(data[4]) || 23.9;
       const humidity = parseFloat(data[5]) || 65;
       const baro = parseFloat(data[6]) || 1024.0;
@@ -259,6 +263,7 @@
 
       document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${data.slice(28,31).join(':') || 'just now'} (live)`;
 
+      // Hero & tiles (unchanged)
       document.getElementById('current-temp').textContent = temp.toFixed(1);
       document.getElementById('condition').textContent = condition.toUpperCase();
       document.getElementById('feels-like').textContent = feelsLike.toFixed(1) + '°C';
@@ -284,7 +289,7 @@
       document.getElementById('rain-ytd').textContent = rainYTD.toFixed(1) + ' mm';
       document.getElementById('uv').textContent = uv.toFixed(1);
 
-      // Charts
+      // Charts & tables (unchanged – uses hourData + dailyData)
       const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
       const hourlyTemps = hourData.slice(170, 194).reverse();
       if (!tempChart) tempChart = new Chart(document.getElementById('temp24Chart'), {type:'line', data:{labels, datasets:[{label:'Temp °C', data:hourlyTemps, borderColor:'#10b981', tension:0.3, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
@@ -302,7 +307,6 @@
       if (!rainChart) rainChart = new Chart(document.getElementById('rain24Chart'), {type:'bar', data:{labels, datasets:[{label:'mm', data:hourlyRain, backgroundColor:'#38bdf8'}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
       else { rainChart.data.datasets[0].data = hourlyRain; rainChart.update(); }
 
-      // Daily table
       const tbody = document.getElementById('daily-table').querySelector('tbody');
       let dailyHTML = '';
       for (let i = 0; i < 7; i++) {
@@ -314,7 +318,6 @@
       }
       tbody.innerHTML = dailyHTML;
 
-      // Records
       const recordsHTML = `
         <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${extra[20] || '33.4'}°C</span></div>
         <div class="flex justify-between"><span class="text-white/70">All-time low temp</span><span class="font-medium">${extra[25] || '13.7'}°C</span></div>
@@ -332,15 +335,13 @@
       `;
     }
 
-    // FORECAST (independent)
+    // Independent forecast (unchanged)
     async function loadForecast() {
       const container = document.getElementById('forecast-container');
       container.innerHTML = '<div class="col-span-3 text-center py-8 text-white/60">Loading BOM forecast...</div>';
-
       try {
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney`);
         const forecastData = await res.json();
-
         container.innerHTML = '';
         for (let i = 0; i < 6; i++) {
           const date = new Date(forecastData.daily.time[i]);
@@ -349,7 +350,6 @@
           const high = Math.round(forecastData.daily.temperature_2m_max[i]);
           const low = Math.round(forecastData.daily.temperature_2m_min[i]);
           const rain = forecastData.daily.precipitation_sum[i] || 0;
-
           const card = document.createElement('div');
           card.className = 'forecast-card glass rounded-2xl p-3 flex flex-col items-center';
           card.innerHTML = `
@@ -361,32 +361,24 @@
           container.appendChild(card);
         }
       } catch (e) {
-        container.innerHTML = '<div class="col-span-3 text-center py-8 text-orange-400">Forecast unavailable right now</div>';
+        container.innerHTML = '<div class="col-span-3 text-center py-8 text-orange-400">Forecast unavailable</div>';
       }
     }
 
     async function loadWeather() {
-      let stationOk = false;
       try {
         await loadStationData();
-        stationOk = true;
+        document.getElementById('error-toast').classList.add('hidden');
       } catch (e) {
         console.error('Station data issue', e);
         const toast = document.getElementById('error-toast');
         document.getElementById('error-text').textContent = 'Station data unavailable (using fallback values)';
         toast.style.display = 'flex';
       }
-
-      // Forecast always runs
       await loadForecast();
-
-      if (stationOk) document.getElementById('error-toast').classList.add('hidden');
     }
 
-    window.onload = () => {
-      loadWeather();
-      setInterval(loadWeather, 90000);
-    };
+    window.onload = () => { loadWeather(); setInterval(loadWeather, 90000); };
   </script>
 </body>
 </html>
