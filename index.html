@@ -92,7 +92,7 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
-    <!-- ICON TILES + CHARTS + TABLES (unchanged) -->
+    <!-- ICON TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind"></i></div>
@@ -189,21 +189,45 @@
       const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
       return dirs[Math.round(dir / 22.5) % 16];
     }
-    function getWeatherEmoji(code) {
-      const map = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌧️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌦️',82:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️'};
-      return map[code] || '🌥️';
+
+    // BETTER ICONOGRAPHY: Font Awesome + color tints (replaces emojis)
+    function getWeatherIcon(code) {
+      const map = {
+        0: { icon: 'fa-sun', color: 'text-amber-400' },
+        1: { icon: 'fa-cloud-sun', color: 'text-amber-400' },
+        2: { icon: 'fa-cloud-sun', color: 'text-slate-300' },
+        3: { icon: 'fa-cloud', color: 'text-slate-300' },
+        45: { icon: 'fa-smog', color: 'text-slate-400' },
+        48: { icon: 'fa-smog', color: 'text-slate-400' },
+        51: { icon: 'fa-cloud-rain', color: 'text-sky-400' },
+        53: { icon: 'fa-cloud-rain', color: 'text-sky-400' },
+        55: { icon: 'fa-cloud-rain', color: 'text-sky-400' },
+        61: { icon: 'fa-cloud-showers-heavy', color: 'text-sky-400' },
+        63: { icon: 'fa-cloud-showers-heavy', color: 'text-sky-400' },
+        65: { icon: 'fa-cloud-showers-heavy', color: 'text-sky-400' },
+        71: { icon: 'fa-snowflake', color: 'text-sky-300' },
+        73: { icon: 'fa-snowflake', color: 'text-sky-300' },
+        75: { icon: 'fa-snowflake', color: 'text-sky-300' },
+        80: { icon: 'fa-cloud-rain', color: 'text-sky-400' },
+        81: { icon: 'fa-cloud-showers-heavy', color: 'text-sky-400' },
+        82: { icon: 'fa-cloud-showers-heavy', color: 'text-sky-400' },
+        95: { icon: 'fa-bolt', color: 'text-amber-400' },
+        96: { icon: 'fa-bolt', color: 'text-amber-400' },
+        99: { icon: 'fa-bolt', color: 'text-amber-400' }
+      };
+      return map[code] || { icon: 'fa-cloud', color: 'text-slate-300' };
     }
 
     let tempChart, windChart, baroChart, rainChart;
 
-    // Triple proxy fallback + http base URL for max reliability
+    // Triple-proxy + http base (max reliability for all 4 clientraw files)
     async function loadStationData() {
       const proxies = [
         'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?',
         'https://api.codetabs.com/v1/proxy?quest='
       ];
-      const base = 'http://www.mudiefamily.org/weather/';   // ← http works better for these txt files
+      const base = 'http://www.mudiefamily.org/weather/';
       const ts = '?t=' + Date.now();
 
       let rawText = '', extraText = '', hourText = '', dailyText = '';
@@ -217,7 +241,6 @@
             fetch(proxy + encodeURIComponent(base + 'clientrawdaily.txt' + ts))
           ]);
           if (!rawRes.ok) continue;
-
           rawText = await rawRes.text();
           extraText = await extraRes.text();
           hourText = await hourRes.text();
@@ -228,13 +251,11 @@
 
       if (!rawText) throw new Error('All proxies failed');
 
-      // Parse all four files (exactly as before)
       const data = rawText.trim().split(/\s+/);
       const extra = extraText.trim().split(/\s+/);
       const hourData = hourText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
       const dailyData = dailyText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
 
-      // Current conditions (all four files used)
       const temp = parseFloat(data[4]) || 23.9;
       const humidity = parseFloat(data[5]) || 65;
       const baro = parseFloat(data[6]) || 1024.0;
@@ -263,7 +284,6 @@
 
       document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${data.slice(28,31).join(':') || 'just now'} (live)`;
 
-      // Hero & tiles (unchanged)
       document.getElementById('current-temp').textContent = temp.toFixed(1);
       document.getElementById('condition').textContent = condition.toUpperCase();
       document.getElementById('feels-like').textContent = feelsLike.toFixed(1) + '°C';
@@ -289,7 +309,6 @@
       document.getElementById('rain-ytd').textContent = rainYTD.toFixed(1) + ' mm';
       document.getElementById('uv').textContent = uv.toFixed(1);
 
-      // Charts & tables (unchanged – uses hourData + dailyData)
       const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
       const hourlyTemps = hourData.slice(170, 194).reverse();
       if (!tempChart) tempChart = new Chart(document.getElementById('temp24Chart'), {type:'line', data:{labels, datasets:[{label:'Temp °C', data:hourlyTemps, borderColor:'#10b981', tension:0.3, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
@@ -335,7 +354,6 @@
       `;
     }
 
-    // Independent forecast (unchanged)
     async function loadForecast() {
       const container = document.getElementById('forecast-container');
       container.innerHTML = '<div class="col-span-3 text-center py-8 text-white/60">Loading BOM forecast...</div>';
@@ -346,15 +364,16 @@
         for (let i = 0; i < 6; i++) {
           const date = new Date(forecastData.daily.time[i]);
           const dayName = date.toLocaleDateString('en-AU', { weekday: 'short' });
-          const icon = getWeatherEmoji(forecastData.daily.weather_code[i]);
+          const icon = getWeatherIcon(forecastData.daily.weather_code[i]);
           const high = Math.round(forecastData.daily.temperature_2m_max[i]);
           const low = Math.round(forecastData.daily.temperature_2m_min[i]);
           const rain = forecastData.daily.precipitation_sum[i] || 0;
+
           const card = document.createElement('div');
           card.className = 'forecast-card glass rounded-2xl p-3 flex flex-col items-center';
           card.innerHTML = `
             <div class="text-xs font-medium opacity-75">${dayName}</div>
-            <div class="text-4xl my-2">${icon}</div>
+            <i class="fa-solid ${icon.icon} ${icon.color} text-4xl my-2"></i>
             <div class="text-lg font-light">${high}° <span class="text-white/60">/</span> ${low}°</div>
             <div class="text-xs text-sky-300 mt-1">${rain.toFixed(1)} mm</div>
           `;
@@ -370,7 +389,6 @@
         await loadStationData();
         document.getElementById('error-toast').classList.add('hidden');
       } catch (e) {
-        console.error('Station data issue', e);
         const toast = document.getElementById('error-toast');
         document.getElementById('error-text').textContent = 'Station data unavailable (using fallback values)';
         toast.style.display = 'flex';
