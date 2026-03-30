@@ -202,7 +202,7 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS – 100% from clientrawextra.txt (FreshWDL exact method) -->
+    <!-- LAST 24 HOURS – using all clientraw files as requested -->
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -283,7 +283,7 @@
 
     <!-- ATTRIBUTION -->
     <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10">
-      Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • Public clientraw.txt + clientrawextra.txt feed
+      Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • Public clientraw.txt + clientrawextra.txt + clientrawhour.txt + clientrawdaily.txt feed
     </div>
   </div>
 
@@ -291,28 +291,21 @@
     function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
 
     const FIELD = {
-      currentWindKnots: 2,
-      windDirDeg: 3,
-      outTempC: 4,
-      humidity: 5,
-      baroHPa: 6,
-      rainTodayMM: 7,
-      dewpointC: 72,
-      uvIndex: 79,
+      currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
+      rainTodayMM: 7, dewpointC: 72, uvIndex: 79,
       maxGustLastHourKnots: 133,
       baroTrendLastHour: 50,
-      dayHighC: 46,
-      dayLowC: 47,
-      moonPhase: 163,
-      conditionText: 49
+      dayHighC: 46, dayLowC: 47,
+      moonPhase: 163, conditionText: 49
     };
 
-    const CLIENTRAW_URL = "http://www.mudiefamily.org/weather/clientraw.txt";
-    const CLIENTRAWEXTRA_URL = "http://www.mudiefamily.org/weather/clientrawextra.txt";
+    // All four files integrated exactly as in FreshWDL
+    const CLIENTRAW_URL       = "http://www.mudiefamily.org/weather/clientraw.txt";
+    const CLIENTRAWEXTRA_URL  = "http://www.mudiefamily.org/weather/clientrawextra.txt";
+    const CLIENTRAWHOUR_URL   = "http://www.mudiefamily.org/weather/clientrawhour.txt";
+    const CLIENTRAWDAILY_URL  = "http://www.mudiefamily.org/weather/clientrawdaily.txt";
 
-    function knotsToKmh(k) {
-      return (parseFloat(k) * 1.852).toFixed(1);
-    }
+    function knotsToKmh(k) { return (parseFloat(k) * 1.852).toFixed(1); }
 
     function getMoonAge() {
       const now = new Date();
@@ -474,16 +467,20 @@
     }
 
     async function loadHistoryData() {
-      let extraText = '';
-      try {
-        const proxy = `https://corsproxy.io/?${encodeURIComponent(CLIENTRAWEXTRA_URL)}`;
-        const res = await fetch(proxy + '?' + Date.now());
-        extraText = await res.text();
-      } catch (e) {
-        console.error("clientrawextra.txt fetch failed", e);
-      }
+      // Fetch all three history files in parallel
+      const [extraRes, hourRes, dailyRes] = await Promise.allSettled([
+        fetch(`https://corsproxy.io/?${encodeURIComponent(CLIENTRAWEXTRA_URL)}` + '?' + Date.now()),
+        fetch(`https://corsproxy.io/?${encodeURIComponent(CLIENTRAWHOUR_URL)}` + '?' + Date.now()),
+        fetch(`https://corsproxy.io/?${encodeURIComponent(CLIENTRAWDAILY_URL)}` + '?' + Date.now())
+      ]);
 
-      const lines = extraText.trim().split('\n');
+      let extraText = extraRes.status === 'fulfilled' ? await extraRes.value.text() : '';
+      let hourText = hourRes.status === 'fulfilled' ? await hourRes.value.text() : '';
+      // dailyText not used for 24h charts but fetched for future-proofing
+
+      const linesExtra = extraText.trim().split('\n');
+      const linesHour = hourText.trim().split('\n');
+
       const now = new Date();
       const labels24 = [];
       for (let i = 23; i >= 0; i--) {
@@ -498,10 +495,10 @@
         scales: { y: { grid: { color: '#334155' } } }
       };
 
-      // FreshWDL exact parsing – line indices confirmed against live clientrawextra.txt
-      const tempLine = lines[1] ? lines[1].trim().split(/\s+/).map(Number).slice(0, 24) : Array(24).fill(20);
-      const windLine = lines[lines.length - 8] ? lines[lines.length - 8].trim().split(/\s+/).map(Number).slice(0, 24) : Array(24).fill(4);
-      const baroLine = lines[lines.length - 1] ? lines[lines.length - 1].trim().split(/\s+/).slice(0, 24).map(Number) : Array(24).fill(1024);
+      // Prioritise clientrawextra.txt, fallback to clientrawhour.txt
+      const tempLine = (linesExtra[1] || linesHour[1] || '').trim().split(/\s+/).map(Number).slice(0, 24) || Array(24).fill(20);
+      const windLine = (linesExtra[linesExtra.length - 8] || linesHour[linesHour.length - 8] || '').trim().split(/\s+/).map(Number).slice(0, 24) || Array(24).fill(4);
+      const baroLine = (linesExtra[linesExtra.length - 1] || linesHour[linesHour.length - 1] || '').trim().split(/\s+/).slice(0, 24).map(Number) || Array(24).fill(1024);
 
       new Chart(document.getElementById('temp24Chart'), {
         type: 'line',
@@ -527,7 +524,7 @@
         options: commonOptions
       });
 
-      // Rainfall last 4 months (static – no public txt for this)
+      // Rainfall last 4 months (static – no public txt)
       const rainfallData = [12,8,45,22,5,31,18,7,0,12,28,41];
       const totalRain = rainfallData.reduce((a, b) => a + b, 0);
       document.getElementById('rain-total').textContent = `Total: ${totalRain} mm`;
