@@ -15,6 +15,8 @@
     .compass { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .icon-square { width: 48px; height: 48px; }
     .chart-container { height: 280px; }
+    .forecast-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    #error-toast { display: none; }
   </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen pb-12">
@@ -38,7 +40,7 @@
     </div>
   </nav>
 
-  <!-- HERO -->
+  <!-- HERO – 3-column with live 6-day BOM forecast -->
   <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
@@ -82,7 +84,7 @@
 
         <!-- 6-DAY FORECAST -->
         <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
-          <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST</h3>
+          <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST • BOM ACCESS-G</h3>
           <div id="forecast-container" class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center flex-1"></div>
         </div>
       </div>
@@ -113,7 +115,6 @@
           </svg>
         </div>
       </div>
-
       <!-- Humidity -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-droplet"></i></div>
@@ -124,7 +125,6 @@
           <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden"><div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[65%]"></div></div>
         </div>
       </div>
-
       <!-- Barometer -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high"></i></div>
@@ -134,7 +134,6 @@
           <div class="flex items-center gap-x-2 text-xs text-white/70"><span>hPa</span><span id="pressure-trend" class="flex items-center font-medium"></span></div>
         </div>
       </div>
-
       <!-- Rain -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain"></i></div>
@@ -144,7 +143,6 @@
           <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">150.4 mm</span> • YTD <span id="rain-ytd" class="font-medium">441.7 mm</span></div>
         </div>
       </div>
-
       <!-- UV -->
       <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
         <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-sun"></i></div>
@@ -181,10 +179,16 @@
       <div class="glass rounded-3xl p-6"><h3 class="font-semibold mb-4">RECENT HISTORY (last 4 weeks)</h3><table id="recent-table" class="w-full text-sm"><thead class="border-b border-white/20"><tr><th class="text-left py-2">Week</th><th class="text-right py-2">Rain mm</th><th class="text-right py-2">Avg Temp</th></tr></thead><tbody class="text-white/80"></tbody></table></div>
       <div class="glass rounded-3xl p-6"><h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3><div id="records" class="grid grid-cols-2 gap-4 text-sm"></div></div>
     </div>
+
+    <!-- ERROR TOAST -->
+    <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-500 text-white text-sm px-6 py-3 rounded-2xl flex items-center gap-2 shadow-2xl">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span id="error-text"></span>
+    </div>
   </div>
 
   <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10 max-w-screen-2xl mx-auto">
-    Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • All four clientraw files
+    Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> + BOM 6-day forecast via Open-Meteo
   </div>
 
   <script>
@@ -193,16 +197,24 @@
       return dirs[Math.round(dir / 22.5) % 16];
     }
 
+    function getWeatherEmoji(code) {
+      const map = { 0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌧️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌦️',82:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️' };
+      return map[code] || '🌥️';
+    }
+
     let tempChart, windChart, baroChart, rainChart;
 
     async function loadWeather() {
-      const proxy = 'https://corsproxy.io/?';
+      const proxy = 'https://api.allorigins.win/raw?url=';
+      const base = 'https://www.mudiefamily.org/weather/';
+      const ts = '?t=' + Date.now();
+
       try {
         const [rawRes, extraRes, hourRes, dailyRes] = await Promise.all([
-          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientraw.txt') + '?t=' + Date.now()),
-          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientrawextra.txt') + '?t=' + Date.now()),
-          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientrawhour.txt') + '?t=' + Date.now()),
-          fetch(proxy + encodeURIComponent('https://www.mudiefamily.org/weather/clientrawdaily.txt') + '?t=' + Date.now())
+          fetch(proxy + encodeURIComponent(base + 'clientraw.txt' + ts)),
+          fetch(proxy + encodeURIComponent(base + 'clientrawextra.txt' + ts)),
+          fetch(proxy + encodeURIComponent(base + 'clientrawhour.txt' + ts)),
+          fetch(proxy + encodeURIComponent(base + 'clientrawdaily.txt' + ts))
         ]);
 
         const rawText = await rawRes.text();
@@ -256,7 +268,6 @@
         document.getElementById('moon-phase-hero').textContent = moonIllum + '%';
         document.getElementById('moon-age-hero').textContent = moonAge.toFixed(1);
         document.getElementById('moon-icon-hero').textContent = moonIllum > 75 ? '🌕' : moonIllum > 50 ? '🌗' : '🌑';
-
         document.getElementById('wind-speed').textContent = windSpeed;
         document.getElementById('wind-dir').textContent = windDirCard;
         document.getElementById('wind-gust').textContent = windGust + ' km/h';
@@ -273,7 +284,6 @@
 
         // 24h charts
         const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
-
         const hourlyTemps = hourData.slice(170, 194).reverse();
         if (!tempChart) tempChart = new Chart(document.getElementById('temp24Chart'), {type:'line', data:{labels, datasets:[{label:'Temp °C', data:hourlyTemps, borderColor:'#10b981', tension:0.3, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
         else { tempChart.data.datasets[0].data = hourlyTemps; tempChart.update(); }
@@ -319,9 +329,38 @@
           <tr><td>Week ending 9 Mar</td><td class="text-right">41.3</td><td class="text-right">24.1</td></tr>
         `;
 
-        console.log('%c✅ 312-line complete interoperable dashboard – all 4 files + charts live', 'color:#10b981;font-weight:600');
+        // 6-DAY BOM FORECAST (Open-Meteo)
+        const forecastRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney`);
+        const forecastData = await forecastRes.json();
+
+        const container = document.getElementById('forecast-container');
+        container.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+          const date = new Date(forecastData.daily.time[i]);
+          const dayName = date.toLocaleDateString('en-AU', { weekday: 'short' });
+          const icon = getWeatherEmoji(forecastData.daily.weather_code[i]);
+          const high = Math.round(forecastData.daily.temperature_2m_max[i]);
+          const low = Math.round(forecastData.daily.temperature_2m_min[i]);
+          const rain = forecastData.daily.precipitation_sum[i] || 0;
+
+          const card = document.createElement('div');
+          card.className = 'forecast-card glass rounded-2xl p-3 flex flex-col items-center';
+          card.innerHTML = `
+            <div class="text-xs font-medium opacity-75">${dayName}</div>
+            <div class="text-4xl my-2">${icon}</div>
+            <div class="text-lg font-light">${high}° <span class="text-white/60">/</span> ${low}°</div>
+            <div class="text-xs text-sky-300 mt-1">${rain.toFixed(1)} mm</div>
+          `;
+          container.appendChild(card);
+        }
+
+        console.log('%c✅ Dashboard fully live – station + BOM forecast', 'color:#10b981;font-weight:600');
+        document.getElementById('error-toast').classList.add('hidden');
       } catch (e) {
-        console.error('Fetch issue', e);
+        console.error(e);
+        const toast = document.getElementById('error-toast');
+        document.getElementById('error-text').textContent = 'Failed to load live data';
+        toast.style.display = 'flex';
       }
     }
 
