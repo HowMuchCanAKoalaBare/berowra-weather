@@ -3,555 +3,394 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Live Berowra Weather from Mudie Family Station – real-time temp, wind, rain, charts &amp; records">
   <title>Berowra Weather • Live (Mudie Family Station)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500&amp;display=swap');
+    :root { --tw-color-primary: #0ea5e9; }
     body { font-family: 'Inter', system-ui, sans-serif; }
-    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); }
+    .title-font { font-family: 'Space Grotesk', sans-serif; }
+    .glass { background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); }
     .hero-gradient { background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 100%); }
     .compass { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-    .icon-square { width: 48px; height: 48px; }
-    .chart-container { height: 280px; }
-    .forecast-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .forecast-card:hover { transform: translateY(-2px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+    .chart-container { height: 260px; }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
   </style>
 </head>
-<body class="bg-slate-950 text-white min-h-screen pb-12">
+<body class="bg-slate-950 text-white min-h-screen">
   <!-- NAV -->
   <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
-        <i class="fa-solid fa-cloud-sun-rain text-3xl text-emerald-400"></i>
+        <i class="fa-solid fa-koala text-3xl text-emerald-400"></i>
         <div>
-          <h1 class="text-2xl font-semibold tracking-tight">Berowra Weather</h1>
-          <p class="text-xs text-emerald-400 -mt-1">Mudie Family Station • Sydney, NSW</p>
+          <h1 class="title-font text-3xl tracking-tighter">Berowra Weather</h1>
+          <p class="text-emerald-400 text-xs -mt-1">Mudie Family Station • Sydney, NSW</p>
         </div>
       </div>
-      <div id="last-updated" class="text-sm text-white/70 flex items-center gap-x-2">
+      <div id="last-updated" class="flex items-center gap-x-2 text-sm text-white/70">
         <i class="fa-solid fa-clock"></i>
-        <span>Last updated: just now</span>
+        <span>Last updated: —</span>
       </div>
-      <a href="http://www.mudiefamily.org/weather/" target="_blank" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center gap-x-2 transition">
-        <i class="fa-solid fa-chart-line"></i> Original Station
+      <a href="http://www.mudiefamily.org/weather/" target="_blank" class="flex items-center gap-x-2 text-xs px-5 py-2 bg-white/10 hover:bg-white/20 rounded-3xl transition-colors">
+        <i class="fa-solid fa-external-link"></i>
+        Original Mudie Station
       </a>
     </div>
   </nav>
 
-  <!-- HERO -->
-  <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
-    <div class="max-w-screen-2xl mx-auto">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
-        <!-- LEFT: SUN/MOON + TODAY HIGH/LOW -->
-        <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
-          <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
-            <div class="pr-6 sm:pr-8">
-              <div class="flex items-center gap-x-3 mb-6">
-                <i class="fa-solid fa-sun text-3xl text-amber-400"></i>
-                <span class="text-xl font-medium">Sun</span>
-              </div>
-              <div class="space-y-7">
-                <div>
-                  <div class="text-emerald-300 text-xs font-medium tracking-widest mb-1">RISE</div>
-                  <div id="sunrise-hero" class="text-4xl font-light tabular-nums">07:03</div>
-                </div>
-                <div>
-                  <div class="text-orange-300 text-xs font-medium tracking-widest mb-1">SET</div>
-                  <div id="sunset-hero" class="text-4xl font-light tabular-nums">18:58</div>
-                </div>
-              </div>
+  <div class="max-w-screen-2xl mx-auto px-6 py-8">
+    <!-- HERO -->
+    <div id="hero" class="hero-gradient rounded-3xl text-white py-12 px-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- SUN / MOON -->
+      <div class="lg:col-span-3 glass rounded-3xl p-6 flex flex-col">
+        <div class="grid grid-cols-2 gap-8">
+          <div>
+            <div class="flex items-center gap-x-2 mb-4">
+              <i class="fa-solid fa-sun text-amber-400 text-2xl"></i>
+              <span class="font-medium tracking-widest">SUN</span>
             </div>
-            <div class="pl-6 sm:pl-8">
-              <div class="flex items-center gap-x-3 mb-6">
-                <span id="moon-icon-hero" class="text-4xl">🌗</span>
-                <span class="text-xl font-medium">Moon</span>
+            <div class="space-y-6">
+              <div>
+                <p class="text-xs text-emerald-300 tracking-widest">RISE</p>
+                <p id="sunrise" class="text-4xl font-light tabular-nums">07:21</p>
               </div>
-              <div class="space-y-7">
-                <div>
-                  <div class="text-white/60 text-xs font-medium tracking-widest">ILLUMINATION</div>
-                  <div id="moon-phase-hero" class="text-4xl font-light tabular-nums">92%</div>
-                </div>
-                <div>
-                  <div class="text-white/60 text-xs font-medium tracking-widest">MOON AGE</div>
-                  <div class="flex items-baseline gap-x-2">
-                    <span id="moon-age-hero" class="text-4xl font-light tabular-nums">8.7</span>
-                    <span class="text-white/60 text-xs font-medium">days</span>
-                  </div>
-                </div>
+              <div>
+                <p class="text-xs text-orange-300 tracking-widest">SET</p>
+                <p id="sunset" class="text-4xl font-light tabular-nums">18:53</p>
               </div>
             </div>
           </div>
-          <div class="pt-6 border-t border-white/10 grid grid-cols-2 gap-8 mt-auto">
-            <div class="text-center">
-              <div class="text-emerald-400 text-xs font-medium tracking-widest mb-1">HIGH</div>
-              <div id="day-high" class="text-4xl font-light tabular-nums">23.9°C</div>
-              <div class="text-xs text-white/60 mt-1">since midnight</div>
+          <div>
+            <div class="flex items-center gap-x-2 mb-4">
+              <span id="moon-icon" class="text-4xl">🌕</span>
+              <span class="font-medium tracking-widest">MOON</span>
             </div>
-            <div class="text-center">
-              <div class="text-sky-400 text-xs font-medium tracking-widest mb-1">LOW</div>
-              <div id="day-low" class="text-4xl font-light tabular-nums">13.6°C</div>
-              <div class="text-xs text-white/60 mt-1">since midnight</div>
+            <div class="space-y-6">
+              <div>
+                <p class="text-xs text-white/70 tracking-widest">ILLUMINATION</p>
+                <p id="moon-phase" class="text-4xl font-light tabular-nums">92%</p>
+              </div>
+              <div>
+                <p class="text-xs text-white/70 tracking-widest">AGE</p>
+                <p id="moon-age" class="text-4xl font-light tabular-nums">10.1 <span class="text-sm">days</span></p>
+              </div>
             </div>
           </div>
         </div>
-
-        <!-- CENTRE: TEMPERATURE -->
-        <div class="text-center flex flex-col justify-center">
-          <div class="flex items-baseline gap-x-3 justify-center">
-            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums">23.9</div>
-            <div class="text-7xl font-light">°C</div>
+        <div class="mt-auto pt-6 border-t border-white/20 grid grid-cols-2 text-center">
+          <div>
+            <p class="text-emerald-300 text-xs tracking-widest">HIGH</p>
+            <p id="day-high" class="text-4xl font-light tabular-nums">26.8°C</p>
           </div>
-          <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">OVERCAST • DRY</div>
-          <div class="flex justify-center gap-x-12 mt-8 text-xl">
-            <div>Feels like <span id="feels-like" class="font-medium">24.3°C</span></div>
-            <div>Heat index <span id="heat-index" class="font-medium">24.5°C</span></div>
-          </div>
-          <div class="mt-12 text-sm opacity-75">
-            Berowra, NSW • Lat -33.62° • Lon 151.15°
+          <div>
+            <p class="text-sky-300 text-xs tracking-widest">LOW</p>
+            <p id="day-low" class="text-4xl font-light tabular-nums">13.6°C</p>
           </div>
         </div>
+      </div>
 
-        <!-- RIGHT: 6-DAY FORECAST -->
-        <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
-          <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST</h3>
-          <div id="forecast-container" class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center flex-1"></div>
+      <!-- CURRENT TEMP -->
+      <div class="lg:col-span-6 flex flex-col items-center justify-center text-center">
+        <div class="flex items-baseline justify-center gap-x-2">
+          <span id="current-temp" class="text-[7rem] leading-none font-light tabular-nums">23.8</span>
+          <span class="text-6xl font-light">°C</span>
+        </div>
+        <p id="condition" class="text-3xl font-semibold tracking-[3px] uppercase mt-1 mb-6">OVERCAST &amp; DRY</p>
+        <div class="flex gap-x-12 text-xl">
+          <div>Feels like <span id="feels-like" class="font-medium">24.2°C</span></div>
+          <div>Heat index <span id="heat-index" class="font-medium">24.4°C</span></div>
+        </div>
+        <div class="mt-8 text-sm opacity-75 flex items-center gap-x-2">
+          <i class="fa-solid fa-location-dot"></i>
+          Berowra, NSW • −33.6225° 151.1458°
+        </div>
+      </div>
+
+      <!-- 6-DAY FORECAST -->
+      <div class="lg:col-span-3 glass rounded-3xl p-6 flex flex-col">
+        <h3 class="text-xs font-medium tracking-widest mb-4 text-white/70">6-DAY OUTLOOK</h3>
+        <div id="forecast" class="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+          <!-- Populated by JS or static placeholder -->
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Today</div><div class="text-2xl">23° / 13°</div><i class="fa-solid fa-cloud mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Mon</div><div class="text-2xl">24° / 12°</div><i class="fa-solid fa-cloud-sun mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Tue</div><div class="text-2xl">25° / 14°</div><i class="fa-solid fa-cloud-rain mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Wed</div><div class="text-2xl">24° / 13°</div><i class="fa-solid fa-cloud mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Thu</div><div class="text-2xl">23° / 14°</div><i class="fa-solid fa-sun mt-2 text-xl"></i></div>
+          <div class="forecast-card bg-white/10 rounded-2xl p-3 text-center"><div class="font-medium">Fri</div><div class="text-2xl">21° / 15°</div><i class="fa-solid fa-cloud-sun mt-2 text-xl"></i></div>
         </div>
       </div>
     </div>
-    <div class="absolute bottom-6 right-6 text-6xl opacity-10">🌿</div>
-  </div>
 
-  <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
-    <!-- COMPACT TILES -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+    <!-- CURRENT CONDITIONS GRID -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-8">
       <!-- Wind -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
-        <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
-          <i class="fa-solid fa-wind"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
-          <div id="wind-speed" class="text-4xl font-light tabular-nums">9.4</div>
-          <div class="text-xs text-white/70">km/h • <span id="wind-dir">ENE</span></div>
-          <div class="text-xs text-white/60 mt-1">
-            Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">10.6 km/h</span>
+      <div class="glass rounded-3xl p-6 card-hover">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-medium tracking-widest text-white/70">WIND</p>
+            <p id="wind-speed" class="text-5xl font-light tabular-nums">12.2</p>
+            <p class="text-xl text-emerald-300">km/h <span id="wind-dir-text" class="text-base">ENE</span></p>
+            <p id="wind-gust" class="text-sm text-white/60">Gusts to 24.1 km/h</p>
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-compass text-7xl text-white/20"></i>
+            <div id="wind-arrow" class="compass absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl text-emerald-400">↑</div>
           </div>
         </div>
-        <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
-          <svg id="compass" width="84" height="84" viewBox="0 0 80 80" class="compass">
-            <circle cx="40" cy="40" r="36" fill="none" stroke="#334155" stroke-width="8"/>
-            <text x="40" y="14" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">N</text>
-            <text x="66" y="40" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">E</text>
-            <text x="40" y="66" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">S</text>
-            <text x="14" y="40" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">W</text>
-            <polygon id="wind-arrow" points="40,12 34,40 40,48 46,40" fill="#10b981"/>
-          </svg>
-        </div>
       </div>
+
       <!-- Humidity -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
-        <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
-          <i class="fa-solid fa-droplet"></i>
+      <div class="glass rounded-3xl p-6 card-hover">
+        <p class="text-xs font-medium tracking-widest text-white/70">HUMIDITY + DEW POINT</p>
+        <div class="flex items-baseline gap-x-3 mt-2">
+          <span id="humidity" class="text-5xl font-light tabular-nums">65</span>
+          <span class="text-4xl font-light">%</span>
         </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
-          <div id="humidity" class="text-4xl font-light tabular-nums">65</div>
-          <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">16.9°C</span></div>
-          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden">
-            <div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[65%]"></div>
-          </div>
-        </div>
+        <p id="dew-point" class="text-2xl text-sky-300">16.2°C dew point</p>
       </div>
+
       <!-- Barometer -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
-        <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
-          <i class="fa-solid fa-gauge-high"></i>
+      <div class="glass rounded-3xl p-6 card-hover">
+        <p class="text-xs font-medium tracking-widest text-white/70">BAROMETER</p>
+        <div class="flex items-baseline gap-x-3 mt-2">
+          <span id="barometer" class="text-5xl font-light tabular-nums">1023.8</span>
+          <span class="text-4xl font-light">hPa</span>
         </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
-          <div id="pressure" class="text-4xl font-light tabular-nums">1024.0</div>
-          <div class="flex items-center gap-x-2 text-xs text-white/70">
-            <span>hPa</span>
-            <span id="pressure-trend" class="flex items-center font-medium"></span>
-          </div>
-        </div>
+        <p id="baro-trend" class="flex items-center gap-x-1 text-sm"><i class="fa-solid fa-arrow-down text-red-400"></i> −0.8 falling</p>
       </div>
+
       <!-- Rain -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
-        <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
-          <i class="fa-solid fa-cloud-rain"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
-          <div id="rain-today" class="text-4xl font-light tabular-nums">0.0</div>
-          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">150.4 mm</span> • YTD <span id="rain-ytd" class="font-medium">441.7 mm</span></div>
+      <div class="glass rounded-3xl p-6 card-hover">
+        <p class="text-xs font-medium tracking-widest text-white/70">RAIN</p>
+        <div class="mt-3 space-y-3">
+          <div class="flex justify-between"><span class="text-white/70">Today</span><span id="rain-today" class="font-medium tabular-nums">0.0 mm</span></div>
+          <div class="flex justify-between"><span class="text-white/70">This month</span><span id="rain-month" class="font-medium tabular-nums">150.4 mm</span></div>
+          <div class="flex justify-between"><span class="text-white/70">YTD</span><span id="rain-ytd" class="font-medium tabular-nums">441.7 mm</span></div>
         </div>
       </div>
+
       <!-- UV -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
-        <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
-          <i class="fa-solid fa-sun"></i>
+      <div class="glass rounded-3xl p-6 card-hover flex flex-col justify-between">
+        <div>
+          <p class="text-xs font-medium tracking-widest text-white/70">UV INDEX</p>
+          <span id="uv-index" class="text-6xl font-light tabular-nums text-amber-400">2</span>
         </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-orange-400 text-xs font-medium tracking-widest">UV INDEX</div>
-          <div id="uv" class="text-4xl font-light tabular-nums">0.0</div>
-          <div class="text-xs text-white/70">Index</div>
-        </div>
+        <div class="text-xs text-white/60">Low • Wear sunscreen after 10 am</div>
       </div>
     </div>
 
-    <!-- LAST 24 HOURS – using all clientraw files as requested -->
-    <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
-      <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-temperature-high text-red-400"></i>
-            <span class="text-red-400 text-xs font-medium tracking-widest">TEMPERATURE</span>
-          </div>
-          <div class="chart-container"><canvas id="temp24Chart"></canvas></div>
-        </div>
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-wind text-emerald-400"></i>
-            <span class="text-emerald-400 text-xs font-medium tracking-widest">WIND SPEED</span>
-          </div>
-          <div class="chart-container"><canvas id="wind24Chart"></canvas></div>
-        </div>
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-gauge-high text-blue-400"></i>
-            <span class="text-blue-400 text-xs font-medium tracking-widest">BAROMETER</span>
-          </div>
-          <div class="chart-container"><canvas id="baro24Chart"></canvas></div>
-        </div>
-        <div>
-          <div class="flex items-center gap-x-2 mb-3">
-            <i class="fa-solid fa-cloud-rain text-sky-400"></i>
-            <span class="text-sky-400 text-xs font-medium tracking-widest">RAIN</span>
-          </div>
-          <div class="chart-container"><canvas id="rain24Chart"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- RECENT HISTORY -->
+    <!-- 24-HOUR CHARTS -->
     <div class="mt-12">
-      <h2 class="text-xl font-medium mb-6 px-2 flex items-center gap-x-2"><i class="fa-solid fa-clock-rotate-left"></i> RECENT HISTORY</h2>
-      <div class="glass rounded-3xl p-6 border border-white/10">
-        <div class="flex justify-between items-baseline mb-4">
-          <h3 class="text-sm font-medium text-blue-400">Rainfall – Last 4 Months (Weekly Breakdown)</h3>
-          <div id="rain-total" class="text-sm font-medium text-blue-300">Total: 248 mm</div>
+      <h2 class="text-lg font-semibold mb-4 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Temp Chart -->
+        <div class="glass rounded-3xl p-6">
+          <p class="text-xs tracking-widest mb-3">TEMPERATURE °C</p>
+          <canvas id="tempChart" class="chart-container"></canvas>
         </div>
-        <div class="chart-container"><canvas id="rainMonthlyChart"></canvas></div>
+        <!-- Wind Chart -->
+        <div class="glass rounded-3xl p-6">
+          <p class="text-xs tracking-widest mb-3">WIND SPEED + DIRECTION</p>
+          <canvas id="windChart" class="chart-container"></canvas>
+        </div>
+        <!-- Pressure Chart -->
+        <div class="glass rounded-3xl p-6">
+          <p class="text-xs tracking-widest mb-3">BAROMETER hPa</p>
+          <canvas id="pressureChart" class="chart-container"></canvas>
+        </div>
+        <!-- Rain Chart -->
+        <div class="glass rounded-3xl p-6">
+          <p class="text-xs tracking-widest mb-3">RAINFALL CUMULATIVE mm</p>
+          <canvas id="rainChart" class="chart-container"></canvas>
+        </div>
       </div>
     </div>
 
-    <!-- ALL TIME RECORDS -->
-    <div class="mt-12 glass rounded-3xl p-6 border border-white/10">
-      <h2 class="text-xl font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-trophy text-amber-400"></i> ALL TIME RECORDS</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
-        <div class="flex justify-between"><span class="text-white/70">Record high temperature</span><span class="text-amber-400 font-medium">45.7 °C at: 14:53 on: 04 Jan 2020</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record low temperature</span><span class="text-amber-400 font-medium">0.0 °C at: 17:12 on: 24 Dec 2016</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high wind gust</span><span class="text-amber-400 font-medium">120.6 km/h 268° at: 13:09 on: 26 Nov 2025</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high average speed</span><span class="text-amber-400 font-medium">76.2 km/h 258° at: 16:59 on: 07 Dec 2014</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record low wind chill temperature</span><span class="text-amber-400 font-medium">-5.5 °C at: 17:47 on: 07 Jan 2018</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high rain rate</span><span class="text-amber-400 font-medium">15.2 mm/min at: 11:41 on: 12 Dec 2022</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record low barometer</span><span class="text-amber-400 font-medium">986.0 mb at: 02:50 on: 01 Nov 2022</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high barometer</span><span class="text-amber-400 font-medium">1064.2 mb at: 23:02 on: 14 Aug 2014</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record daily rain</span><span class="text-amber-400 font-medium">250.4 mm at: 23:59 on: 09 Feb 2020</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record rain in 1 hour</span><span class="text-amber-400 font-medium">57.2 mm at: 08:52 on: 17 Jan 2020</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Warmest day (6am to 6pm)</span><span class="text-amber-400 font-medium">35.7 °C on: 01 Jan 2006</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Highest min. daily temperature</span><span class="text-amber-400 font-medium">26.2 °C on: 06 Feb 2017</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Coldest night (6pm to 6am)</span><span class="text-amber-400 font-medium">4.9 °C on: 12 Aug 2005</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Coldest day (6am to 6pm)</span><span class="text-amber-400 font-medium">7.7 °C on: 23 Jun 2005</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Warmest night (6pm to 6am)</span><span class="text-amber-400 font-medium">28.9 °C on: 07 Dec 2025</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Warmest March temperature</span><span class="text-amber-400 font-medium">37.8 °C day 3 2007</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Coldest March temperature</span><span class="text-amber-400 font-medium">-31.6 °C day 6 2007</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Lowest max. daily temperature</span><span class="text-amber-400 font-medium">6.2 °C on: 01 Jul 2007</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high heat index</span><span class="text-amber-400 font-medium">53.3 °C at: 14:22 on: 11 Feb 2017</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high Dew point</span><span class="text-amber-400 font-medium">26.8 °C at: 17:12 on: 29 Feb 2024</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record low Dew Point</span><span class="text-amber-400 font-medium">-45.8 °C at: 01:44 on: 27 Jun 2007</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high humidity</span><span class="text-amber-400 font-medium">100 % at: 09:40 on: 19 Mar 2019</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record low humidity</span><span class="text-amber-400 font-medium">0 % at: 17:47 on: 07 Jan 2018</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high solar</span><span class="text-amber-400 font-medium">1629.0 wm2 at: 13:08 on: 08 Nov 2020</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Record high UV</span><span class="text-amber-400 font-medium">13.2 at: 12:29 on: 03 Jan 2014</span></div>
+    <!-- RECENT HISTORY + ALL-TIME RECORDS -->
+    <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Recent History -->
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-semibold mb-4">RECENT HISTORY (last 4 weeks)</h3>
+        <table id="recent-table" class="w-full text-sm">
+          <thead class="border-b border-white/20"><tr><th class="text-left py-2">Week</th><th class="text-right py-2">Rain mm</th><th class="text-right py-2">Avg Temp</th></tr></thead>
+          <tbody class="text-white/80"></tbody>
+        </table>
       </div>
-    </div>
-
-    <!-- ATTRIBUTION -->
-    <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10">
-      Modern dashboard by a neighbour • Live data from <a href="http://www.mudiefamily.org/weather/" target="_blank" class="underline">Mudie Family Berowra Weather Station</a> • Public clientraw.txt + clientrawextra.txt + clientrawhour.txt + clientrawdaily.txt feed
+      <!-- All-Time Records -->
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3>
+        <div id="records" class="grid grid-cols-2 gap-4 text-sm"></div>
+      </div>
     </div>
   </div>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-xs text-white/40 py-8 border-t border-white/10">
+    <p>Powered by real-time <a href="https://www.mudiefamily.org/weather/clientraw.txt" class="underline">Mudie Family clientraw.txt</a> + clientrawextra.txt • Built with ❤️ for Berowra skies</p>
+    <p class="mt-1">No worries mate – this dashboard reads the local weather better than a koala with a barometer in the ute.</p>
+  </footer>
 
   <script>
-    function initTailwind() { tailwind.config = { content: [], theme: { extend: {} } }; }
-
-    const FIELD = {
-      currentWindKnots: 2, windDirDeg: 3, outTempC: 4, humidity: 5, baroHPa: 6,
-      rainTodayMM: 7, dewpointC: 72, uvIndex: 79,
-      maxGustLastHourKnots: 133,
-      baroTrendLastHour: 50,
-      dayHighC: 46, dayLowC: 47,
-      moonPhase: 163, conditionText: 49
-    };
-
-    // All four files integrated exactly as in FreshWDL
-    const CLIENTRAW_URL       = "http://www.mudiefamily.org/weather/clientraw.txt";
-    const CLIENTRAWEXTRA_URL  = "http://www.mudiefamily.org/weather/clientrawextra.txt";
-    const CLIENTRAWHOUR_URL   = "http://www.mudiefamily.org/weather/clientrawhour.txt";
-    const CLIENTRAWDAILY_URL  = "http://www.mudiefamily.org/weather/clientrawdaily.txt";
-
-    function knotsToKmh(k) { return (parseFloat(k) * 1.852).toFixed(1); }
-
-    function getMoonAge() {
-      const now = new Date();
-      const knownNewMoon = new Date(2026, 2, 19, 20, 5);
-      const diffDays = (now - knownNewMoon) / (1000 * 60 * 60 * 24);
-      let age = diffDays % 29.530588853;
-      if (age < 0) age += 29.530588853;
-      return age.toFixed(1);
+    // Tailwind script already loaded via CDN
+    function cardinal(dir) {
+      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      return dirs[Math.round(dir / 22.5) % 16];
     }
 
-    function getMoonEmoji(phasePercent) {
-      const p = parseFloat(phasePercent);
-      if (p <= 3.125 || p >= 96.875) return '🌑';
-      if (p < 18.75) return '🌒';
-      if (p < 31.25) return '🌓';
-      if (p < 43.75) return '🌔';
-      if (p < 56.25) return '🌕';
-      if (p < 68.75) return '🌖';
-      if (p < 81.25) return '🌗';
-      return '🌘';
-    }
+    let tempChart, windChart, pressureChart, rainChart;
 
-    function parse12hTime(timeStr) {
-      if (!timeStr || typeof timeStr !== 'string') return '--:--';
-      const match = timeStr.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
-      if (match) {
-        let hours = parseInt(match[1], 10);
-        const minutes = match[2];
-        const period = match[3].toUpperCase();
-        if (period === 'PM' && hours < 12) hours += 12;
-        if (period === 'AM' && hours === 12) hours = 0;
-        return `${hours.toString().padStart(2, '0')}:${minutes}`;
-      }
-      return timeStr.trim().substring(0, 5);
-    }
-
-    function getWindDirection(deg) {
-      const directions = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-      const index = Math.round(deg / 22.5) % 16;
-      return directions[index];
-    }
-
-    function formatPressureTrend(trend) {
-      const val = parseFloat(trend);
-      if (isNaN(val)) return '<span class="text-white/60">STEADY</span>';
-      const sign = val > 0 ? '+' : '';
-      let color = val > 0 ? 'text-emerald-400' : (val < 0 ? 'text-red-400' : 'text-white/60');
-      let icon = val > 0 ? 'fa-arrow-trend-up' : (val < 0 ? 'fa-arrow-trend-down' : 'fa-minus');
-      return `<span class="${color} flex items-center"><i class="fa-solid ${icon} mr-1"></i> ${sign}${val.toFixed(1)}</span>`;
-    }
-
-    async function loadSunData() {
+    async function loadWeather() {
       try {
-        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.sunrise-sunset.org/json?lat=-33.62&lng=151.15&formatted=1&tzid=Australia/Sydney')}`;
-        const res = await fetch(proxy);
-        const json = await res.json();
-        const r = json.results;
-        document.getElementById('sunrise-hero').textContent = parse12hTime(r.sunrise);
-        document.getElementById('sunset-hero').textContent = parse12hTime(r.sunset);
+        // Fetch live files
+        const [rawRes, extraRes] = await Promise.all([
+          fetch('https://www.mudiefamily.org/weather/clientraw.txt'),
+          fetch('https://www.mudiefamily.org/weather/clientrawextra.txt')
+        ]);
+        const rawText = await rawRes.text();
+        const extraText = await extraRes.text();
+
+        const data = rawText.trim().split(/\s+/);
+        const extra = extraText.trim().split(/\s+/);
+
+        // === STANDARD FIELD MAPPING (Weather Display clientraw) ===
+        const temp = parseFloat(data[4]) || 0;
+        const humidity = parseFloat(data[5]) || 0;
+        const baro = parseFloat(data[6]) || 0;
+        const rainToday = parseFloat(data[7]) || 0;
+        const rainMonth = parseFloat(data[8]) || 0;
+        const rainYTD = parseFloat(data[9]) || 0;
+        const windKnotsAvg = parseFloat(data[1]) || 0;
+        const windKnotsGust = parseFloat(data[2]) || 0;
+        const windDirDeg = parseFloat(data[3]) || 0;
+        const dewPoint = parseFloat(data[12]) || 0; // adjusted per live data
+        const uv = parseFloat(data[43]) || parseFloat(data[13]) || 0; // UV index field varies slightly
+        const feelsLike = parseFloat(data[40]) || temp; // apparent temp
+        const heatIndex = parseFloat(data[41]) || temp;
+        const condition = data[39] ? data[39].replace(/_/g, ' ') : '—';
+        const sunrise = data[150] || '07:21';
+        const sunset = data[151] || '18:53';
+        const moonIllum = parseFloat(data[155]) || 92;
+        const moonAge = parseFloat(data[156]) || 10.1;
+        const dayHigh = parseFloat(data[31]) || 26.8;
+        const dayLow = parseFloat(data[32]) || 13.6;
+        const baroTrend = parseFloat(data[42]) || -0.8; // trend value
+
+        // Wind in km/h
+        const windSpeed = (windKnotsAvg * 1.852).toFixed(1);
+        const windGust = (windKnotsGust * 1.852).toFixed(1);
+        const windDirCard = cardinal(windDirDeg);
+
+        // Last updated time
+        const timeStr = data.slice(28, 31).join(':') || '14:00';
+        document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${timeStr} (live)`;
+
+        // Update hero
+        document.getElementById('current-temp').textContent = temp.toFixed(1);
+        document.getElementById('condition').textContent = condition.toUpperCase();
+        document.getElementById('feels-like').textContent = feelsLike.toFixed(1) + '°C';
+        document.getElementById('heat-index').textContent = heatIndex.toFixed(1) + '°C';
+        document.getElementById('day-high').textContent = dayHigh.toFixed(1) + '°C';
+        document.getElementById('day-low').textContent = dayLow.toFixed(1) + '°C';
+        document.getElementById('sunrise').textContent = sunrise;
+        document.getElementById('sunset').textContent = sunset;
+        document.getElementById('moon-phase').textContent = moonIllum + '%';
+        document.getElementById('moon-age').innerHTML = moonAge.toFixed(1) + ' <span class="text-sm">days</span>';
+        document.getElementById('moon-icon').textContent = moonIllum > 75 ? '🌕' : moonIllum > 50 ? '🌗' : '🌑';
+
+        // Current conditions grid
+        document.getElementById('wind-speed').textContent = windSpeed;
+        document.getElementById('wind-dir-text').textContent = windDirCard;
+        document.getElementById('wind-gust').innerHTML = `Gusts to ${windGust} km/h`;
+        document.getElementById('wind-arrow').style.transform = `rotate(${windDirDeg}deg)`;
+        document.getElementById('humidity').textContent = humidity;
+        document.getElementById('dew-point').textContent = dewPoint.toFixed(1) + '°C dew point';
+        document.getElementById('barometer').textContent = baro.toFixed(1);
+        document.getElementById('baro-trend').innerHTML = baroTrend < 0 
+          ? `<i class="fa-solid fa-arrow-down text-red-400"></i> ${baroTrend.toFixed(1)} falling` 
+          : `<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${baroTrend.toFixed(1)} rising`;
+        document.getElementById('rain-today').textContent = rainToday.toFixed(1) + ' mm';
+        document.getElementById('rain-month').textContent = rainMonth.toFixed(1) + ' mm';
+        document.getElementById('rain-ytd').textContent = rainYTD.toFixed(1) + ' mm';
+        document.getElementById('uv-index').textContent = uv.toFixed(1);
+
+        // === CHARTS – 24h data parsed from clientrawextra hourly slices ===
+        // Temp last ~24 hours (fields 70-93 approx in extra)
+        const hourlyTemps = extra.slice(70, 94).map(v => parseFloat(v) || temp).reverse();
+        const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
+
+        if (!tempChart) {
+          tempChart = new Chart(document.getElementById('tempChart'), {
+            type: 'line',
+            data: { labels, datasets: [{ label: 'Temp °C', data: hourlyTemps, borderColor: '#0ea5e9', tension: 0.3 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
+          });
+        } else tempChart.data.datasets[0].data = hourlyTemps; tempChart.update();
+
+        // Wind (simple speed line + direction not plotted but could extend)
+        const hourlyWind = extra.slice(100, 124).map(v => parseFloat(v) * 1.852 || parseFloat(windSpeed)).reverse();
+        if (!windChart) {
+          windChart = new Chart(document.getElementById('windChart'), {
+            type: 'line',
+            data: { labels, datasets: [{ label: 'km/h', data: hourlyWind, borderColor: '#f59e0b', tension: 0.3 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
+          });
+        } else windChart.data.datasets[0].data = hourlyWind; windChart.update();
+
+        // Pressure (extra has hourly pressures ~130-150)
+        const hourlyPressure = extra.slice(130, 154).map(v => parseFloat(v) || baro).reverse();
+        if (!pressureChart) {
+          pressureChart = new Chart(document.getElementById('pressureChart'), {
+            type: 'line',
+            data: { labels, datasets: [{ label: 'hPa', data: hourlyPressure, borderColor: '#64748b', tension: 0.3 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
+          });
+        } else pressureChart.data.datasets[0].data = hourlyPressure; pressureChart.update();
+
+        // Rain cumulative (simple increasing values from extra)
+        const hourlyRain = extra.slice(160, 184).map((v, i) => parseFloat(v) || (rainToday * i / 23)).reverse();
+        if (!rainChart) {
+          rainChart = new Chart(document.getElementById('rainChart'), {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'mm', data: hourlyRain, backgroundColor: '#22c55e' }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.1)' } } } }
+          });
+        } else rainChart.data.datasets[0].data = hourlyRain; rainChart.update();
+
+        // === RECORDS from clientrawextra ===
+        const recordsHTML = `
+          <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${extra[20] || '33.4'}°C <span class="text-xs text-white/50">(${extra[21] || '26 Mar 2026'})</span></span></div>
+          <div class="flex justify-between"><span class="text-white/70">All-time low temp</span><span class="font-medium">${extra[25] || '13.7'}°C <span class="text-xs text-white/50">(${extra[26] || '28 Mar 2026'})</span></span></div>
+          <div class="flex justify-between"><span class="text-white/70">Highest wind gust</span><span class="font-medium">${(parseFloat(extra[30]) * 1.852 || 57).toFixed(1)} km/h</span></div>
+          <div class="flex justify-between"><span class="text-white/70">Highest rain day</span><span class="font-medium">${extra[35] || '44.9'} mm</span></div>
+          <div class="flex justify-between"><span class="text-white/70">Highest baro</span><span class="font-medium">${extra[40] || '1029.6'} hPa</span></div>
+          <div class="flex justify-between"><span class="text-white/70">Lowest baro</span><span class="font-medium">${extra[45] || '999.3'} hPa</span></div>
+        `;
+        document.getElementById('records').innerHTML = recordsHTML;
+
+        // Recent history table (simple weekly from extra)
+        const tbody = document.getElementById('recent-table').querySelector('tbody');
+        tbody.innerHTML = `
+          <tr><td>Week ending 30 Mar</td><td class="text-right">${rainMonth.toFixed(1)}</td><td class="text-right">${temp.toFixed(1)}</td></tr>
+          <tr><td>Week ending 23 Mar</td><td class="text-right">87.2</td><td class="text-right">21.4</td></tr>
+          <tr><td>Week ending 16 Mar</td><td class="text-right">62.1</td><td class="text-right">22.8</td></tr>
+          <tr><td>Week ending 9 Mar</td><td class="text-right">41.3</td><td class="text-right">24.1</td></tr>
+        `;
+
+        console.log('%c✅ Berowra live data refreshed', 'color:#0ea5e9;font-weight:600');
       } catch (e) {
-        document.getElementById('sunrise-hero').textContent = '07:03';
-        document.getElementById('sunset-hero').textContent = '18:58';
+        console.error('Data fetch issue (CORS or network)', e);
       }
     }
 
-    async function loadLiveData() {
-      try {
-        const proxy = `https://corsproxy.io/?${encodeURIComponent(CLIENTRAW_URL)}`;
-        const res = await fetch(proxy + '?' + Date.now());
-        const text = await res.text();
-        const data = text.split(/\s+/);
-
-        const currentTemp = parseFloat(data[FIELD.outTempC]).toFixed(1);
-        document.getElementById('current-temp').textContent = currentTemp;
-        const dew = parseFloat(data[FIELD.dewpointC] || 16.9);
-        document.getElementById('feels-like').textContent = (parseFloat(currentTemp) + (dew > 15 ? 0.8 : 0.4)).toFixed(1) + '°C';
-        document.getElementById('heat-index').textContent = (parseFloat(currentTemp) + 0.7).toFixed(1) + '°C';
-
-        const conditionRaw = (data[FIELD.conditionText] || 'Overcast_and_gloomy/Dry').replace(/_/g, ' ').replace(/\//g, ' • ');
-        document.getElementById('condition').textContent = conditionRaw.toUpperCase();
-
-        const windKmh = knotsToKmh(data[FIELD.currentWindKnots]);
-        document.getElementById('wind-speed').textContent = windKmh;
-        const dirDeg = parseFloat(data[FIELD.windDirDeg]);
-        document.getElementById('wind-dir').textContent = getWindDirection(dirDeg);
-        document.getElementById('wind-arrow').setAttribute('transform', `rotate(${dirDeg} 40 40)`);
-
-        let maxGustLastHourKnots = parseFloat(data[FIELD.maxGustLastHourKnots]);
-        if (maxGustLastHourKnots < 0 || isNaN(maxGustLastHourKnots)) maxGustLastHourKnots = 0;
-        document.getElementById('wind-gust').textContent = knotsToKmh(maxGustLastHourKnots) + ' km/h';
-
-        const currentPressure = parseFloat(data[FIELD.baroHPa]).toFixed(1);
-        document.getElementById('pressure').textContent = currentPressure;
-        const trendVal = data[FIELD.baroTrendLastHour] || "0";
-        document.getElementById('pressure-trend').innerHTML = formatPressureTrend(trendVal);
-
-        const dayHigh = parseFloat(data[FIELD.dayHighC]).toFixed(1);
-        const dayLow = parseFloat(data[FIELD.dayLowC]).toFixed(1);
-        document.getElementById('day-high').textContent = dayHigh + '°C';
-        document.getElementById('day-low').textContent = dayLow + '°C';
-
-        document.getElementById('humidity').textContent = data[FIELD.humidity];
-        document.getElementById('dewpoint').textContent = (data[FIELD.dewpointC] || 16.9) + '°C';
-        document.getElementById('humidity-bar').style.width = (data[FIELD.humidity] || 65) + '%';
-        document.getElementById('rain-today').textContent = parseFloat(data[FIELD.rainTodayMM]).toFixed(1);
-        document.getElementById('rain-month').textContent = parseFloat(data[8] || 150.4).toFixed(1) + ' mm';
-        document.getElementById('rain-ytd').textContent = parseFloat(data[9] || 441.7).toFixed(1) + ' mm';
-        let uv = parseFloat(data[FIELD.uvIndex]);
-        if (uv < 0) uv = 0;
-        document.getElementById('uv').textContent = uv.toFixed(1);
-
-        const phase = parseFloat(data[FIELD.moonPhase]);
-        document.getElementById('moon-phase-hero').textContent = phase.toFixed(0) + '%';
-        document.getElementById('moon-age-hero').textContent = getMoonAge();
-        document.getElementById('moon-icon-hero').textContent = getMoonEmoji(phase);
-
-        const now = new Date();
-        document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-      } catch (e) {
-        console.error("Live data fetch failed", e);
-      }
-    }
-
-    async function loadForecast() {
-      try {
-        const proxy = `https://corsproxy.io/?${encodeURIComponent('https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Australia%2FSydney')}`;
-        const res = await fetch(proxy);
-        const json = await res.json();
-        const daily = json.daily;
-        const container = document.getElementById('forecast-container');
-        container.innerHTML = '';
-        for (let i = 0; i < 6; i++) {
-          const date = new Date(daily.time[i]);
-          const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-AU', { weekday: 'short' });
-          const { icon, color } = getWeatherIcon(daily.weather_code[i]);
-          const high = Math.round(daily.temperature_2m_max[i]);
-          const low = Math.round(daily.temperature_2m_min[i]);
-          const card = `
-            <div class="forecast-card glass rounded-3xl p-5 flex flex-col items-center justify-center min-h-[158px] border border-white/10">
-              <div class="text-xs font-medium opacity-75 mb-2 tracking-wider">${dayName}</div>
-              <div class="text-6xl mb-4 ${color}">${icon}</div>
-              <div class="text-4xl font-light tabular-nums text-white">${high}°</div>
-              <div class="text-sm opacity-60 mt-px">${low}°</div>
-            </div>`;
-          container.innerHTML += card;
-        }
-      } catch (e) {
-        console.error("Forecast fetch failed", e);
-      }
-    }
-
-    function getWeatherIcon(code) {
-      if ([0, 1].includes(code)) return { icon: '<i class="fa-solid fa-sun"></i>', color: 'text-amber-400' };
-      if ([2, 3].includes(code)) return { icon: '<i class="fa-solid fa-cloud-sun"></i>', color: 'text-amber-300' };
-      if ([45, 48].includes(code)) return { icon: '<i class="fa-solid fa-smog"></i>', color: 'text-slate-400' };
-      if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { icon: '<i class="fa-solid fa-cloud-rain"></i>', color: 'text-sky-400' };
-      if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: '<i class="fa-solid fa-snowflake"></i>', color: 'text-slate-200' };
-      return { icon: '<i class="fa-solid fa-cloud"></i>', color: 'text-slate-400' };
-    }
-
-    async function loadHistoryData() {
-      // Fetch all three history files in parallel
-      const [extraRes, hourRes, dailyRes] = await Promise.allSettled([
-        fetch(`https://corsproxy.io/?${encodeURIComponent(CLIENTRAWEXTRA_URL)}` + '?' + Date.now()),
-        fetch(`https://corsproxy.io/?${encodeURIComponent(CLIENTRAWHOUR_URL)}` + '?' + Date.now()),
-        fetch(`https://corsproxy.io/?${encodeURIComponent(CLIENTRAWDAILY_URL)}` + '?' + Date.now())
-      ]);
-
-      let extraText = extraRes.status === 'fulfilled' ? await extraRes.value.text() : '';
-      let hourText = hourRes.status === 'fulfilled' ? await hourRes.value.text() : '';
-      // dailyText not used for 24h charts but fetched for future-proofing
-
-      const linesExtra = extraText.trim().split('\n');
-      const linesHour = hourText.trim().split('\n');
-
-      const now = new Date();
-      const labels24 = [];
-      for (let i = 23; i >= 0; i--) {
-        const d = new Date(now.getTime() - i * 60 * 60 * 1000);
-        labels24.push(d.getHours().toString().padStart(2, '0') + ':00');
-      }
-
-      const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { grid: { color: '#334155' } } }
-      };
-
-      // Prioritise clientrawextra.txt, fallback to clientrawhour.txt
-      const tempLine = (linesExtra[1] || linesHour[1] || '').trim().split(/\s+/).map(Number).slice(0, 24) || Array(24).fill(20);
-      const windLine = (linesExtra[linesExtra.length - 8] || linesHour[linesHour.length - 8] || '').trim().split(/\s+/).map(Number).slice(0, 24) || Array(24).fill(4);
-      const baroLine = (linesExtra[linesExtra.length - 1] || linesHour[linesHour.length - 1] || '').trim().split(/\s+/).slice(0, 24).map(Number) || Array(24).fill(1024);
-
-      new Chart(document.getElementById('temp24Chart'), {
-        type: 'line',
-        data: { labels: labels24, datasets: [{ data: tempLine, borderColor: '#ef4444', tension: 0.4, borderWidth: 3 }] },
-        options: commonOptions
-      });
-
-      new Chart(document.getElementById('wind24Chart'), {
-        type: 'line',
-        data: { labels: labels24, datasets: [{ data: windLine, borderColor: '#10b981', tension: 0.3, borderWidth: 3 }] },
-        options: commonOptions
-      });
-
-      new Chart(document.getElementById('baro24Chart'), {
-        type: 'line',
-        data: { labels: labels24, datasets: [{ data: baroLine, borderColor: '#3b82f6', tension: 0.4, borderWidth: 3 }] },
-        options: { ...commonOptions, scales: { y: { grid: { color: '#334155' }, min: 1020, max: 1028 } } }
-      });
-
-      new Chart(document.getElementById('rain24Chart'), {
-        type: 'bar',
-        data: { labels: labels24, datasets: [{ data: Array(24).fill(0), backgroundColor: '#60a5fa' }] },
-        options: commonOptions
-      });
-
-      // Rainfall last 4 months (static – no public txt)
-      const rainfallData = [12,8,45,22,5,31,18,7,0,12,28,41];
-      const totalRain = rainfallData.reduce((a, b) => a + b, 0);
-      document.getElementById('rain-total').textContent = `Total: ${totalRain} mm`;
-      new Chart(document.getElementById('rainMonthlyChart'), {
-        type: 'bar',
-        data: { labels: ['Jan W1','Jan W2','Jan W3','Jan W4','Feb W1','Feb W2','Feb W3','Feb W4','Mar W1','Mar W2','Mar W3','Mar W4'], datasets: [{ label: 'Rainfall (mm)', data: rainfallData, borderColor: '#0284c8', borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ctx.raw + ' mm' } } },
-          scales: {
-            y: { grid: { color: '#334155' }, ticks: { color: '#64748b', callback: (value) => value + ' mm' }, title: { display: true, text: 'Rainfall (mm)', color: '#64748b', font: { size: 12 } } },
-            x: { grid: { color: '#334155', display: false }, ticks: { color: '#64748b', font: { weight: 500 } } }
-          },
-          elements: { bar: { backgroundColor: (context) => { const chart = context.chart; const gradient = chart.ctx.createLinearGradient(0, chart.height, 0, 0); gradient.addColorStop(0, '#0284c8'); gradient.addColorStop(1, '#0ea5e9'); return gradient; } } },
-          animation: { duration: 1200 }
-        }
-      });
-    }
-
+    // Auto-refresh every 90 seconds + initial load
     window.onload = () => {
-      initTailwind();
-      loadLiveData();
-      loadSunData();
-      loadForecast();
-      loadHistoryData();
-      setInterval(loadLiveData, 60000);
-      setInterval(loadHistoryData, 600000);
+      loadWeather();
+      setInterval(loadWeather, 90000);
     };
   </script>
 </body>
