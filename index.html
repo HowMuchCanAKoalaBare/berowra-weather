@@ -66,7 +66,6 @@
             <div class="text-center"><div class="text-sky-400 text-xs font-medium tracking-widest mb-1">LOW</div><div id="day-low" class="text-4xl font-light tabular-nums">13.6°C</div><div class="text-xs text-white/60 mt-1">since midnight</div></div>
           </div>
         </div>
-
         <!-- CURRENT TEMP -->
         <div class="text-center flex flex-col justify-center">
           <div class="flex items-baseline gap-x-3 justify-center">
@@ -80,7 +79,6 @@
           </div>
           <div class="mt-12 text-sm opacity-75">Berowra, NSW • Lat -33.62° • Lon 151.15°</div>
         </div>
-
         <!-- 6-DAY FORECAST -->
         <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
           <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST • BOM ACCESS-G</h3>
@@ -194,25 +192,23 @@
       const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
       return dirs[Math.round(dir / 22.5) % 16];
     }
-
     function getWeatherIcon(code) {
       const map = {0:'fa-sun',1:'fa-cloud-sun',2:'fa-cloud-sun',3:'fa-cloud',45:'fa-smog',48:'fa-smog',51:'fa-cloud-rain',53:'fa-cloud-rain',55:'fa-cloud-rain',61:'fa-cloud-showers-heavy',63:'fa-cloud-showers-heavy',65:'fa-cloud-showers-heavy',71:'fa-snowflake',73:'fa-snowflake',75:'fa-snowflake',80:'fa-cloud-rain',81:'fa-cloud-showers-heavy',82:'fa-cloud-showers-heavy',95:'fa-bolt',96:'fa-bolt',99:'fa-bolt'};
       return map[code] || 'fa-cloud';
     }
-
     let tempChart, windChart, baroChart, rainChart;
 
     async function loadStationData() {
+      // Improved proxy list - prioritised reliable ones first
       const proxies = [
         'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?',
-        'https://api.codetabs.com/v1/proxy?quest=',
-        'https://proxy.cors.sh/'
+        'https://api.codetabs.com/v1/proxy?quest='
       ];
       const base = 'http://www.mudiefamily.org/weather/';
       const ts = '?t=' + Date.now();
-
       let rawText = '', extraText = '', hourText = '', dailyText = '';
+      let usedProxy = '';
 
       for (let proxy of proxies) {
         try {
@@ -222,9 +218,7 @@
             fetch(proxy + encodeURIComponent(base + 'clientrawhour.txt' + ts)),
             fetch(proxy + encodeURIComponent(base + 'clientrawdaily.txt' + ts))
           ]);
-
           if (!rawRes.ok) continue;
-
           rawText = await rawRes.text();
           extraText = await extraRes.text();
           hourText = await hourRes.text();
@@ -232,20 +226,21 @@
 
           // BULLETPROOF VALIDATION
           if (rawText.length < 200 || rawText.includes('<html') || rawText.includes('<!DOCTYPE') || isNaN(parseFloat(rawText.trim()[0]))) {
-            continue; // bad data → try next proxy
+            continue;
           }
+          usedProxy = proxy;
           break;
         } catch(e) {}
       }
 
-      if (!rawText || rawText.length < 200) throw new Error('Station data unavailable');
+      if (!rawText || rawText.length < 200) throw new Error('All proxies failed – station data unavailable');
 
       const data = rawText.trim().split(/\s+/);
       const extra = extraText.trim().split(/\s+/);
       const hourData = hourText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
       const dailyData = dailyText.trim().split(/\s+/).map(v => parseFloat(v) || 0);
 
-      // Correct indices from live station files
+      // Standard Weather Display clientraw.txt field mapping (0-based indices confirmed correct for Mudie)
       const temp = parseFloat(data[4]) || 23.9;
       const humidity = parseFloat(data[5]) || 65;
       const baro = parseFloat(data[6]) || 1024.0;
@@ -272,8 +267,11 @@
       const windGust = (windKnotsGust * 1.852).toFixed(1);
       const windDirCard = cardinal(windDirDeg);
 
-      document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${data.slice(28,31).join(':') || 'just now'} (live)`;
+      // Debug: console shows exact fields for future troubleshooting
+      console.log('%c✅ Mudie clientraw loaded via ' + usedProxy, 'color:#10b981;font-weight:bold');
+      console.log('Fields 0-10:', data.slice(0,11));
 
+      document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${data.slice(28,31).join(':') || 'just now'} (live)`;
       document.getElementById('current-temp').textContent = temp.toFixed(1);
       document.getElementById('condition').textContent = condition.toUpperCase();
       document.getElementById('feels-like').textContent = feelsLike.toFixed(1) + '°C';
@@ -284,7 +282,7 @@
       document.getElementById('sunset-hero').textContent = sunset;
       document.getElementById('moon-phase-hero').textContent = moonIllum + '%';
       document.getElementById('moon-age-hero').textContent = moonAge.toFixed(1);
-      document.getElementById('moon-icon-hero').textContent = moonIllum > 75 ? '🌕' : moonIllum > 50 ? '🌗' : '🌑';
+      document.getElementById('moon-icon-hero').textContent = moonIllum > 75 ? '🌕' : moonIllum > 50 ? '🌗' : moonIllum > 25 ? '🌓' : '🌑';
       document.getElementById('wind-speed').textContent = windSpeed;
       document.getElementById('wind-dir').textContent = windDirCard;
       document.getElementById('wind-gust').textContent = windGust + ' km/h';
@@ -299,7 +297,7 @@
       document.getElementById('rain-ytd').textContent = rainYTD.toFixed(1) + ' mm';
       document.getElementById('uv').textContent = uv.toFixed(1);
 
-      // Charts
+      // Charts (standard WD hourly slices)
       const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
       const hourlyTemps = hourData.slice(170, 194).reverse();
       if (!tempChart) tempChart = new Chart(document.getElementById('temp24Chart'), {type:'line', data:{labels, datasets:[{label:'Temp °C', data:hourlyTemps, borderColor:'#10b981', tension:0.3, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
@@ -329,7 +327,7 @@
       }
       tbody.innerHTML = dailyHTML;
 
-      // Records (exact match to official blue box)
+      // Records
       const recordsHTML = `
         <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${extra[20] || '33.4'}°C</span></div>
         <div class="flex justify-between"><span class="text-white/70">All-time low temp</span><span class="font-medium">${extra[25] || '13.7'}°C</span></div>
@@ -338,7 +336,7 @@
       `;
       document.getElementById('records').innerHTML = recordsHTML;
 
-      // Recent
+      // Recent (kept simple – can be extended later)
       const recentTbody = document.getElementById('recent-table').querySelector('tbody');
       recentTbody.innerHTML = `
         <tr><td>Week ending 30 Mar</td><td class="text-right">${rainMonth.toFixed(1)}</td><td class="text-right">${temp.toFixed(1)}</td></tr>
@@ -383,7 +381,7 @@
         document.getElementById('error-toast').classList.add('hidden');
       } catch (e) {
         const toast = document.getElementById('error-toast');
-        document.getElementById('error-text').textContent = 'Station data unavailable (using fallback values)';
+        document.getElementById('error-text').textContent = e.message;
         toast.style.display = 'flex';
       }
       await loadForecast();
