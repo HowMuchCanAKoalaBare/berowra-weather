@@ -14,7 +14,8 @@
     .hero-gradient { background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 100%); }
     .compass { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .icon-square { width: 48px; height: 48px; }
-    .chart-container { height: 280px; }
+    .chart-wrap { position: relative; height: 280px; }
+    .chart-container { width: 100% !important; height: 100% !important; display: block; }
     .forecast-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     .glass-hover { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, background-color 0.2s ease; }
     .glass-hover:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.16); }
@@ -172,10 +173,10 @@
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><canvas id="temp24Chart" class="chart-container" aria-label="24 hour temperature chart"></canvas></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><canvas id="wind24Chart" class="chart-container" aria-label="24 hour wind speed chart"></canvas></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><canvas id="baro24Chart" class="chart-container" aria-label="24 hour barometer chart"></canvas></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><canvas id="rain24Chart" class="chart-container" aria-label="24 hour rainfall chart"></canvas></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="24 hour temperature chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="24 hour wind speed chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="24 hour barometer chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="24 hour rainfall chart"></canvas></div></div>
       </div>
     </div>
 
