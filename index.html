@@ -29,9 +29,12 @@
           <p class="text-xs text-emerald-400 -mt-1">Mudie Family Station • Sydney, NSW</p>
         </div>
       </div>
-      <div id="last-updated" class="text-sm text-white/70 flex items-center gap-x-2">
+      <div id="last-updated" class="text-sm text-white/70 flex items-center gap-x-2" aria-live="polite">
         <i class="fa-solid fa-clock"></i>
         <span>Last updated: —</span>
+      </div>
+      <div id="data-source-badge" class="hidden text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">
+        source: —
       </div>
       <a href="http://www.mudiefamily.org/weather/" target="_blank" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center gap-x-2 transition">
         <i class="fa-solid fa-chart-line"></i> Original Station
@@ -49,33 +52,33 @@
             <div class="pr-6 sm:pr-8">
               <div class="flex items-center gap-x-3 mb-6"><i class="fa-solid fa-sun text-3xl text-amber-400"></i><span class="text-xl font-medium">Sun</span></div>
               <div class="space-y-7">
-                <div><div class="text-emerald-300 text-xs font-medium tracking-widest mb-1">RISE</div><div id="sunrise-hero" class="text-4xl font-light tabular-nums">06:13</div></div>
-                <div><div class="text-orange-300 text-xs font-medium tracking-widest mb-1">SET</div><div id="sunset-hero" class="text-4xl font-light tabular-nums">17:40</div></div>
+                <div><div class="text-emerald-300 text-xs font-medium tracking-widest mb-1">RISE</div><div id="sunrise-hero" class="text-4xl font-light tabular-nums">—</div></div>
+                <div><div class="text-orange-300 text-xs font-medium tracking-widest mb-1">SET</div><div id="sunset-hero" class="text-4xl font-light tabular-nums">—</div></div>
               </div>
             </div>
             <div class="pl-6 sm:pl-8">
-              <div class="flex items-center gap-x-3 mb-6"><span id="moon-icon-hero" class="text-4xl">🌗</span><span class="text-xl font-medium">Moon</span></div>
+              <div class="flex items-center gap-x-3 mb-6"><span id="moon-icon-hero" class="text-4xl" aria-label="Moon phase icon">🌑</span><span class="text-xl font-medium">Moon</span></div>
               <div class="space-y-7">
-                <div><div class="text-white/60 text-xs font-medium tracking-widest">ILLUMINATION</div><div id="moon-phase-hero" class="text-4xl font-light tabular-nums">27%</div></div>
-                <div><div class="text-white/60 text-xs font-medium tracking-widest">MOON AGE</div><div class="flex items-baseline gap-x-2"><span id="moon-age-hero" class="text-4xl font-light tabular-nums">8.7</span><span class="text-white/60 text-xs medium">days</span></div></div>
+                <div><div class="text-white/60 text-xs font-medium tracking-widest">ILLUMINATION</div><div id="moon-phase-hero" class="text-4xl font-light tabular-nums">—%</div></div>
+                <div><div class="text-white/60 text-xs font-medium tracking-widest">MOON AGE</div><div class="flex items-baseline gap-x-2"><span id="moon-age-hero" class="text-4xl font-light tabular-nums">—</span><span class="text-white/60 text-xs font-medium">days</span></div></div>
               </div>
             </div>
           </div>
           <div class="pt-6 border-t border-white/10 grid grid-cols-2 gap-8 mt-auto">
-            <div class="text-center"><div class="text-emerald-400 text-xs font-medium tracking-widest mb-1">HIGH</div><div id="day-high" class="text-4xl font-light tabular-nums">33.0°C</div><div class="text-xs text-white/60 mt-1">since midnight</div></div>
-            <div class="text-center"><div class="text-sky-400 text-xs font-medium tracking-widest mb-1">LOW</div><div id="day-low" class="text-4xl font-light tabular-nums">13.6°C</div><div class="text-xs text-white/60 mt-1">since midnight</div></div>
+            <div class="text-center"><div class="text-emerald-400 text-xs font-medium tracking-widest mb-1">HIGH</div><div id="day-high" class="text-4xl font-light tabular-nums">—°C</div><div class="text-xs text-white/60 mt-1">since midnight</div></div>
+            <div class="text-center"><div class="text-sky-400 text-xs font-medium tracking-widest mb-1">LOW</div><div id="day-low" class="text-4xl font-light tabular-nums">—°C</div><div class="text-xs text-white/60 mt-1">since midnight</div></div>
           </div>
         </div>
         <!-- CURRENT TEMP -->
         <div class="text-center flex flex-col justify-center">
           <div class="flex items-baseline gap-x-3 justify-center">
-            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums">30.7</div>
+            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums" aria-label="Current temperature">—</div>
             <div class="text-7xl font-light">°C</div>
           </div>
-          <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">CLEAR • HOT</div>
+          <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">—</div>
           <div class="flex justify-center gap-x-12 mt-8 text-xl">
-            <div>Feels like <span id="feels-like" class="font-medium">30.6°C</span></div>
-            <div>Heat index <span id="heat-index" class="font-medium">31.2°C</span></div>
+            <div>Feels like <span id="feels-like" class="font-medium">—°C</span></div>
+            <div>Heat index <span id="heat-index" class="font-medium">—°C</span></div>
           </div>
           <div class="mt-12 text-sm opacity-75">Berowra, NSW • Lat -33.62° • Lon 151.15°</div>
         </div>
@@ -97,9 +100,9 @@
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
-          <div id="wind-speed" class="text-4xl font-light tabular-nums">7.4</div>
-          <div class="text-xs text-white/70">km/h • <span id="wind-dir">NNE</span></div>
-          <div class="text-xs text-white/60 mt-1">Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">8.3 km/h</span></div>
+          <div id="wind-speed" class="text-4xl font-light tabular-nums" aria-label="Wind speed">—</div>
+          <div class="text-xs text-white/70">km/h • <span id="wind-dir">—</span></div>
+          <div class="text-xs text-white/60 mt-1">Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">— km/h</span></div>
         </div>
         <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
           <svg id="compass-svg" width="84" height="84" viewBox="0 0 80 80" class="compass">
@@ -117,9 +120,9 @@
         <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-droplet"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
-          <div id="humidity" class="text-4xl font-light tabular-nums">47</div>
-          <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">28.5°C</span></div>
-          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden"><div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-[47%]"></div></div>
+          <div id="humidity" class="text-4xl font-light tabular-nums" aria-label="Humidity">—</div>
+          <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">—°C</span></div>
+          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden"><div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-0"></div></div>
         </div>
       </div>
       <!-- Barometer -->
@@ -127,7 +130,7 @@
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
-          <div id="pressure" class="text-4xl font-light tabular-nums">1013.5</div>
+          <div id="pressure" class="text-4xl font-light tabular-nums" aria-label="Barometric pressure">—</div>
           <div class="flex items-center gap-x-2 text-xs text-white/70"><span>hPa</span><span id="pressure-trend" class="flex items-center font-medium"></span></div>
         </div>
       </div>
@@ -136,8 +139,8 @@
         <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
-          <div id="rain-today" class="text-4xl font-light tabular-nums">0.0</div>
-          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">20.1 mm</span> • YTD <span id="rain-ytd" class="font-medium">461.8 mm</span></div>
+          <div id="rain-today" class="text-4xl font-light tabular-nums" aria-label="Rainfall today">—</div>
+          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">— mm</span> • YTD <span id="rain-ytd" class="font-medium">— mm</span></div>
         </div>
       </div>
       <!-- UV -->
@@ -145,7 +148,7 @@
         <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-sun"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-orange-400 text-xs font-medium tracking-widest">UV INDEX</div>
-          <div id="uv" class="text-4xl font-light tabular-nums">0.0</div>
+          <div id="uv" class="text-4xl font-light tabular-nums" aria-label="UV index">—</div>
           <div class="text-xs text-white/70">Index</div>
         </div>
       </div>
@@ -155,10 +158,10 @@
     <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><canvas id="temp24Chart" class="chart-container"></canvas></div>
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><canvas id="wind24Chart" class="chart-container"></canvas></div>
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><canvas id="baro24Chart" class="chart-container"></canvas></div>
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><canvas id="rain24Chart" class="chart-container"></canvas></div>
+        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><canvas id="temp24Chart" class="chart-container" aria-label="24 hour temperature chart"></canvas></div>
+        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><canvas id="wind24Chart" class="chart-container" aria-label="24 hour wind speed chart"></canvas></div>
+        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><canvas id="baro24Chart" class="chart-container" aria-label="24 hour barometer chart"></canvas></div>
+        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><canvas id="rain24Chart" class="chart-container" aria-label="24 hour rainfall chart"></canvas></div>
       </div>
     </div>
 
@@ -188,127 +191,336 @@
   </div>
 
   <script>
-    function cardinal(dir) {
-      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-      return dirs[Math.round(dir / 22.5) % 16];
-    }
-    function getWeatherIcon(code) {
-      const map = {0:'fa-sun',1:'fa-cloud-sun',2:'fa-cloud-sun',3:'fa-cloud',45:'fa-smog',48:'fa-smog',51:'fa-cloud-rain',53:'fa-cloud-rain',55:'fa-cloud-rain',61:'fa-cloud-showers-heavy',63:'fa-cloud-showers-heavy',65:'fa-cloud-showers-heavy',71:'fa-snowflake',73:'fa-snowflake',75:'fa-snowflake',80:'fa-cloud-rain',81:'fa-cloud-showers-heavy',82:'fa-cloud-showers-heavy',95:'fa-bolt',96:'fa-bolt',99:'fa-bolt'};
-      return map[code] || 'fa-cloud';
-    }
+    const WEATHER_DEBUG = location.search.includes('debug');
+    if (WEATHER_DEBUG) window.WEATHER_DEBUG = true;
 
-    let tempChart, windChart, baroChart, rainChart;
-
-    // ==================== COPILOT-INSPIRED ROBUST LOADER ====================
     const FETCH_TIMEOUT = 8000;
+    const REFRESH_INTERVAL_MS = 90000;
+    const BASE = 'http://www.mudiefamily.org/weather/';
+    const FILES = ['clientraw.txt', 'clientrawextra.txt', 'clientrawhour.txt', 'clientrawdaily.txt'];
     const PROXIES = [
       'https://api.allorigins.win/raw?url=',
       'https://corsproxy.io/?',
       'https://api.codetabs.com/v1/proxy?quest='
     ];
-    const BASE = 'http://www.mudiefamily.org/weather/';
-    const FILES = ['clientraw.txt', 'clientrawextra.txt', 'clientrawhour.txt', 'clientrawdaily.txt'];
+    const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const HOURLY_LABELS = Array.from({ length: 24 }, (_, i) => `${23 - i}:00`);
+
+    // Named mapping keeps parser maintainable while preserving station-specific positions.
+    const FIELD_MAP = {
+      timestampParts: [28, 29, 30],
+      windKnotsAvg: 1, windKnotsGust: 2, windDirDeg: 3,
+      temp: 4, humidity: 5, baro: 6,
+      rainToday: 7, rainMonth: 8, rainYTD: 9,
+      dewPoint: 12, uv: 43,
+      conditionRaw: 49, feelsLike: 50, heatIndex: 51,
+      dayHigh: 31, dayLow: 32, baroTrend: 42,
+      moonIllum: 155, moonAge: 156,
+      sunrise: 166, sunset: 174,
+      records: { highTemp: 20, lowTemp: 25, maxWindGustKnots: 30, highestRainDay: 35 }
+    };
+
+    // Hour and daily array slices in clientrawhour/clientrawdaily format.
+    const SERIES_MAP = {
+      hourly: { temp: [170, 194], windKnots: [380, 404], baro: [250, 274], rain: [300, 324] },
+      daily: { highStart: 1, lowStart: 29, rainStart: 57, days: 31 }
+    };
+
+    const CHART_DEFS = {
+      temp24Chart: { key: 'hourlyTemps', type: 'line', label: 'Temp °C', color: '#10b981' },
+      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'km/h', color: '#f59e0b' },
+      baro24Chart: { key: 'hourlyBaro', type: 'line', label: 'hPa', color: '#fbbf24' },
+      rain24Chart: { key: 'hourlyRain', type: 'bar', label: 'mm', color: '#38bdf8' }
+    };
+
+    const chartInstances = {};
+
+    function cardinal(dir) {
+      return DIRS[Math.round((Number(dir) || 0) / 22.5) % 16];
+    }
+
+    function getWeatherIcon(code) {
+      const map = { 0: 'fa-sun', 1: 'fa-cloud-sun', 2: 'fa-cloud-sun', 3: 'fa-cloud', 45: 'fa-smog', 48: 'fa-smog', 51: 'fa-cloud-rain', 53: 'fa-cloud-rain', 55: 'fa-cloud-rain', 61: 'fa-cloud-showers-heavy', 63: 'fa-cloud-showers-heavy', 65: 'fa-cloud-showers-heavy', 71: 'fa-snowflake', 73: 'fa-snowflake', 75: 'fa-snowflake', 80: 'fa-cloud-rain', 81: 'fa-cloud-showers-heavy', 82: 'fa-cloud-showers-heavy', 95: 'fa-bolt', 96: 'fa-bolt', 99: 'fa-bolt' };
+      return map[code] || 'fa-cloud';
+    }
 
     function timeoutFetch(url, ms = FETCH_TIMEOUT) {
       return Promise.race([
         fetch(url),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('fetch timeout')), ms))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('fetch timeout')), ms))
       ]);
     }
 
-    function safeFloat(v, fallback = 0) {
+    function toNum(v) {
       const n = Number(v);
-      return Number.isFinite(n) ? n : fallback;
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function fmtNum(v, digits = 1, suffix = '') {
+      return Number.isFinite(v) ? `${v.toFixed(digits)}${suffix}` : '—';
+    }
+
+    function read(arr, idx, fallback = '') {
+      return idx < arr.length ? arr[idx] : fallback;
+    }
+
+    function safeSlice(arr, start, end) {
+      if (start < 0 || end > arr.length || start >= end) return [];
+      return arr.slice(start, end);
+    }
+
+    function moonIcon(illumination) {
+      if (!Number.isFinite(illumination)) return '🌑';
+      if (illumination >= 88) return '🌕';
+      if (illumination >= 63) return '🌖';
+      if (illumination >= 38) return '🌗';
+      if (illumination >= 13) return '🌘';
+      return '🌑';
     }
 
     function parseClientRaw(rawText, extraText, hourText, dailyText) {
       const data = rawText.trim().split(/\s+/);
       const extra = extraText.trim().split(/\s+/);
-      const hourData = hourText.trim().split(/\s+/).map(v => safeFloat(v, 0));
-      const dailyData = dailyText.trim().split(/\s+/).map(v => safeFloat(v, 0));
-
+      const hourData = hourText.trim().split(/\s+/).map(toNum);
+      const dailyData = dailyText.trim().split(/\s+/).map(toNum);
       const diag = { rawLength: data.length, extraLength: extra.length, hourLength: hourData.length, dailyLength: dailyData.length };
 
-      const mapping = {
-        timestampParts: [28, 29, 30],
-        windKnotsAvg: 1, windKnotsGust: 2, windDirDeg: 3,
-        temp: 4, humidity: 5, baro: 6,
-        rainToday: 7, rainMonth: 8, rainYTD: 9,
-        dewPoint: 12, uv: 43,
-        conditionRaw: 49, feelsLike: 50, heatIndex: 51,
-        dayHigh: 31, dayLow: 32, baroTrend: 42,
-        moonIllum: 155, moonAge: 156,
-        sunrise: 166, sunset: 174
-      };
+      const temp = toNum(read(data, FIELD_MAP.temp));
+      const humidity = toNum(read(data, FIELD_MAP.humidity));
+      const baro = toNum(read(data, FIELD_MAP.baro));
+      const rainToday = toNum(read(data, FIELD_MAP.rainToday));
+      const rainMonth = toNum(read(data, FIELD_MAP.rainMonth));
+      const rainYTD = toNum(read(data, FIELD_MAP.rainYTD));
+      const windKnotsAvg = toNum(read(data, FIELD_MAP.windKnotsAvg));
+      const windKnotsGust = toNum(read(data, FIELD_MAP.windKnotsGust));
+      const windDirDeg = toNum(read(data, FIELD_MAP.windDirDeg));
+      const dewPoint = toNum(read(data, FIELD_MAP.dewPoint));
+      const uv = toNum(read(data, FIELD_MAP.uv));
+      const feelsLike = toNum(read(data, FIELD_MAP.feelsLike));
+      const heatIndex = toNum(read(data, FIELD_MAP.heatIndex));
+      const condition = read(data, FIELD_MAP.conditionRaw, '').replace(/_/g, ' ').toUpperCase().trim();
+      const sunrise = read(data, FIELD_MAP.sunrise, '').trim();
+      const sunset = read(data, FIELD_MAP.sunset, '').trim();
+      const moonIllum = toNum(read(data, FIELD_MAP.moonIllum));
+      const moonAge = toNum(read(data, FIELD_MAP.moonAge));
+      const dayHigh = toNum(read(data, FIELD_MAP.dayHigh));
+      const dayLow = toNum(read(data, FIELD_MAP.dayLow));
+      const baroTrend = toNum(read(data, FIELD_MAP.baroTrend));
 
-      const read = (arr, idx, fallback = '') => (idx < arr.length ? arr[idx] : fallback);
+      const hourlyTemps = safeSlice(hourData, ...SERIES_MAP.hourly.temp)
+        .reverse()
+        .map(v => (Number.isFinite(v) && v <= 60 && v >= -50 ? v : temp));
+      const hourlyWind = safeSlice(hourData, ...SERIES_MAP.hourly.windKnots)
+        .map(v => (Number.isFinite(v) ? v * 1.852 : null))
+        .reverse();
+      const hourlyBaro = safeSlice(hourData, ...SERIES_MAP.hourly.baro).reverse();
+      const hourlyRain = safeSlice(hourData, ...SERIES_MAP.hourly.rain).reverse();
 
-      const temp = safeFloat(read(data, mapping.temp));
-      const humidity = safeFloat(read(data, mapping.humidity));
-      const baro = safeFloat(read(data, mapping.baro));
-      const rainToday = safeFloat(read(data, mapping.rainToday));
-      const rainMonth = safeFloat(read(data, mapping.rainMonth));
-      const rainYTD = safeFloat(read(data, mapping.rainYTD));
-      const windKnotsAvg = safeFloat(read(data, mapping.windKnotsAvg));
-      const windKnotsGust = safeFloat(read(data, mapping.windKnotsGust));
-      const windDirDeg = safeFloat(read(data, mapping.windDirDeg));
-      const dewPoint = safeFloat(read(data, mapping.dewPoint));
-      const uv = safeFloat(read(data, mapping.uv));
-      const feelsLike = safeFloat(read(data, mapping.feelsLike), temp);
-      const heatIndex = safeFloat(read(data, mapping.heatIndex), temp);
-      const condition = (read(data, mapping.conditionRaw, 'CLEAR')).replace(/_/g, ' ').toUpperCase();
-      const sunrise = read(data, mapping.sunrise, '06:13');
-      const sunset = read(data, mapping.sunset, '17:40');
-      const moonIllum = safeFloat(read(data, mapping.moonIllum), 27);
-      const moonAge = safeFloat(read(data, mapping.moonAge), 8.7);
-      const dayHigh = safeFloat(read(data, mapping.dayHigh), 0);
-      const dayLow = safeFloat(read(data, mapping.dayLow), 0);
-      const baroTrend = safeFloat(read(data, mapping.baroTrend), 0);
-
-      const windSpeedKmh = +(windKnotsAvg * 1.852).toFixed(1);
-      const windGustKmh = +(windKnotsGust * 1.852).toFixed(1);
-
-      const safeSlice = (arr, start, end, fallback = []) => {
-        if (start < 0 || end > arr.length || start >= end) return fallback;
-        return arr.slice(start, end);
-      };
-
-      const hourlyTemps = safeSlice(hourData, 170, 194).reverse().map(v => (v > 60 || v < -50) ? temp : v);
-      const hourlyWind = safeSlice(hourData, 380, 404).map(v => v * 1.852).reverse();
-      const hourlyBaro = safeSlice(hourData, 250, 274).reverse();
-      const hourlyRain = safeSlice(hourData, 300, 324).reverse();
-
-      const last7 = [];
-      for (let i = 0; i < 7; i++) {
-        last7.push({
-          high: safeFloat(dailyData[1 + i]),
-          low: safeFloat(dailyData[29 + i]),
-          rain: safeFloat(dailyData[57 + i])
-        });
-      }
+      const last7 = Array.from({ length: 7 }, (_, i) => ({
+        high: toNum(dailyData[SERIES_MAP.daily.highStart + i]),
+        low: toNum(dailyData[SERIES_MAP.daily.lowStart + i]),
+        rain: toNum(dailyData[SERIES_MAP.daily.rainStart + i])
+      }));
 
       return {
-        diag, mapping, temp, humidity, baro, rainToday, rainMonth, rainYTD,
-        windSpeedKmh, windGustKmh, windDirDeg, dewPoint, uv,
-        feelsLike, heatIndex, condition, sunrise, sunset,
-        moonIllum, moonAge, dayHigh, dayLow, baroTrend,
-        hourlyTemps, hourlyWind, hourlyBaro, hourlyRain, last7, extra, data
+        diag,
+        mapping: FIELD_MAP,
+        data,
+        extra,
+        dailyData,
+        temp,
+        humidity,
+        baro,
+        rainToday,
+        rainMonth,
+        rainYTD,
+        windSpeedKmh: Number.isFinite(windKnotsAvg) ? +(windKnotsAvg * 1.852).toFixed(1) : null,
+        windGustKmh: Number.isFinite(windKnotsGust) ? +(windKnotsGust * 1.852).toFixed(1) : null,
+        windDirDeg,
+        dewPoint,
+        uv,
+        feelsLike: Number.isFinite(feelsLike) ? feelsLike : temp,
+        heatIndex: Number.isFinite(heatIndex) ? heatIndex : temp,
+        condition,
+        sunrise,
+        sunset,
+        moonIllum,
+        moonAge,
+        dayHigh,
+        dayLow,
+        baroTrend,
+        hourlyTemps,
+        hourlyWind,
+        hourlyBaro,
+        hourlyRain,
+        last7
       };
     }
 
+    function renderDailyTable(last7) {
+      const tbody = document.querySelector('#daily-table tbody');
+      tbody.innerHTML = last7.map((d, i) => {
+        const dateStr = new Date(Date.now() - i * 86400000).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+        return `<tr><td class="py-2">${dateStr}</td><td class="text-right">${fmtNum(d.high)}</td><td class="text-right">${fmtNum(d.low)}</td><td class="text-right">${fmtNum(d.rain)}</td></tr>`;
+      }).join('');
+    }
+
+    function renderRecords(extra) {
+      const record = (idx) => toNum(read(extra, idx));
+      const rows = [
+        ['All-time high temp', fmtNum(record(FIELD_MAP.records.highTemp), 1, '°C')],
+        ['All-time low temp', fmtNum(record(FIELD_MAP.records.lowTemp), 1, '°C')],
+        ['Highest wind gust', fmtNum(Number.isFinite(record(FIELD_MAP.records.maxWindGustKnots)) ? record(FIELD_MAP.records.maxWindGustKnots) * 1.852 : null, 1, ' km/h')],
+        ['Highest rain day', fmtNum(record(FIELD_MAP.records.highestRainDay), 1, ' mm')]
+      ];
+      document.getElementById('records').innerHTML = rows
+        .map(([label, value]) => `<div class="flex justify-between"><span class="text-white/70">${label}</span><span class="font-medium">${value}</span></div>`)
+        .join('');
+    }
+
+    function renderRecentHistory(dailyData) {
+      const tbody = document.querySelector('#recent-table tbody');
+      const weeks = [];
+      for (let week = 0; week < 4; week++) {
+        const start = week * 7;
+        const rainVals = [];
+        const tempVals = [];
+        for (let i = 0; i < 7; i++) {
+          const dayIdx = start + i;
+          const rain = toNum(dailyData[SERIES_MAP.daily.rainStart + dayIdx]);
+          const high = toNum(dailyData[SERIES_MAP.daily.highStart + dayIdx]);
+          const low = toNum(dailyData[SERIES_MAP.daily.lowStart + dayIdx]);
+          if (Number.isFinite(rain)) rainVals.push(rain);
+          if (Number.isFinite(high) && Number.isFinite(low)) tempVals.push((high + low) / 2);
+        }
+        const weekEndDate = new Date(Date.now() - week * 7 * 86400000);
+        const weekLabel = `Week ending ${weekEndDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`;
+        weeks.push({
+          label: weekLabel,
+          rain: rainVals.length ? rainVals.reduce((a, b) => a + b, 0) : null,
+          avgTemp: tempVals.length ? tempVals.reduce((a, b) => a + b, 0) / tempVals.length : null
+        });
+      }
+
+      tbody.innerHTML = weeks
+        .map(w => `<tr><td>${w.label}</td><td class="text-right">${fmtNum(w.rain)}</td><td class="text-right">${fmtNum(w.avgTemp)}</td></tr>`)
+        .join('');
+    }
+
+    function baseChartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+        }
+      };
+    }
+
+    function initOrUpdateChart(canvasId, series) {
+      const config = CHART_DEFS[canvasId];
+      if (!chartInstances[canvasId]) {
+        chartInstances[canvasId] = new Chart(document.getElementById(canvasId), {
+          type: config.type,
+          data: {
+            labels: HOURLY_LABELS,
+            datasets: [{
+              label: config.label,
+              data: series,
+              borderColor: config.type === 'line' ? config.color : undefined,
+              backgroundColor: config.type === 'bar' ? config.color : undefined,
+              tension: config.type === 'line' ? 0.3 : undefined,
+              borderWidth: config.type === 'line' ? 3 : undefined
+            }]
+          },
+          options: baseChartOptions()
+        });
+        return;
+      }
+      chartInstances[canvasId].data.datasets[0].data = series;
+      chartInstances[canvasId].update();
+    }
+
+    function updateAllCharts(parsed) {
+      Object.entries(CHART_DEFS).forEach(([canvasId, cfg]) => {
+        initOrUpdateChart(canvasId, parsed[cfg.key]);
+      });
+    }
+
+    function updateSourceBadge(usedProxy) {
+      const badge = document.getElementById('data-source-badge');
+      if (!WEATHER_DEBUG) {
+        badge.classList.add('hidden');
+        return;
+      }
+      badge.textContent = `source: ${usedProxy}`;
+      badge.classList.remove('hidden');
+    }
+
+    function updateUI(parsed, usedProxy) {
+      const timestamp = parsed.data.slice(parsed.mapping.timestampParts[0], parsed.mapping.timestampParts[2] + 1).join(':');
+      document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> <span>Last updated: ${timestamp || '—'} (live)</span>`;
+      updateSourceBadge(usedProxy);
+
+      document.getElementById('current-temp').textContent = fmtNum(parsed.temp);
+      document.getElementById('condition').textContent = parsed.condition || '—';
+      document.getElementById('feels-like').textContent = fmtNum(parsed.feelsLike, 1, '°C');
+      document.getElementById('heat-index').textContent = fmtNum(parsed.heatIndex, 1, '°C');
+      document.getElementById('day-high').textContent = fmtNum(parsed.dayHigh, 1, '°C');
+      document.getElementById('day-low').textContent = fmtNum(parsed.dayLow, 1, '°C');
+      document.getElementById('sunrise-hero').textContent = parsed.sunrise || '—';
+      document.getElementById('sunset-hero').textContent = parsed.sunset || '—';
+      document.getElementById('moon-phase-hero').textContent = fmtNum(parsed.moonIllum, 0, '%');
+      document.getElementById('moon-age-hero').textContent = fmtNum(parsed.moonAge);
+      document.getElementById('moon-icon-hero').textContent = moonIcon(parsed.moonIllum);
+
+      document.getElementById('wind-speed').textContent = fmtNum(parsed.windSpeedKmh);
+      document.getElementById('wind-dir').textContent = Number.isFinite(parsed.windDirDeg) ? cardinal(parsed.windDirDeg) : '—';
+      document.getElementById('wind-gust').textContent = fmtNum(parsed.windGustKmh, 1, ' km/h');
+      document.getElementById('wind-arrow').setAttribute('transform', `rotate(${Number.isFinite(parsed.windDirDeg) ? parsed.windDirDeg : 0} 40 40)`);
+
+      document.getElementById('humidity').textContent = fmtNum(parsed.humidity, 0);
+      document.getElementById('dewpoint').textContent = fmtNum(parsed.dewPoint, 1, '°C');
+      document.getElementById('humidity-bar').style.width = `${Math.max(0, Math.min(Number.isFinite(parsed.humidity) ? parsed.humidity : 0, 100))}%`;
+
+      document.getElementById('pressure').textContent = fmtNum(parsed.baro);
+      const pressureTrend = document.getElementById('pressure-trend');
+      if (Number.isFinite(parsed.baroTrend)) {
+        pressureTrend.innerHTML = parsed.baroTrend < 0
+          ? `<i class="fa-solid fa-arrow-down text-red-400"></i> ${parsed.baroTrend.toFixed(1)}`
+          : `<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${parsed.baroTrend.toFixed(1)}`;
+      } else {
+        pressureTrend.textContent = '—';
+      }
+
+      document.getElementById('rain-today').textContent = fmtNum(parsed.rainToday);
+      document.getElementById('rain-month').textContent = fmtNum(parsed.rainMonth, 1, ' mm');
+      document.getElementById('rain-ytd').textContent = fmtNum(parsed.rainYTD, 1, ' mm');
+      document.getElementById('uv').textContent = fmtNum(parsed.uv);
+
+      updateAllCharts(parsed);
+      renderDailyTable(parsed.last7);
+      renderRecords(parsed.extra);
+      renderRecentHistory(parsed.dailyData);
+    }
+
     async function loadStationData() {
-      let rawText = '', extraText = '', hourText = '', dailyText = '';
+      let rawText = '';
+      let extraText = '';
+      let hourText = '';
+      let dailyText = '';
       let usedProxy = 'none';
 
-      const candidates = [...PROXIES.map(p => p + encodeURIComponent(BASE)), BASE];
+      const candidates = [...PROXIES.map(proxy => proxy + encodeURIComponent(BASE)), BASE];
       for (const basePrefix of candidates) {
         try {
-          const urls = FILES.map(f => basePrefix + encodeURIComponent(f) + '?t=' + Date.now());
-          const fetches = urls.map(u => timeoutFetch(u));
-          const responses = await Promise.all(fetches);
+          const urls = FILES.map(file => `${basePrefix}${encodeURIComponent(file)}?t=${Date.now()}`);
+          const responses = await Promise.all(urls.map(url => timeoutFetch(url)));
           if (!responses.every(r => r.ok)) throw new Error('non-ok response');
-          const ct = responses[0].headers.get('content-type') || '';
-          if (ct.includes('text/html')) throw new Error('HTML error page');
+          const contentType = responses[0].headers.get('content-type') || '';
+          if (contentType.includes('text/html')) throw new Error('HTML error page');
           [rawText, extraText, hourText, dailyText] = await Promise.all(responses.map(r => r.text()));
           const trimmed = rawText.trim();
           if (trimmed.length < 200 || !/^\d/.test(trimmed)) throw new Error('sanity check failed');
@@ -316,92 +528,29 @@
           break;
         } catch (err) {
           console.warn('Proxy attempt failed:', basePrefix, err.message);
-          continue;
         }
       }
 
       if (!rawText || rawText.length < 200) throw new Error('All proxies failed – station data unavailable');
 
       const parsed = parseClientRaw(rawText, extraText, hourText, dailyText);
+      console.log(`%c✅ Mudie clientraw loaded via ${usedProxy}`, 'color:#10b981;font-weight:bold');
 
-      console.log('%c✅ Mudie clientraw loaded via ' + usedProxy, 'color:#10b981;font-weight:bold');
       if (window.WEATHER_DEBUG) {
         console.groupCollapsed('%cMudie Diagnostics', 'color:#10b981');
         console.log('usedProxy:', usedProxy);
         console.log('lengths:', parsed.diag);
-        console.log('key values:', { temp: parsed.temp, humidity: parsed.humidity, baro: parsed.baro, condition: parsed.condition, sunrise: parsed.sunrise });
+        console.log('key values:', {
+          temp: parsed.temp,
+          humidity: parsed.humidity,
+          baro: parsed.baro,
+          condition: parsed.condition,
+          sunrise: parsed.sunrise
+        });
         console.groupEnd();
       }
 
-      // DOM updates
-      document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> Last updated: ${parsed.data.slice(parsed.mapping.timestampParts[0], parsed.mapping.timestampParts[2] + 1).join(':') || 'just now'} (live)`;
-      document.getElementById('current-temp').textContent = parsed.temp.toFixed(1);
-      document.getElementById('condition').textContent = parsed.condition;
-      document.getElementById('feels-like').textContent = parsed.feelsLike.toFixed(1) + '°C';
-      document.getElementById('heat-index').textContent = parsed.heatIndex.toFixed(1) + '°C';
-      document.getElementById('day-high').textContent = parsed.dayHigh.toFixed(1) + '°C';
-      document.getElementById('day-low').textContent = parsed.dayLow.toFixed(1) + '°C';
-      document.getElementById('sunrise-hero').textContent = parsed.sunrise;
-      document.getElementById('sunset-hero').textContent = parsed.sunset;
-      document.getElementById('moon-phase-hero').textContent = parsed.moonIllum + '%';
-      document.getElementById('moon-age-hero').textContent = parsed.moonAge.toFixed(1);
-      document.getElementById('moon-icon-hero').textContent = parsed.moonIllum > 75 ? '🌕' : parsed.moonIllum > 50 ? '🌗' : parsed.moonIllum > 25 ? '🌓' : '🌑';
-      document.getElementById('wind-speed').textContent = parsed.windSpeedKmh;
-      document.getElementById('wind-dir').textContent = cardinal(parsed.windDirDeg);
-      document.getElementById('wind-gust').textContent = parsed.windGustKmh + ' km/h';
-      document.getElementById('wind-arrow').setAttribute('transform', `rotate(${parsed.windDirDeg} 40 40)`);
-      document.getElementById('humidity').textContent = parsed.humidity;
-      document.getElementById('dewpoint').textContent = parsed.dewPoint.toFixed(1) + '°C';
-      document.getElementById('humidity-bar').style.width = Math.min(parsed.humidity, 100) + '%';
-      document.getElementById('pressure').textContent = parsed.baro.toFixed(1);
-      document.getElementById('pressure-trend').innerHTML = parsed.baroTrend < 0 
-        ? `<i class="fa-solid fa-arrow-down text-red-400"></i> ${parsed.baroTrend.toFixed(1)}` 
-        : `<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${parsed.baroTrend.toFixed(1)}`;
-      document.getElementById('rain-today').textContent = parsed.rainToday.toFixed(1);
-      document.getElementById('rain-month').textContent = parsed.rainMonth.toFixed(1) + ' mm';
-      document.getElementById('rain-ytd').textContent = parsed.rainYTD.toFixed(1) + ' mm';
-      document.getElementById('uv').textContent = parsed.uv.toFixed(1);
-
-      // Charts
-      const labels = Array.from({length: 24}, (_, i) => `${23-i}:00`);
-      if (!tempChart) tempChart = new Chart(document.getElementById('temp24Chart'), {type:'line', data:{labels, datasets:[{label:'Temp °C', data:parsed.hourlyTemps, borderColor:'#10b981', tension:0.3, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
-      else { tempChart.data.datasets[0].data = parsed.hourlyTemps; tempChart.update(); }
-
-      if (!windChart) windChart = new Chart(document.getElementById('wind24Chart'), {type:'line', data:{labels, datasets:[{label:'km/h', data:parsed.hourlyWind, borderColor:'#f59e0b', tension:0.3, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
-      else { windChart.data.datasets[0].data = parsed.hourlyWind; windChart.update(); }
-
-      if (!baroChart) baroChart = new Chart(document.getElementById('baro24Chart'), {type:'line', data:{labels, datasets:[{label:'hPa', data:parsed.hourlyBaro, borderColor:'#fbbf24', tension:0.3, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
-      else { baroChart.data.datasets[0].data = parsed.hourlyBaro; baroChart.update(); }
-
-      if (!rainChart) rainChart = new Chart(document.getElementById('rain24Chart'), {type:'bar', data:{labels, datasets:[{label:'mm', data:parsed.hourlyRain, backgroundColor:'#38bdf8'}]}, options:{plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#334155'}}}}});
-      else { rainChart.data.datasets[0].data = parsed.hourlyRain; rainChart.update(); }
-
-      // Last 7 days
-      const tbody = document.getElementById('daily-table').querySelector('tbody');
-      let dailyHTML = '';
-      parsed.last7.forEach((d, i) => {
-        const dateStr = new Date(Date.now() - i * 86400000).toLocaleDateString('en-AU', {weekday:'short', day:'numeric', month:'short'});
-        dailyHTML += `<tr><td class="py-2">${dateStr}</td><td class="text-right">${d.high.toFixed(1)}</td><td class="text-right">${d.low.toFixed(1)}</td><td class="text-right">${d.rain.toFixed(1)}</td></tr>`;
-      });
-      tbody.innerHTML = dailyHTML;
-
-      // Records
-      const recordsHTML = `
-        <div class="flex justify-between"><span class="text-white/70">All-time high temp</span><span class="font-medium">${parsed.extra[20] || '33.4'}°C</span></div>
-        <div class="flex justify-between"><span class="text-white/70">All-time low temp</span><span class="font-medium">${parsed.extra[25] || '13.7'}°C</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Highest wind gust</span><span class="font-medium">${(parseFloat(parsed.extra[30]) * 1.852 || 57).toFixed(1)} km/h</span></div>
-        <div class="flex justify-between"><span class="text-white/70">Highest rain day</span><span class="font-medium">${parsed.extra[35] || '44.9'} mm</span></div>
-      `;
-      document.getElementById('records').innerHTML = recordsHTML;
-
-      // Recent
-      const recentTbody = document.getElementById('recent-table').querySelector('tbody');
-      recentTbody.innerHTML = `
-        <tr><td>Week ending 30 Mar</td><td class="text-right">${parsed.rainMonth.toFixed(1)}</td><td class="text-right">${parsed.temp.toFixed(1)}</td></tr>
-        <tr><td>Week ending 23 Mar</td><td class="text-right">87.2</td><td class="text-right">21.4</td></tr>
-        <tr><td>Week ending 16 Mar</td><td class="text-right">62.1</td><td class="text-right">22.8</td></tr>
-        <tr><td>Week ending 9 Mar</td><td class="text-right">41.3</td><td class="text-right">24.1</td></tr>
-      `;
+      return { parsed, usedProxy };
     }
 
     async function loadForecast() {
@@ -435,7 +584,8 @@
 
     async function loadWeather() {
       try {
-        await loadStationData();
+        const { parsed, usedProxy } = await loadStationData();
+        updateUI(parsed, usedProxy);
         document.getElementById('error-toast').classList.add('hidden');
       } catch (e) {
         const toast = document.getElementById('error-toast');
@@ -445,11 +595,9 @@
       await loadForecast();
     }
 
-    window.onload = () => { 
-      loadWeather(); 
-      setInterval(loadWeather, 90000); 
-      // Enable debug with ?debug in URL or manually in console
-      if (location.search.includes('debug')) window.WEATHER_DEBUG = true;
+    window.onload = () => {
+      loadWeather();
+      setInterval(loadWeather, REFRESH_INTERVAL_MS);
     };
   </script>
 </body>
