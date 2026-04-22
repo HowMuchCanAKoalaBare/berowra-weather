@@ -16,12 +16,16 @@
     .icon-square { width: 48px; height: 48px; }
     .chart-container { height: 280px; }
     .forecast-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .glass-hover { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, background-color 0.2s ease; }
+    .glass-hover:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.16); }
+    .spin { animation: spin 0.9s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen pb-12">
   <!-- NAV -->
   <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-    <div class="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div class="flex items-center gap-x-3">
         <i class="fa-solid fa-cloud-sun-rain text-3xl text-emerald-400"></i>
         <div>
@@ -29,25 +33,35 @@
           <p class="text-xs text-emerald-400 -mt-1">Mudie Family Station • Sydney, NSW</p>
         </div>
       </div>
-      <div id="last-updated" class="text-sm text-white/70 flex items-center gap-x-2" aria-live="polite">
-        <i class="fa-solid fa-clock"></i>
-        <span>Last updated: —</span>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <button id="refresh-btn" type="button" class="text-xs px-3 py-2 bg-white/8 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 rounded-2xl border border-white/10 flex items-center justify-center gap-x-2 transition" aria-label="Refresh live weather data">
+          <i id="refresh-icon" class="fa-solid fa-rotate-right"></i>
+          <span>Refresh</span>
+        </button>
+        <button id="last-updated" type="button" class="text-sm text-white/70 flex items-center gap-x-2 px-3 py-2 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition" aria-live="polite" aria-label="Copy last updated time">
+          <i class="fa-solid fa-clock"></i>
+          <span>Last updated: —</span>
+        </button>
+        <div id="data-source-badge" class="hidden text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">
+          source: —
+        </div>
+        <div class="hidden sm:flex items-center gap-x-2 text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+          Live
+        </div>
+        <a href="http://www.mudiefamily.org/weather/" target="_blank" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center gap-x-2 transition">
+          <i class="fa-solid fa-chart-line"></i> Original Station
+        </a>
       </div>
-      <div id="data-source-badge" class="hidden text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">
-        source: —
-      </div>
-      <a href="http://www.mudiefamily.org/weather/" target="_blank" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center gap-x-2 transition">
-        <i class="fa-solid fa-chart-line"></i> Original Station
-      </a>
     </div>
   </nav>
 
   <!-- HERO -->
-  <div id="hero" class="hero-gradient text-white py-16 px-6 relative overflow-hidden">
+  <div id="hero" class="hero-gradient text-white py-14 sm:py-16 px-4 sm:px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
         <!-- SUN/MOON -->
-        <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
+        <div class="glass glass-hover rounded-3xl p-6 sm:p-8 flex flex-col border border-white/10">
           <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
             <div class="pr-6 sm:pr-8">
               <div class="flex items-center gap-x-3 mb-6"><i class="fa-solid fa-sun text-3xl text-amber-400"></i><span class="text-xl font-medium">Sun</span></div>
@@ -70,20 +84,20 @@
           </div>
         </div>
         <!-- CURRENT TEMP -->
-        <div class="text-center flex flex-col justify-center">
+        <div class="text-center flex flex-col justify-center px-2">
           <div class="flex items-baseline gap-x-3 justify-center">
             <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums" aria-label="Current temperature">—</div>
             <div class="text-7xl font-light">°C</div>
           </div>
           <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">—</div>
-          <div class="flex justify-center gap-x-12 mt-8 text-xl">
+          <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-x-12 mt-8 text-lg sm:text-xl">
             <div>Feels like <span id="feels-like" class="font-medium">—°C</span></div>
             <div>Heat index <span id="heat-index" class="font-medium">—°C</span></div>
           </div>
           <div class="mt-12 text-sm opacity-75">Berowra, NSW • Lat -33.62° • Lon 151.15°</div>
         </div>
         <!-- 6-DAY FORECAST -->
-        <div class="glass rounded-3xl p-6 sm:p-8 flex flex-col">
+        <div class="glass glass-hover rounded-3xl p-6 sm:p-8 flex flex-col border border-white/10">
           <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST • BOM ACCESS-G</h3>
           <div id="forecast-container" class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center flex-1"></div>
         </div>
@@ -92,11 +106,11 @@
     <div class="absolute bottom-6 right-6 text-6xl opacity-10">🌿</div>
   </div>
 
-  <div class="max-w-screen-2xl mx-auto px-6 -mt-8 relative z-10">
+  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
     <!-- ICON TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <!-- Wind -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
@@ -116,7 +130,7 @@
         </div>
       </div>
       <!-- Humidity -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
         <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-droplet"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
@@ -126,7 +140,7 @@
         </div>
       </div>
       <!-- Barometer -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
@@ -135,7 +149,7 @@
         </div>
       </div>
       <!-- Rain -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
         <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
@@ -144,7 +158,7 @@
         </div>
       </div>
       <!-- UV -->
-      <div class="glass rounded-3xl p-5 border border-white/10 flex items-center gap-4 hover:scale-[1.02] transition-all">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
         <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-sun"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-orange-400 text-xs font-medium tracking-widest">UV INDEX</div>
@@ -155,20 +169,20 @@
     </div>
 
     <!-- LAST 24 HOURS -->
-    <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
+    <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><canvas id="temp24Chart" class="chart-container" aria-label="24 hour temperature chart"></canvas></div>
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><canvas id="wind24Chart" class="chart-container" aria-label="24 hour wind speed chart"></canvas></div>
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><canvas id="baro24Chart" class="chart-container" aria-label="24 hour barometer chart"></canvas></div>
-        <div class="glass rounded-3xl p-4"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><canvas id="rain24Chart" class="chart-container" aria-label="24 hour rainfall chart"></canvas></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><canvas id="temp24Chart" class="chart-container" aria-label="24 hour temperature chart"></canvas></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><canvas id="wind24Chart" class="chart-container" aria-label="24 hour wind speed chart"></canvas></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><canvas id="baro24Chart" class="chart-container" aria-label="24 hour barometer chart"></canvas></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><canvas id="rain24Chart" class="chart-container" aria-label="24 hour rainfall chart"></canvas></div>
       </div>
     </div>
 
     <!-- LAST 7 DAYS -->
-    <div class="mt-8 glass rounded-3xl p-6 border border-white/10">
+    <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10 overflow-x-auto">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-calendar"></i> LAST 7 DAYS</h3>
-      <table id="daily-table" class="w-full text-sm border-collapse">
+      <table id="daily-table" class="w-full min-w-[420px] text-sm border-collapse">
         <thead class="border-b border-white/20"><tr><th class="text-left py-2">Date</th><th class="text-right py-2">High °C</th><th class="text-right py-2">Low °C</th><th class="text-right py-2">Rain mm</th></tr></thead>
         <tbody class="text-white/80"></tbody>
       </table>
@@ -176,8 +190,8 @@
 
     <!-- RECENT + RECORDS -->
     <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div class="glass rounded-3xl p-6"><h3 class="font-semibold mb-4">RECENT HISTORY (last 4 weeks)</h3><table id="recent-table" class="w-full text-sm"><thead class="border-b border-white/20"><tr><th class="text-left py-2">Week</th><th class="text-right py-2">Rain mm</th><th class="text-right py-2">Avg Temp</th></tr></thead><tbody class="text-white/80"></tbody></table></div>
-      <div class="glass rounded-3xl p-6"><h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3><div id="records" class="grid grid-cols-2 gap-4 text-sm"></div></div>
+      <div class="glass glass-hover rounded-3xl p-6 border border-white/10 overflow-x-auto"><h3 class="font-semibold mb-4">RECENT HISTORY (last 4 weeks)</h3><table id="recent-table" class="w-full min-w-[320px] text-sm"><thead class="border-b border-white/20"><tr><th class="text-left py-2">Week</th><th class="text-right py-2">Rain mm</th><th class="text-right py-2">Avg Temp</th></tr></thead><tbody class="text-white/80"></tbody></table></div>
+      <div class="glass glass-hover rounded-3xl p-6 border border-white/10"><h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3><div id="records" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm"></div></div>
     </div>
 
     <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-500 text-white text-sm px-6 py-3 rounded-2xl flex items-center gap-2 shadow-2xl">
@@ -234,6 +248,7 @@
     };
 
     const chartInstances = {};
+    let isRefreshing = false;
 
     function cardinal(dir) {
       return DIRS[Math.round((Number(dir) || 0) / 22.5) % 16];
@@ -260,6 +275,10 @@
       return Number.isFinite(v) ? `${v.toFixed(digits)}${suffix}` : '—';
     }
 
+    function clamp(v, min, max) {
+      return Math.min(max, Math.max(min, v));
+    }
+
     function read(arr, idx, fallback = '') {
       return idx < arr.length ? arr[idx] : fallback;
     }
@@ -276,6 +295,16 @@
       if (illumination >= 38) return '🌗';
       if (illumination >= 13) return '🌘';
       return '🌑';
+    }
+
+    function setRefreshingState(refreshing) {
+      isRefreshing = refreshing;
+      const button = document.getElementById('refresh-btn');
+      const icon = document.getElementById('refresh-icon');
+      button.disabled = refreshing;
+      button.classList.toggle('opacity-70', refreshing);
+      button.classList.toggle('cursor-wait', refreshing);
+      icon.classList.toggle('spin', refreshing);
     }
 
     function parseClientRaw(rawText, extraText, hourText, dailyText) {
@@ -361,7 +390,7 @@
       const tbody = document.querySelector('#daily-table tbody');
       tbody.innerHTML = last7.map((d, i) => {
         const dateStr = new Date(Date.now() - i * 86400000).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
-        return `<tr><td class="py-2">${dateStr}</td><td class="text-right">${fmtNum(d.high)}</td><td class="text-right">${fmtNum(d.low)}</td><td class="text-right">${fmtNum(d.rain)}</td></tr>`;
+        return `<tr class="border-b border-white/5 last:border-b-0"><td class="py-2">${dateStr}</td><td class="text-right">${fmtNum(d.high)}</td><td class="text-right">${fmtNum(d.low)}</td><td class="text-right">${fmtNum(d.rain)}</td></tr>`;
       }).join('');
     }
 
@@ -403,7 +432,7 @@
       }
 
       tbody.innerHTML = weeks
-        .map(w => `<tr><td>${w.label}</td><td class="text-right">${fmtNum(w.rain)}</td><td class="text-right">${fmtNum(w.avgTemp)}</td></tr>`)
+        .map(w => `<tr class="border-b border-white/5 last:border-b-0"><td class="py-2">${w.label}</td><td class="text-right">${fmtNum(w.rain)}</td><td class="text-right">${fmtNum(w.avgTemp)}</td></tr>`)
         .join('');
     }
 
@@ -411,10 +440,11 @@
       return {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
-          y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+          x: { ticks: { color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: false }
         }
       };
     }
@@ -432,7 +462,9 @@
               borderColor: config.type === 'line' ? config.color : undefined,
               backgroundColor: config.type === 'bar' ? config.color : undefined,
               tension: config.type === 'line' ? 0.3 : undefined,
-              borderWidth: config.type === 'line' ? 3 : undefined
+              borderWidth: config.type === 'line' ? 3 : undefined,
+              pointRadius: config.type === 'line' ? 0 : undefined,
+              fill: false
             }]
           },
           options: baseChartOptions()
@@ -459,6 +491,16 @@
       badge.classList.remove('hidden');
     }
 
+    async function copyLastUpdated() {
+      const text = document.querySelector('#last-updated span').textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        if (window.WEATHER_DEBUG) console.log('Copied last-updated label:', text);
+      } catch (err) {
+        if (window.WEATHER_DEBUG) console.warn('Clipboard unavailable:', err);
+      }
+    }
+
     function updateUI(parsed, usedProxy) {
       const timestamp = parsed.data.slice(parsed.mapping.timestampParts[0], parsed.mapping.timestampParts[2] + 1).join(':');
       document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> <span>Last updated: ${timestamp || '—'} (live)</span>`;
@@ -483,7 +525,7 @@
 
       document.getElementById('humidity').textContent = fmtNum(parsed.humidity, 0);
       document.getElementById('dewpoint').textContent = fmtNum(parsed.dewPoint, 1, '°C');
-      document.getElementById('humidity-bar').style.width = `${Math.max(0, Math.min(Number.isFinite(parsed.humidity) ? parsed.humidity : 0, 100))}%`;
+      document.getElementById('humidity-bar').style.width = `${clamp(Number.isFinite(parsed.humidity) ? parsed.humidity : 0, 0, 100)}%`;
 
       document.getElementById('pressure').textContent = fmtNum(parsed.baro);
       const pressureTrend = document.getElementById('pressure-trend');
@@ -547,6 +589,13 @@
           condition: parsed.condition,
           sunrise: parsed.sunrise
         });
+        console.log('series sizes:', {
+          hourlyTemps: parsed.hourlyTemps.length,
+          hourlyWind: parsed.hourlyWind.length,
+          hourlyBaro: parsed.hourlyBaro.length,
+          hourlyRain: parsed.hourlyRain.length,
+          last7: parsed.last7.length
+        });
         console.groupEnd();
       }
 
@@ -583,6 +632,8 @@
     }
 
     async function loadWeather() {
+      if (isRefreshing) return;
+      setRefreshingState(true);
       try {
         const { parsed, usedProxy } = await loadStationData();
         updateUI(parsed, usedProxy);
@@ -593,9 +644,12 @@
         toast.style.display = 'flex';
       }
       await loadForecast();
+      setRefreshingState(false);
     }
 
     window.onload = () => {
+      document.getElementById('refresh-btn').addEventListener('click', loadWeather);
+      document.getElementById('last-updated').addEventListener('click', copyLastUpdated);
       loadWeather();
       setInterval(loadWeather, REFRESH_INTERVAL_MS);
     };
