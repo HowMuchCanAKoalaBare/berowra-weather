@@ -76,6 +76,7 @@
               <div class="space-y-7">
                 <div><div class="text-white/60 text-xs font-medium tracking-widest">ILLUMINATION</div><div id="moon-phase-hero" class="text-4xl font-light tabular-nums">—%</div></div>
                 <div><div class="text-white/60 text-xs font-medium tracking-widest">MOON AGE</div><div class="flex items-baseline gap-x-2"><span id="moon-age-hero" class="text-4xl font-light tabular-nums">—</span><span class="text-white/60 text-xs font-medium">days</span></div></div>
+                <div><div class="text-white/60 text-xs font-medium tracking-widest">PHASE NAME</div><div id="moon-phase-name-hero" class="text-base font-medium text-slate-200">—</div></div>
               </div>
             </div>
           </div>
@@ -364,6 +365,24 @@
       `;
     }
 
+    function moonPhaseName(moonAge) {
+      const synodicMonth = 29.53058867;
+      if (!Number.isFinite(moonAge)) return '—';
+      const age = ((moonAge % synodicMonth) + synodicMonth) % synodicMonth;
+      const idx = Math.floor((age / synodicMonth) * 8);
+      const phases = [
+        'New Moon',
+        'Waxing Crescent',
+        'First Quarter',
+        'Waxing Gibbous',
+        'Full Moon',
+        'Waning Gibbous',
+        'Last Quarter',
+        'Waning Crescent'
+      ];
+      return phases[Math.max(0, Math.min(phases.length - 1, idx))];
+    }
+
     function setRefreshingState(refreshing) {
       isRefreshing = refreshing;
       const button = document.getElementById('refresh-btn');
@@ -635,6 +654,7 @@
       document.getElementById('sunset-hero').textContent = parsed.sunset || '—';
       document.getElementById('moon-phase-hero').textContent = fmtNum(parsed.moonIllum, 0, '%');
       document.getElementById('moon-age-hero').textContent = fmtNum(parsed.moonAge);
+      document.getElementById('moon-phase-name-hero').textContent = moonPhaseName(parsed.moonAge);
       const moonIconEl = document.getElementById('moon-icon-hero');
       moonIconEl.innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge);
 
