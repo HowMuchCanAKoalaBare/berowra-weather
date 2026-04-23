@@ -272,6 +272,20 @@
       return map[code] || 'fa-cloud';
     }
 
+    function getWeatherLabel(code) {
+      if (code === 0) return 'Sunny';
+      if (code === 1) return 'Mostly Sunny';
+      if (code === 2) return 'Partly Cloudy';
+      if (code === 3) return 'Overcast';
+      if (code === 45 || code === 48) return 'Fog';
+      if (code === 51 || code === 53 || code === 55) return 'Drizzle';
+      if (code === 61 || code === 63 || code === 65) return 'Rain';
+      if (code === 71 || code === 73 || code === 75) return 'Snow';
+      if (code === 80 || code === 81 || code === 82) return 'Showers';
+      if (code === 95 || code === 96 || code === 99) return 'Thunderstorm';
+      return 'Cloudy';
+    }
+
     function timeoutFetch(url, ms = FETCH_TIMEOUT) {
       return Promise.race([
         fetch(url),
@@ -757,7 +771,9 @@
         for (let i = 0; i < 6; i++) {
           const date = new Date(forecastData.daily.time[i]);
           const dayName = date.toLocaleDateString('en-AU', { weekday: 'short' });
-          const iconClass = getWeatherIcon(forecastData.daily.weather_code[i]);
+          const weatherCode = forecastData.daily.weather_code[i];
+          const iconClass = getWeatherIcon(weatherCode);
+          const conditionLabel = getWeatherLabel(weatherCode);
           const high = Math.round(forecastData.daily.temperature_2m_max[i]);
           const low = Math.round(forecastData.daily.temperature_2m_min[i]);
           const rain = forecastData.daily.precipitation_sum[i] || 0;
@@ -766,6 +782,7 @@
           card.innerHTML = `
             <div class="text-xs font-medium opacity-75">${dayName}</div>
             <i class="fa-solid ${iconClass} text-4xl my-2 text-slate-300"></i>
+            <div class="text-[11px] text-white/70 uppercase tracking-wide">${conditionLabel}</div>
             <div class="text-lg font-light">${high}° <span class="text-white/60">/</span> ${low}°</div>
             <div class="text-xs text-sky-300 mt-1">${rain.toFixed(1)} mm</div>
           `;
