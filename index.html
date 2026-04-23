@@ -221,24 +221,27 @@
     const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     const HOURLY_LABELS = Array.from({ length: 24 }, (_, i) => `${23 - i}:00`);
 
-    // Named mapping keeps parser maintainable while preserving station-specific positions.
+    // Mapped to FreshWDL's own parser indices for this station feed.
     const FIELD_MAP = {
-      timestampParts: [28, 29, 30],
+      timestampParts: [29, 30, 31],
       windKnotsAvg: 1, windKnotsGust: 2, windDirDeg: 3,
       temp: 4, humidity: 5, baro: 6,
       rainToday: 7, rainMonth: 8, rainYTD: 9,
-      dewPoint: 12, uv: 43,
-      conditionRaw: 49, feelsLike: 50, heatIndex: 51,
-      dayHigh: 31, dayLow: 32, baroTrend: 42,
-      moonIllum: 155, moonAge: 156,
-      sunrise: 166, sunset: 174,
-      records: { highTemp: 20, lowTemp: 25, maxWindGustKnots: 30, highestRainDay: 35 }
+      dewPoint: 72, uv: 79,
+      conditionRaw: 49, feelsLike: 130, heatIndex: 112,
+      dayHigh: 46, dayLow: 47, baroTrend: 50,
+      hourMaxGustKnots: 71,
+      records: { highTemp: 61, lowTemp: 67, maxWindGustKnots: 73, highestRainDay: 97 },
+      sunMoon: { sunrise: 556, sunset: 557, moonIllum: 560, moonAge: 561 }
     };
 
-    // Hour and daily array slices in clientrawhour/clientrawdaily format.
+    // 24h/7d series mapped to FreshWDL processGraphData() positions.
     const SERIES_MAP = {
-      hourly: { temp: [193, 217], windKnots: [625, 649], baro: [337, 361], rain: [361, 385] },
-      daily: { highStart: 1, lowStart: 29, rainStart: 57, days: 31 }
+      hourlyExtra: {
+        first20: { windKnotsStart: 1, tempStart: 21, rainStart: 41, baroStart: 439 },
+        last4: { windKnotsStart: 562, tempStart: 566, rainStart: 570, baroStart: 574 }
+      },
+      daily: { highStart: 1, lowStart: 32, rainStart: 63, days: 31 }
     };
 
     const CHART_DEFS = {
@@ -323,28 +326,36 @@
       const rainYTD = toNum(read(data, FIELD_MAP.rainYTD));
       const windKnotsAvg = toNum(read(data, FIELD_MAP.windKnotsAvg));
       const windKnotsGust = toNum(read(data, FIELD_MAP.windKnotsGust));
+      const windKnotsHourMax = toNum(read(data, FIELD_MAP.hourMaxGustKnots));
       const windDirDeg = toNum(read(data, FIELD_MAP.windDirDeg));
       const dewPoint = toNum(read(data, FIELD_MAP.dewPoint));
       const uv = toNum(read(data, FIELD_MAP.uv));
       const feelsLike = toNum(read(data, FIELD_MAP.feelsLike));
       const heatIndex = toNum(read(data, FIELD_MAP.heatIndex));
       const condition = read(data, FIELD_MAP.conditionRaw, '').replace(/_/g, ' ').toUpperCase().trim();
-      const sunrise = read(data, FIELD_MAP.sunrise, '').trim();
-      const sunset = read(data, FIELD_MAP.sunset, '').trim();
-      const moonIllum = toNum(read(data, FIELD_MAP.moonIllum));
-      const moonAge = toNum(read(data, FIELD_MAP.moonAge));
+      const sunrise = read(extra, FIELD_MAP.sunMoon.sunrise, '').trim();
+      const sunset = read(extra, FIELD_MAP.sunMoon.sunset, '').trim();
+      const moonIllum = toNum(read(extra, FIELD_MAP.sunMoon.moonIllum));
+      const moonAge = toNum(read(extra, FIELD_MAP.sunMoon.moonAge));
       const dayHigh = toNum(read(data, FIELD_MAP.dayHigh));
       const dayLow = toNum(read(data, FIELD_MAP.dayLow));
       const baroTrend = toNum(read(data, FIELD_MAP.baroTrend));
 
-      const hourlyTemps = safeSlice(hourData, ...SERIES_MAP.hourly.temp)
-        .reverse()
+      const first20Wind = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i)));
+      const last4Wind = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.windKnotsStart + i)));
+      const first20Temp = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + i)));
+      const last4Temp = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.tempStart + i)));
+      const first20Baro = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + i)));
+      const last4Baro = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.baroStart + i)));
+      const first20Rain = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + i)));
+      const last4Rain = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.rainStart + i)));
+
+      const hourlyTemps = [...first20Temp, ...last4Temp]
         .map(v => (Number.isFinite(v) && v <= 60 && v >= -50 ? v : temp));
-      const hourlyWind = safeSlice(hourData, ...SERIES_MAP.hourly.windKnots)
-        .map(v => (Number.isFinite(v) ? v * 1.852 : null))
-        .reverse();
-      const hourlyBaro = safeSlice(hourData, ...SERIES_MAP.hourly.baro).reverse();
-      const hourlyRain = safeSlice(hourData, ...SERIES_MAP.hourly.rain).reverse();
+      const hourlyWind = [...first20Wind, ...last4Wind]
+        .map(v => (Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null));
+      const hourlyBaro = [...first20Baro, ...last4Baro];
+      const hourlyRain = [...first20Rain, ...last4Rain];
 
       const last7 = Array.from({ length: 7 }, (_, i) => ({
         high: toNum(dailyData[SERIES_MAP.daily.highStart + i]),
@@ -365,7 +376,9 @@
         rainMonth,
         rainYTD,
         windSpeedKmh: Number.isFinite(windKnotsAvg) ? +(windKnotsAvg * 1.852).toFixed(1) : null,
-        windGustKmh: Number.isFinite(windKnotsGust) ? +(windKnotsGust * 1.852).toFixed(1) : null,
+        windGustKmh: Number.isFinite(windKnotsHourMax)
+          ? +(windKnotsHourMax * 1.852).toFixed(1)
+          : (Number.isFinite(windKnotsGust) ? +(windKnotsGust * 1.852).toFixed(1) : null),
         windDirDeg,
         dewPoint,
         uv,
