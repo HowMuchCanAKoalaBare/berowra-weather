@@ -250,7 +250,7 @@
         first20: { windKnotsStart: 1, tempStart: 21, rainStart: 41, baroStart: 439 },
         last4: { windKnotsStart: 562, tempStart: 566, rainStart: 570, baroStart: 574 }
       },
-      daily: { highStart: 1, lowStart: 32, rainStart: 63, days: 31 }
+      daily: { highStart: 1, lowStart: 32, rainStart: 63, baroStart: 94, days: 31 }
     };
 
     const CHART_DEFS = {
@@ -456,7 +456,8 @@
       const last7 = Array.from({ length: 7 }, (_, i) => ({
         high: toNum(dailyData[SERIES_MAP.daily.highStart + i]),
         low: toNum(dailyData[SERIES_MAP.daily.lowStart + i]),
-        rain: toNum(dailyData[SERIES_MAP.daily.rainStart + i])
+        rain: toNum(dailyData[SERIES_MAP.daily.rainStart + i]),
+        baro: toNum(dailyData[SERIES_MAP.daily.baroStart + i])
       }));
 
       return {
@@ -559,6 +560,7 @@
       const highs = points.map(d => d.high);
       const lows = points.map(d => d.low);
       const rain = points.map(d => d.rain);
+      const baro = points.map(d => d.baro);
 
       const canvasId = 'last7Chart';
       if (!chartInstances[canvasId]) {
@@ -569,7 +571,8 @@
             datasets: [
               { type: 'line', label: 'High °C', data: highs, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
               { type: 'line', label: 'Low °C', data: lows, borderColor: '#38bdf8', backgroundColor: '#38bdf8', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
-              { type: 'bar', label: 'Rain mm', data: rain, backgroundColor: 'rgba(59,130,246,0.45)', borderColor: '#3b82f6', borderWidth: 1, yAxisID: 'yRain' }
+              { type: 'bar', label: 'Rain mm', data: rain, backgroundColor: 'rgba(59,130,246,0.45)', borderColor: '#3b82f6', borderWidth: 1, yAxisID: 'yRain' },
+              { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yBaro' }
             ]
           },
           options: {
@@ -580,7 +583,8 @@
             scales: {
               x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
               yTemp: { position: 'left', ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-              yRain: { position: 'right', ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false }, beginAtZero: true }
+              yRain: { position: 'right', offset: true, ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false }, beginAtZero: true },
+              yBaro: { position: 'right', ticks: { color: '#fbbf24' }, grid: { drawOnChartArea: false } }
             }
           }
         });
@@ -591,6 +595,7 @@
       chart.data.datasets[0].data = highs;
       chart.data.datasets[1].data = lows;
       chart.data.datasets[2].data = rain;
+      chart.data.datasets[3].data = baro;
       chart.update();
     }
 
