@@ -201,8 +201,9 @@
     </div>
   </div>
 
-  <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10 max-w-screen-2xl mx-auto">
-    Modern dashboard • Robust parser from Copilot + Grok refinements
+  <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10 max-w-screen-2xl mx-auto space-y-1">
+    <div>Modern dashboard • Robust parser from Copilot + Grok refinements</div>
+    <div id="code-update-stamp" class="text-white/60">Code update: —</div>
   </div>
 
   <script>
@@ -211,6 +212,8 @@
 
     const FETCH_TIMEOUT = 8000;
     const REFRESH_INTERVAL_MS = 90000;
+    // Update this stamp whenever you deploy/commit a user-visible change.
+    const CODE_UPDATE_LABEL = '2026-04-23 parser + records mapping update';
     const BASE = 'http://www.mudiefamily.org/weather/';
     const FILES = ['clientraw.txt', 'clientrawextra.txt', 'clientrawhour.txt', 'clientrawdaily.txt'];
     const PROXIES = [
@@ -297,13 +300,68 @@
       return arr.slice(start, end);
     }
 
-    function moonIcon(illumination) {
+    function moonIcon(illumination, moonAge) {
       if (!Number.isFinite(illumination)) return '🌑';
-      if (illumination >= 88) return '🌕';
-      if (illumination >= 63) return '🌖';
-      if (illumination >= 38) return '🌗';
-      if (illumination >= 13) return '🌘';
-      return '🌑';
+      const synodicMonth = 29.53058867;
+      const safeAge = Number.isFinite(moonAge)
+        ? ((moonAge % synodicMonth) + synodicMonth) % synodicMonth
+        : null;
+      const waxing = safeAge == null ? true : safeAge <= synodicMonth / 2;
+      const lit = clamp(illumination, 0, 100) / 100;
+      const size = 42;
+      const r = 18;
+      const cx = 21;
+      const cy = 21;
+      const phaseSteps = 24;
+      const phaseIndex = safeAge == null ? Math.round((phaseSteps - 1) * lit) : Math.floor((safeAge / synodicMonth) * phaseSteps);
+      const phaseLabel = `phase ${Math.max(1, Math.min(phaseSteps, phaseIndex + 1))}/${phaseSteps}`;
+
+      const crescentPath = (side, rx) => {
+        const safeRx = Math.max(0, Math.min(r, rx));
+        if (side === 'right') {
+          return `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${safeRx} ${r} 0 0 0 ${cx} ${cy - r} Z`;
+        }
+        return `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${safeRx} ${r} 0 0 1 ${cx} ${cy - r} Z`;
+      };
+
+      let phaseShape = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#334155"></circle>`;
+      if (lit >= 0.999) {
+        phaseShape = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc"></circle>`;
+      } else if (lit <= 0.001) {
+        phaseShape = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#334155"></circle>`;
+      } else if (lit <= 0.5) {
+        const rx = (1 - (lit / 0.5)) * r;
+        phaseShape += `<path d="${crescentPath(waxing ? 'right' : 'left', rx)}" fill="#f8fafc"></path>`;
+      } else {
+        const darkLit = 1 - lit;
+        const rx = (1 - (darkLit / 0.5)) * r;
+        phaseShape = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc"></circle>`;
+        phaseShape += `<path d="${crescentPath(waxing ? 'left' : 'right', rx)}" fill="#334155"></path>`;
+      }
+
+      return `
+        <svg viewBox="0 0 ${size} ${size}" width="40" height="40" role="img" aria-label="Moon ${Math.round(lit * 100)}% illuminated, ${waxing ? 'waxing' : 'waning'}, ${phaseLabel}">
+          <defs>
+            <radialGradient id="moon-bg-glow" cx="50%" cy="50%" r="70%">
+              <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.14"></stop>
+              <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"></stop>
+            </radialGradient>
+            <filter id="moon-soft-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1.2" result="blur"></feGaussianBlur>
+            </filter>
+          </defs>
+          <circle cx="${cx}" cy="${cy}" r="${r + 3}" fill="url(#moon-bg-glow)"></circle>
+          <g opacity="0.6">
+            <circle cx="9" cy="10" r="0.9" fill="#e2e8f0"></circle>
+            <circle cx="31" cy="8" r="0.7" fill="#cbd5e1"></circle>
+            <circle cx="34" cy="30" r="0.8" fill="#e2e8f0"></circle>
+            <circle cx="11" cy="32" r="0.6" fill="#cbd5e1"></circle>
+          </g>
+          <circle cx="${cx}" cy="${cy}" r="${r - 1}" fill="#f8fafc" opacity="0.14" filter="url(#moon-soft-glow)"></circle>
+          ${phaseShape}
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#94a3b8" stroke-width="1.4"></circle>
+        </svg>
+      `;
     }
 
     function setRefreshingState(refreshing) {
@@ -577,7 +635,8 @@
       document.getElementById('sunset-hero').textContent = parsed.sunset || '—';
       document.getElementById('moon-phase-hero').textContent = fmtNum(parsed.moonIllum, 0, '%');
       document.getElementById('moon-age-hero').textContent = fmtNum(parsed.moonAge);
-      document.getElementById('moon-icon-hero').textContent = moonIcon(parsed.moonIllum);
+      const moonIconEl = document.getElementById('moon-icon-hero');
+      moonIconEl.innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge);
 
       document.getElementById('wind-speed').textContent = fmtNum(parsed.windSpeedKmh);
       document.getElementById('wind-dir').textContent = Number.isFinite(parsed.windDirDeg) ? cardinal(parsed.windDirDeg) : '—';
@@ -709,6 +768,7 @@
     }
 
     window.onload = () => {
+      document.getElementById('code-update-stamp').textContent = `Code update: ${CODE_UPDATE_LABEL}`;
       document.getElementById('refresh-btn').addEventListener('click', loadWeather);
       document.getElementById('last-updated').addEventListener('click', copyLastUpdated);
       loadWeather();
