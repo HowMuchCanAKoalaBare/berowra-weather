@@ -231,7 +231,12 @@
       conditionRaw: 49, feelsLike: 130, heatIndex: 112,
       dayHigh: 46, dayLow: 47, baroTrend: 50,
       hourMaxGustKnots: 71,
-      records: { highTemp: 61, lowTemp: 67, maxWindGustKnots: 73, highestRainDay: 97 },
+      records: {
+        allTimeBase: 313,
+        allTimeExtraBase: 684,
+        highGustDirOffset: 78,
+        highAvgWindDirOffset: 84
+      },
       sunMoon: { sunrise: 556, sunset: 557, moonIllum: 560, moonAge: 561 }
     };
 
@@ -408,16 +413,58 @@
       }).join('');
     }
 
+    function fmtRecordStamp(extra, startIdx) {
+      const hh = read(extra, startIdx + 1, '').padStart(2, '0');
+      const mm = read(extra, startIdx + 2, '').padStart(2, '0');
+      const dd = toNum(read(extra, startIdx + 3));
+      const mon = toNum(read(extra, startIdx + 4));
+      const yyyy = toNum(read(extra, startIdx + 5));
+      if (!Number.isFinite(dd) || !Number.isFinite(mon) || !Number.isFinite(yyyy) || yyyy === 0 || mon < 1 || mon > 12 || dd < 1 || dd > 31) return '—';
+      const dt = new Date(yyyy, mon - 1, dd);
+      const month = dt.toLocaleDateString('en-AU', { month: 'short' });
+      return `${hh}:${mm}, ${month} ${dd} ${yyyy}`;
+    }
+
     function renderRecords(extra) {
-      const record = (idx) => toNum(read(extra, idx));
+      const rec = (startIdx) => ({ value: toNum(read(extra, startIdx)), stamp: fmtRecordStamp(extra, startIdx) });
+      const b = FIELD_MAP.records.allTimeBase;
+      const bx = FIELD_MAP.records.allTimeExtraBase;
       const rows = [
-        ['All-time high temp', fmtNum(record(FIELD_MAP.records.highTemp), 1, '°C')],
-        ['All-time low temp', fmtNum(record(FIELD_MAP.records.lowTemp), 1, '°C')],
-        ['Highest wind gust', fmtNum(Number.isFinite(record(FIELD_MAP.records.maxWindGustKnots)) ? record(FIELD_MAP.records.maxWindGustKnots) * 1.852 : null, 1, ' km/h')],
-        ['Highest rain day', fmtNum(record(FIELD_MAP.records.highestRainDay), 1, ' mm')]
+        { label: 'Highest temperature', ...rec(b + 0), unit: '°C' },
+        { label: 'Lowest temperature', ...rec(b + 6), unit: '°C' },
+        { label: 'Highest gust', ...rec(b + 12), unit: 'km/h', transform: v => v * 1.852, dirIdx: b + FIELD_MAP.records.highGustDirOffset },
+        { label: 'Highest rain rate', ...rec(b + 18), unit: 'mm/min' },
+        { label: 'Lowest barometer', ...rec(b + 24), unit: 'hPa' },
+        { label: 'Highest barometer', ...rec(b + 30), unit: 'hPa' },
+        { label: 'Highest daily rainfall', ...rec(b + 36), unit: 'mm' },
+        { label: 'Highest hourly rainfall', ...rec(b + 42), unit: 'mm' },
+        { label: 'Highest average wind speed', ...rec(b + 48), unit: 'km/h', transform: v => v * 1.852, dirIdx: b + FIELD_MAP.records.highAvgWindDirOffset },
+        { label: 'Lowest wind chill', ...rec(b + 72), unit: '°C' },
+        { label: 'Warmest day', ...rec(b + 90), unit: '°C' },
+        { label: 'Coldest night', ...rec(b + 96), unit: '°C' },
+        { label: 'Coldest day', ...rec(b + 102), unit: '°C' },
+        { label: 'Warmest night', ...rec(b + 108), unit: '°C' },
+        { label: 'Highest heat index', ...rec(b + 114), unit: '°C' },
+        { label: 'Highest solar', ...rec(bx + 0), unit: 'W/m²' },
+        { label: 'Highest uv index', ...rec(bx + 6), unit: '' },
+        { label: 'Highest dew point', ...rec(bx + 69), unit: '°C' },
+        { label: 'Lowest dew point', ...rec(bx + 75), unit: '°C' }
       ];
+
+      const fmtVal = (row) => {
+        if (!Number.isFinite(row.value)) return '—';
+        const transformed = row.transform ? row.transform(row.value) : row.value;
+        const value = row.unit === 'hPa'
+          ? (Math.abs(transformed % 1) < 0.05 ? transformed.toFixed(0) : transformed.toFixed(1))
+          : transformed.toFixed(1);
+        const dir = row.dirIdx != null && Number.isFinite(toNum(read(extra, row.dirIdx)))
+          ? `, ${toNum(read(extra, row.dirIdx)).toFixed(1)}°`
+          : '';
+        return `${value}${row.unit}${dir}`;
+      };
+
       document.getElementById('records').innerHTML = rows
-        .map(([label, value]) => `<div class="flex justify-between"><span class="text-white/70">${label}</span><span class="font-medium">${value}</span></div>`)
+        .map(row => `<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3"><div class="text-white/70 text-xs">${row.label}</div><div class="font-medium mt-1">${fmtVal(row)}</div><div class="text-white/50 text-xs mt-1">${row.stamp}</div></div>`)
         .join('');
     }
 
