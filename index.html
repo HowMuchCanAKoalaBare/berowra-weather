@@ -182,18 +182,18 @@
     </div>
 
     <!-- LAST 7 DAYS -->
-    <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10 overflow-x-auto">
+    <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-calendar"></i> LAST 7 DAYS</h3>
-      <table id="daily-table" class="w-full min-w-[420px] text-sm border-collapse">
-        <thead class="border-b border-white/20"><tr><th class="text-left py-2">Date</th><th class="text-right py-2">High °C</th><th class="text-right py-2">Low °C</th><th class="text-right py-2">Rain mm</th></tr></thead>
-        <tbody class="text-white/80"></tbody>
-      </table>
+      <div class="glass rounded-3xl p-4 border border-white/5">
+        <p class="text-xs tracking-widest mb-3 text-white/70">HIGH / LOW / RAIN</p>
+        <div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Last 7 days weather metrics chart"></canvas></div>
+      </div>
     </div>
 
-    <!-- RECENT + RECORDS -->
-    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div class="glass glass-hover rounded-3xl p-6 border border-white/10 overflow-x-auto"><h3 class="font-semibold mb-4">RECENT HISTORY (last 4 weeks)</h3><table id="recent-table" class="w-full min-w-[320px] text-sm"><thead class="border-b border-white/20"><tr><th class="text-left py-2">Week</th><th class="text-right py-2">Rain mm</th><th class="text-right py-2">Avg Temp</th></tr></thead><tbody class="text-white/80"></tbody></table></div>
-      <div class="glass glass-hover rounded-3xl p-6 border border-white/10"><h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3><div id="records" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm"></div></div>
+    <!-- RECORDS -->
+    <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
+      <h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3>
+      <div id="records" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 text-sm"></div>
     </div>
 
     <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-500 text-white text-sm px-6 py-3 rounded-2xl flex items-center gap-2 shadow-2xl">
@@ -482,14 +482,6 @@
       };
     }
 
-    function renderDailyTable(last7) {
-      const tbody = document.querySelector('#daily-table tbody');
-      tbody.innerHTML = last7.map((d, i) => {
-        const dateStr = new Date(Date.now() - i * 86400000).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
-        return `<tr class="border-b border-white/5 last:border-b-0"><td class="py-2">${dateStr}</td><td class="text-right">${fmtNum(d.high)}</td><td class="text-right">${fmtNum(d.low)}</td><td class="text-right">${fmtNum(d.rain)}</td></tr>`;
-      }).join('');
-    }
-
     function fmtRecordStamp(extra, startIdx) {
       const hh = read(extra, startIdx + 1, '').padStart(2, '0');
       const mm = read(extra, startIdx + 2, '').padStart(2, '0');
@@ -545,33 +537,47 @@
         .join('');
     }
 
-    function renderRecentHistory(dailyData) {
-      const tbody = document.querySelector('#recent-table tbody');
-      const weeks = [];
-      for (let week = 0; week < 4; week++) {
-        const start = week * 7;
-        const rainVals = [];
-        const tempVals = [];
-        for (let i = 0; i < 7; i++) {
-          const dayIdx = start + i;
-          const rain = toNum(dailyData[SERIES_MAP.daily.rainStart + dayIdx]);
-          const high = toNum(dailyData[SERIES_MAP.daily.highStart + dayIdx]);
-          const low = toNum(dailyData[SERIES_MAP.daily.lowStart + dayIdx]);
-          if (Number.isFinite(rain)) rainVals.push(rain);
-          if (Number.isFinite(high) && Number.isFinite(low)) tempVals.push((high + low) / 2);
-        }
-        const weekEndDate = new Date(Date.now() - week * 7 * 86400000);
-        const weekLabel = `Week ending ${weekEndDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`;
-        weeks.push({
-          label: weekLabel,
-          rain: rainVals.length ? rainVals.reduce((a, b) => a + b, 0) : null,
-          avgTemp: tempVals.length ? tempVals.reduce((a, b) => a + b, 0) / tempVals.length : null
-        });
-      }
+    function renderLast7Chart(last7) {
+      const points = [...last7].reverse();
+      const labels = points.map((_, i) =>
+        new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en-AU', { weekday: 'short' })
+      );
+      const highs = points.map(d => d.high);
+      const lows = points.map(d => d.low);
+      const rain = points.map(d => d.rain);
 
-      tbody.innerHTML = weeks
-        .map(w => `<tr class="border-b border-white/5 last:border-b-0"><td class="py-2">${w.label}</td><td class="text-right">${fmtNum(w.rain)}</td><td class="text-right">${fmtNum(w.avgTemp)}</td></tr>`)
-        .join('');
+      const canvasId = 'last7Chart';
+      if (!chartInstances[canvasId]) {
+        chartInstances[canvasId] = new Chart(document.getElementById(canvasId), {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { type: 'line', label: 'High °C', data: highs, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
+              { type: 'line', label: 'Low °C', data: lows, borderColor: '#38bdf8', backgroundColor: '#38bdf8', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
+              { type: 'bar', label: 'Rain mm', data: rain, backgroundColor: 'rgba(59,130,246,0.45)', borderColor: '#3b82f6', borderWidth: 1, yAxisID: 'yRain' }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { legend: { display: true, labels: { color: '#cbd5e1' } } },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
+              yTemp: { position: 'left', ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+              yRain: { position: 'right', ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false }, beginAtZero: true }
+            }
+          }
+        });
+        return;
+      }
+      const chart = chartInstances[canvasId];
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = highs;
+      chart.data.datasets[1].data = lows;
+      chart.data.datasets[2].data = rain;
+      chart.update();
     }
 
     function baseChartOptions() {
@@ -683,9 +689,8 @@
       document.getElementById('uv').textContent = fmtNum(parsed.uv);
 
       updateAllCharts(parsed);
-      renderDailyTable(parsed.last7);
+      renderLast7Chart(parsed.last7);
       renderRecords(parsed.extra);
-      renderRecentHistory(parsed.dailyData);
     }
 
     async function loadStationData() {
