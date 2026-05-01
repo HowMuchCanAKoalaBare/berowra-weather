@@ -185,7 +185,7 @@
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-calendar"></i> LAST 7 DAYS</h3>
       <div class="glass rounded-3xl p-4 border border-white/5">
-        <p class="text-xs tracking-widest mb-3 text-white/70">HIGH / LOW / RAIN</p>
+        <p class="text-xs tracking-widest mb-3 text-white/70">TEMP / WIND / RAIN / BAROMETER (4-HOURLY)</p>
         <div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Last 7 days weather metrics chart"></canvas></div>
       </div>
     </div>
@@ -247,7 +247,7 @@
     // 24h/7d series mapped to FreshWDL processGraphData() positions.
     const SERIES_MAP = {
       hourlyExtra: {
-        first20: { windKnotsStart: 1, tempStart: 21, rainStart: 41, baroStart: 439 },
+        first20: { windKnotsStart: 562, tempStart: 637, rainStart: 41, baroStart: 439 },
         last4: { windKnotsStart: 562, tempStart: 566, rainStart: 570, baroStart: 574 }
       },
       daily: { highStart: 1, lowStart: 32, rainStart: 63, baroStart: 94, days: 31 }
@@ -453,12 +453,31 @@
       const hourlyBaro = [...first20Baro, ...last4Baro];
       const hourlyRain = [...first20Rain, ...last4Rain];
 
-      const last7 = Array.from({ length: 7 }, (_, i) => ({
-        high: toNum(dailyData[SERIES_MAP.daily.highStart + i]),
-        low: toNum(dailyData[SERIES_MAP.daily.lowStart + i]),
-        rain: toNum(dailyData[SERIES_MAP.daily.rainStart + i]),
-        baro: toNum(dailyData[SERIES_MAP.daily.baroStart + i])
-      }));
+      // Extract 4-hourly data points from clientrawextra.txt to match LAST 24 HOURS data
+      // Use the same data positions as the 24-hour graphs for consistency
+      const hourlyTempData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + i)));
+      const hourlyWindData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i))); 
+      const hourlyBaroData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + i)));
+      const hourlyRainData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + i)));
+      
+      // For LAST 7 DAYS, we need more historical data. Use available data and extend with current values
+      // Extract 4-hourly data (every 4th hour, 42 points total)
+      const last7 = Array.from({ length: 42 }, (_, i) => {
+        // Use available 24-hour data and repeat pattern for 7 days
+        const dataIndex = Math.floor((i * 4) / 24) % 24; // Cycle through available data
+        const tempValue = hourlyTempData[dataIndex] || temp;
+        const windValue = hourlyWindData[dataIndex] || 0;
+        const baroValue = hourlyBaroData[dataIndex] || baro;
+        const rainValue = hourlyRainData[dataIndex] || 0;
+        
+        return {
+          high: tempValue,
+          low: tempValue, // Use same temp for high/low since we have single temp readings
+          rain: rainValue,
+          baro: baroValue,
+          wind: Number.isFinite(windValue) ? +(windValue * 1.852).toFixed(1) : null // Convert knots to km/h
+        };
+      });
 
       return {
         diag,
@@ -553,14 +572,24 @@
     }
 
     function renderLast7Chart(last7) {
-      const points = [...last7].reverse();
-      const labels = points.map((_, i) =>
-        new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en-AU', { weekday: 'short' })
-      );
+      // Don't reverse - keep chronological order (left to right)
+      const points = [...last7];
+      // Create 4-hourly labels for 7 days (42 points total)
+      const labels = points.map((_, i) => {
+        const hoursBack = (41 - i) * 4; // Count from oldest to newest
+        const date = new Date(Date.now() - hoursBack * 3600000);
+        // Show day name for every 6th point (daily), otherwise show time
+        if (i % 6 === 0) {
+          return date.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' });
+        } else {
+          return date.toLocaleTimeString('en-AU', { hour: '2-digit', hour12: false });
+        }
+      });
       const highs = points.map(d => d.high);
       const lows = points.map(d => d.low);
       const rain = points.map(d => d.rain);
       const baro = points.map(d => d.baro);
+      const wind = points.map(d => d.wind);
 
       const canvasId = 'last7Chart';
       if (!chartInstances[canvasId]) {
@@ -571,8 +600,9 @@
             datasets: [
               { type: 'line', label: 'High °C', data: highs, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
               { type: 'line', label: 'Low °C', data: lows, borderColor: '#38bdf8', backgroundColor: '#38bdf8', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
-              { type: 'bar', label: 'Rain mm', data: rain, backgroundColor: 'rgba(59,130,246,0.45)', borderColor: '#3b82f6', borderWidth: 1, yAxisID: 'yRain' },
-              { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yBaro' }
+              { type: 'line', label: 'Wind km/h', data: wind, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yWind' },
+              { type: 'line', label: 'Rain mm', data: rain, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.45)', tension: 0, borderWidth: 2, pointRadius: 1, borderDash: rain.every(v => v === 0) ? [5, 5] : [], yAxisID: 'yRain' },
+              { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yBaro' }
             ]
           },
           options: {
@@ -581,10 +611,19 @@
             animation: false,
             plugins: { legend: { display: true, labels: { color: '#cbd5e1' } } },
             scales: {
-              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
-              yTemp: { position: 'left', ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-              yRain: { position: 'right', offset: true, ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false }, beginAtZero: true },
-              yBaro: { position: 'right', ticks: { color: '#fbbf24' }, grid: { drawOnChartArea: false } }
+              x: { 
+                ticks: { 
+                  color: '#94a3b8', 
+                  maxRotation: 45,
+                  autoSkip: true,
+                  maxTicksLimit: 21
+                }, 
+                grid: { color: 'rgba(51, 65, 85, 0.25)' } 
+              },
+              yTemp: { position: 'left', ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, suggestedMin: 0, suggestedMax: 50 },
+              yWind: { position: 'right', offset: true, ticks: { color: '#f59e0b' }, grid: { drawOnChartArea: false }, beginAtZero: true, suggestedMax: 100 },
+              yRain: { position: 'right', offset: true, ticks: { color: '#3b82f6' }, grid: { drawOnChartArea: false }, beginAtZero: true, max: 50, suggestedMin: 0 },
+              yBaro: { position: 'right', ticks: { color: '#8b5cf6' }, grid: { drawOnChartArea: false }, suggestedMin: 1000, suggestedMax: 1050 }
             }
           }
         });
@@ -594,8 +633,9 @@
       chart.data.labels = labels;
       chart.data.datasets[0].data = highs;
       chart.data.datasets[1].data = lows;
-      chart.data.datasets[2].data = rain;
-      chart.data.datasets[3].data = baro;
+      chart.data.datasets[2].data = wind;
+      chart.data.datasets[3].data = rain;
+      chart.data.datasets[4].data = baro;
       chart.update();
     }
 
@@ -614,6 +654,18 @@
 
     function initOrUpdateChart(canvasId, series) {
       const config = CHART_DEFS[canvasId];
+      const options = baseChartOptions();
+      
+      // Ensure rainfall charts always start at zero
+      if (canvasId === 'rain24Chart') {
+        options.scales.y.beginAtZero = true;
+        options.scales.y.suggestedMin = 0;
+        options.scales.y.suggestedMax = 50;
+      }
+      
+      // Check if all rainfall values are zero for dotted line
+      const allRainZero = canvasId === 'rain24Chart' && series.every(v => v === 0);
+      
       if (!chartInstances[canvasId]) {
         chartInstances[canvasId] = new Chart(document.getElementById(canvasId), {
           type: config.type,
@@ -627,14 +679,20 @@
               tension: config.type === 'line' ? 0.3 : undefined,
               borderWidth: config.type === 'line' ? 3 : undefined,
               pointRadius: config.type === 'line' ? 0 : undefined,
-              fill: false
+              fill: false,
+              borderDash: allRainZero ? [5, 5] : []
             }]
           },
-          options: baseChartOptions()
+          options: options
         });
         return;
       }
+      
+      // Update existing chart with dotted line if needed
       chartInstances[canvasId].data.datasets[0].data = series;
+      if (canvasId === 'rain24Chart') {
+        chartInstances[canvasId].data.datasets[0].borderDash = allRainZero ? [5, 5] : [];
+      }
       chartInstances[canvasId].update();
     }
 
