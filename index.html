@@ -255,7 +255,7 @@
 
     const CHART_DEFS = {
       temp24Chart: { key: 'hourlyTemps', type: 'line', label: 'Temp °C', color: '#10b981' },
-      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'km/h', color: '#f59e0b' },
+      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'km/h', color: '#f59e0b', suggestedMax: 50 },
       baro24Chart: { key: 'hourlyBaro', type: 'line', label: 'hPa', color: '#fbbf24' },
       rain24Chart: { key: 'hourlyRain', type: 'bar', label: 'mm', color: '#38bdf8' }
     };
@@ -437,45 +437,33 @@
       const dayLow = toNum(read(data, FIELD_MAP.dayLow));
       const baroTrend = toNum(read(data, FIELD_MAP.baroTrend));
 
-      const first20Wind = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i)));
-      const last4Wind = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.windKnotsStart + i)));
-      const first20Temp = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + i)));
-      const last4Temp = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.tempStart + i)));
-      const first20Baro = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + i)));
-      const last4Baro = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.baroStart + i)));
-      const first20Rain = Array.from({ length: 20 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + i)));
-      const last4Rain = Array.from({ length: 4 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.last4.rainStart + i)));
+      // Extract proper hourly data from clientrawhour.txt for LAST 24 HOURS section
+      // clientrawhour.txt structure: positions 122-181 (wind), 182-200 (temp), need to find pressure/rain positions
+      const hourlyTempData = Array.from({ length: 24 }, (_, i) => toNum(hourData[182 + i])); // Temperature data
+      const hourlyWindData = Array.from({ length: 24 }, (_, i) => toNum(hourData[122 + i])); // Wind speed data (knots)
+      // Convert wind to km/h for consistency
+      const hourlyWindKmh = hourlyWindData.map(v => Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null);
+      // Extract rainfall data from clientrawhour.txt position 400 for LAST 24 HOURS
+      const hourlyRainData = Array.from({ length: 24 }, (_, i) => toNum(hourData[400 + i])); // Rainfall data from clientrawhour.txt
 
-      const hourlyTemps = [...first20Temp, ...last4Temp]
-        .map(v => (Number.isFinite(v) && v <= 60 && v >= -50 ? v : temp));
-      const hourlyWind = [...first20Wind, ...last4Wind]
-        .map(v => (Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null));
-      const hourlyBaro = [...first20Baro, ...last4Baro];
-      const hourlyRain = [...first20Rain, ...last4Rain];
+      const hourlyTemps = hourlyTempData;
+      const hourlyWind = hourlyWindKmh;
+      const hourlyBaro = Array.from({ length: 24 }, (_, i) => toNum(hourData[302 + i])); // Barometer data from clientrawhour.txt
+      const hourlyRain = hourlyRainData;
 
-      // Extract 4-hourly data points from clientrawextra.txt to match LAST 24 HOURS data
-      // Use the same data positions as the 24-hour graphs for consistency
-      const hourlyTempData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + i)));
-      const hourlyWindData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i))); 
-      const hourlyBaroData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + i)));
-      const hourlyRainData = Array.from({ length: 24 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + i)));
-      
-      // For LAST 7 DAYS, we need more historical data. Use available data and extend with current values
-      // Extract 4-hourly data (every 4th hour, 42 points total)
       const last7 = Array.from({ length: 42 }, (_, i) => {
-        // Use available 24-hour data and repeat pattern for 7 days
-        const dataIndex = Math.floor((i * 4) / 24) % 24; // Cycle through available data
-        const tempValue = hourlyTempData[dataIndex] || temp;
-        const windValue = hourlyWindData[dataIndex] || 0;
-        const baroValue = hourlyBaroData[dataIndex] || baro;
-        const rainValue = hourlyRainData[dataIndex] || 0;
+        const dataIndex = Math.floor((i * 4) / 24) % 24;
+        const tempValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + dataIndex)) || temp;
+        const windValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + dataIndex)) || 0;
+        const baroValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + dataIndex)) || baro;
+        const rainValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + dataIndex)) || 0;
         
         return {
           high: tempValue,
-          low: tempValue, // Use same temp for high/low since we have single temp readings
+          low: tempValue,
           rain: rainValue,
           baro: baroValue,
-          wind: Number.isFinite(windValue) ? +(windValue * 1.852).toFixed(1) : null // Convert knots to km/h
+          wind: Number.isFinite(windValue) ? +(windValue * 1.852).toFixed(1) : null
         };
       });
 
