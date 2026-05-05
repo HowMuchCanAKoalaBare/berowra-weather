@@ -170,14 +170,14 @@
       </div>
     </div>
 
-    <!-- LAST 24 HOURS -->
+    <!-- LAST 12 HOURS -->
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
-      <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-chart-line"></i> LAST 24 HOURS</h3>
+      <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-clock"></i> LAST 12 HOURS</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="24 hour temperature chart"></canvas></div></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="24 hour wind speed chart"></canvas></div></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="24 hour barometer chart"></canvas></div></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="24 hour rainfall chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="12 hour temperature chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="12 hour wind speed chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="12 hour barometer chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="12 hour rainfall chart"></canvas></div></div>
       </div>
     </div>
 
@@ -437,14 +437,14 @@
       const dayLow = toNum(read(data, FIELD_MAP.dayLow));
       const baroTrend = toNum(read(data, FIELD_MAP.baroTrend));
 
-      // Extract proper hourly data from clientrawhour.txt for LAST 24 HOURS section
+      // Extract LAST 12 HOURS data from clientrawhour.txt instead of 24 hours
       // clientrawhour.txt structure: positions 122-181 (wind), 182-200 (temp), need to find pressure/rain positions
-      const hourlyTempData = Array.from({ length: 24 }, (_, i) => toNum(hourData[182 + i])); // Temperature data
-      const hourlyWindData = Array.from({ length: 24 }, (_, i) => toNum(hourData[122 + i])); // Wind speed data (knots)
+      const hourlyTempData = Array.from({ length: 12 }, (_, i) => toNum(hourData[182 + i])); // Temperature data (first 12 hours)
+      const hourlyWindData = Array.from({ length: 12 }, (_, i) => toNum(hourData[122 + i])); // Wind speed data (first 12 hours, knots)
       // Convert wind to km/h for consistency
       const hourlyWindKmh = hourlyWindData.map(v => Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null);
-      // Extract rainfall data from clientrawhour.txt position 400 for LAST 24 HOURS
-      const hourlyRainData = Array.from({ length: 24 }, (_, i) => toNum(hourData[400 + i])); // Rainfall data from clientrawhour.txt
+      // Extract rainfall data from clientrawhour.txt position 400 for LAST 12 HOURS
+      const hourlyRainData = Array.from({ length: 12 }, (_, i) => toNum(hourData[400 + i])); // Rainfall data (first 12 hours)
 
       const hourlyTemps = hourlyTempData;
       const hourlyWind = hourlyWindKmh;
@@ -685,9 +685,22 @@
     }
 
     function updateAllCharts(parsed) {
+      // Update LAST 12 HOURS charts with 12-hour data
       Object.entries(CHART_DEFS).forEach(([canvasId, cfg]) => {
-        initOrUpdateChart(canvasId, parsed[cfg.key]);
+        if (canvasId.includes('24Chart')) {
+          // Create 12-hour labels (every 2 hours)
+          const labels = Array.from({ length: 12 }, (_, i) => {
+            const hoursBack = (11 - i) * 2; // 0, 2, 4, ..., 20 hours back
+            const date = new Date(Date.now() - hoursBack * 3600000);
+            return date.toLocaleTimeString('en-AU', { hour: '2-digit', hour12: false });
+          });
+          
+          initOrUpdateChart(canvasId, parsed[cfg.key], labels);
+        }
       });
+      
+      // Update LAST 7 DAYS chart with 42-point data
+      renderLast7Chart(parsed.last7);
     }
 
     function updateSourceBadge(usedProxy) {
