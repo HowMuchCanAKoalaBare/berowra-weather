@@ -437,18 +437,18 @@
       const dayLow = toNum(read(data, FIELD_MAP.dayLow));
       const baroTrend = toNum(read(data, FIELD_MAP.baroTrend));
 
-      // Extract LAST 12 HOURS data from clientrawhour.txt instead of 24 hours
+      // Extract LAST 12 HOURS data sampling every hour
       // clientrawhour.txt structure: positions 122-181 (wind), 182-200 (temp), need to find pressure/rain positions
-      const hourlyTempData = Array.from({ length: 12 }, (_, i) => toNum(hourData[182 + i])); // Temperature data (first 12 hours)
+      const hourlyTempData = Array.from({ length: 12 }, (_, i) => toNum(hourData[182 + i])); // Temperature data (hourly)
       const hourlyWindData = Array.from({ length: 12 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i))); // Wind speed data from clientrawextra.txt (reasonable values)
       // Convert wind to km/h for consistency
       const hourlyWindKmh = hourlyWindData.map(v => Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null);
       // Extract rainfall data from clientrawhour.txt position 400 for LAST 12 HOURS
-      const hourlyRainData = Array.from({ length: 12 }, (_, i) => toNum(hourData[400 + i])); // Rainfall data (first 12 hours)
+      const hourlyRainData = Array.from({ length: 12 }, (_, i) => toNum(hourData[400 + i])); // Rainfall data (hourly)
 
       const hourlyTemps = hourlyTempData;
       const hourlyWind = hourlyWindKmh;
-      const hourlyBaro = Array.from({ length: 24 }, (_, i) => toNum(hourData[302 + i])); // Barometer data from clientrawhour.txt
+      const hourlyBaro = Array.from({ length: 12 }, (_, i) => toNum(hourData[302 + i])); // Barometer data from clientrawhour.txt (12 hours)
       const hourlyRain = hourlyRainData;
 
       const last7 = Array.from({ length: 42 }, (_, i) => {
@@ -685,12 +685,12 @@
     }
 
     function updateAllCharts(parsed) {
-      // Update LAST 12 HOURS charts with 12-hour data
+      // Update LAST 12 HOURS charts with proper time labels
       Object.entries(CHART_DEFS).forEach(([canvasId, cfg]) => {
         if (canvasId.includes('24Chart')) {
-          // Create 12-hour labels (every 2 hours)
+          // Create 12-hour labels (every hour)
           const labels = Array.from({ length: 12 }, (_, i) => {
-            const hoursBack = (11 - i) * 2; // 0, 2, 4, ..., 20 hours back
+            const hoursBack = (11 - i); // 0, 1, 2, ..., 11 hours back
             const date = new Date(Date.now() - hoursBack * 3600000);
             return date.toLocaleTimeString('en-AU', { hour: '2-digit', hour12: false });
           });
