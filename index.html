@@ -440,7 +440,7 @@
       // Extract LAST 12 HOURS data from clientrawhour.txt instead of 24 hours
       // clientrawhour.txt structure: positions 122-181 (wind), 182-200 (temp), need to find pressure/rain positions
       const hourlyTempData = Array.from({ length: 12 }, (_, i) => toNum(hourData[182 + i])); // Temperature data (first 12 hours)
-      const hourlyWindData = Array.from({ length: 12 }, (_, i) => toNum(hourData[122 + i])); // Wind speed data (first 12 hours, knots)
+      const hourlyWindData = Array.from({ length: 12 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i))); // Wind speed data from clientrawextra.txt (reasonable values)
       // Convert wind to km/h for consistency
       const hourlyWindKmh = hourlyWindData.map(v => Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null);
       // Extract rainfall data from clientrawhour.txt position 400 for LAST 12 HOURS
