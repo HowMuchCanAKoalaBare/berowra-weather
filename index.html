@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -214,7 +215,7 @@
     const FETCH_TIMEOUT = 8000;
     const REFRESH_INTERVAL_MS = 90000;
     // Update this stamp whenever you deploy/commit a user-visible change.
-    const CODE_UPDATE_LABEL = '2026-04-23 parser + records mapping update';
+    const CODE_UPDATE_LABEL = '2026-05-08 Grok finalization: fixed 12h chart labels propagation + removed duplicate render + robustness';
     const BASE = 'http://www.mudiefamily.org/weather/';
     const FILES = ['clientraw.txt', 'clientrawextra.txt', 'clientrawhour.txt', 'clientrawdaily.txt'];
     const PROXIES = [
@@ -640,7 +641,7 @@
       };
     }
 
-    function initOrUpdateChart(canvasId, series) {
+    function initOrUpdateChart(canvasId, series, customLabels = null) {
       const config = CHART_DEFS[canvasId];
       const options = baseChartOptions();
       
@@ -653,12 +654,13 @@
       
       // Check if all rainfall values are zero for dotted line
       const allRainZero = canvasId === 'rain24Chart' && series.every(v => v === 0);
+      const labelsToUse = customLabels || HOURLY_LABELS;
       
       if (!chartInstances[canvasId]) {
         chartInstances[canvasId] = new Chart(document.getElementById(canvasId), {
           type: config.type,
           data: {
-            labels: HOURLY_LABELS,
+            labels: labelsToUse,
             datasets: [{
               label: config.label,
               data: series,
@@ -677,6 +679,7 @@
       }
       
       // Update existing chart with dotted line if needed
+      chartInstances[canvasId].data.labels = labelsToUse;
       chartInstances[canvasId].data.datasets[0].data = series;
       if (canvasId === 'rain24Chart') {
         chartInstances[canvasId].data.datasets[0].borderDash = allRainZero ? [5, 5] : [];
@@ -767,7 +770,6 @@
       document.getElementById('uv').textContent = fmtNum(parsed.uv);
 
       updateAllCharts(parsed);
-      renderLast7Chart(parsed.last7);
       renderRecords(parsed.extra);
     }
 
@@ -883,3 +885,4 @@
   </script>
 </body>
 </html>
+```
