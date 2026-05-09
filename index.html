@@ -573,8 +573,7 @@
           return date.toLocaleTimeString('en-AU', { hour: '2-digit', hour12: false });
         }
       });
-      const highs = points.map(d => d.high);
-      const lows = points.map(d => d.low);
+      const temps = points.map(d => d.high); // Use high (== actual temp in current synthetic data)
       const rain = points.map(d => d.rain);
       const baro = points.map(d => d.baro);
       const wind = points.map(d => d.wind);
@@ -586,8 +585,7 @@
           data: {
             labels,
             datasets: [
-              { type: 'line', label: 'High °C', data: highs, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
-              { type: 'line', label: 'Low °C', data: lows, borderColor: '#38bdf8', backgroundColor: '#38bdf8', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
+              { type: 'line', label: 'Temp °C', data: temps, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
               { type: 'line', label: 'Wind km/h', data: wind, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yWind' },
               { type: 'line', label: 'Rain mm', data: rain, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.45)', tension: 0, borderWidth: 2, pointRadius: 1, borderDash: rain.every(v => v === 0) ? [5, 5] : [], yAxisID: 'yRain' },
               { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yBaro' }
@@ -619,11 +617,10 @@
       }
       const chart = chartInstances[canvasId];
       chart.data.labels = labels;
-      chart.data.datasets[0].data = highs;
-      chart.data.datasets[1].data = lows;
-      chart.data.datasets[2].data = wind;
-      chart.data.datasets[3].data = rain;
-      chart.data.datasets[4].data = baro;
+      chart.data.datasets[0].data = temps;
+      chart.data.datasets[1].data = wind;
+      chart.data.datasets[2].data = rain;
+      chart.data.datasets[3].data = baro;
       chart.update();
     }
 
