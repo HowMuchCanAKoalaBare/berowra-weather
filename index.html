@@ -185,7 +185,7 @@
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-calendar"></i> LAST 7 DAYS</h3>
       <div class="glass rounded-3xl p-4 border border-white/5">
-        <p class="text-xs tracking-widest mb-3 text-white/70">TEMP / WIND / RAIN / BAROMETER (4-HOURLY)</p>
+        <p class="text-xs tracking-widest mb-3 text-white/70">TEMP / WIND / RAIN / BAROMETER (DAILY)</p>
         <div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Last 7 days weather metrics chart"></canvas></div>
       </div>
     </div>
@@ -451,19 +451,21 @@
       const hourlyBaro = Array.from({ length: 12 }, (_, i) => toNum(hourData[302 + i])); // Barometer data from clientrawhour.txt (12 hours)
       const hourlyRain = hourlyRainData;
 
-      const last7 = Array.from({ length: 42 }, (_, i) => {
-        const dataIndex = Math.floor((i * 4) / 24) % 24;
-        const tempValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + dataIndex)) || temp;
-        const windValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + dataIndex)) || 0;
-        const baroValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + dataIndex)) || baro;
-        const rainValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + dataIndex)) || 0;
+      // Real LAST 7 DAYS from clientrawdaily.txt (daily highs for actual temperature variation)
+      const last7 = Array.from({ length: 7 }, (_, i) => {
+        const idx = 6 - i; // last 7 days, oldest first
+        const high = toNum(read(dailyData, SERIES_MAP.daily.highStart + idx)) || temp;
+        const low = toNum(read(dailyData, SERIES_MAP.daily.lowStart + idx)) || temp;
+        const rain = toNum(read(dailyData, SERIES_MAP.daily.rainStart + idx)) || 0;
+        const baro = toNum(read(dailyData, SERIES_MAP.daily.baroStart + idx)) || baro;
+        const wind = 0; // daily file does not contain wind speed
         
         return {
-          high: tempValue,
-          low: tempValue,
-          rain: rainValue,
-          baro: baroValue,
-          wind: Number.isFinite(windValue) ? +(windValue * 1.852).toFixed(1) : null
+          high: high,
+          low: low,
+          rain: rain,
+          baro: baro,
+          wind: wind
         };
       });
 
@@ -560,20 +562,17 @@
     }
 
     function renderLast7Chart(last7) {
-      // Don't reverse - keep chronological order (left to right)
+      // Real daily data - 7 points (last 7 days)
       const points = [...last7];
-      // Create 4-hourly labels for 7 days (42 points total)
+      // Create daily labels for last 7 days (oldest to newest)
       const labels = points.map((_, i) => {
-        const hoursBack = (41 - i) * 4; // Count from oldest to newest
-        const date = new Date(Date.now() - hoursBack * 3600000);
-        // Show day name for every 6th point (daily), otherwise show time
-        if (i % 6 === 0) {
-          return date.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' });
-        } else {
-          return date.toLocaleTimeString('en-AU', { hour: '2-digit', hour12: false });
-        }
+        const daysBack = 6 - i;
+        const date = new Date(Date.now() - daysBack * 86400000);
+        return date.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' });
       });
-      const temps = points.map(d => d.high); // Use high (== actual temp in current synthetic data)
+      
+      // Use real average temperature (high + low) / 2 for actual daily temperature
+      const temps = points.map(d => (d.high + d.low) / 2);
       const rain = points.map(d => d.rain);
       const baro = points.map(d => d.baro);
       const wind = points.map(d => d.wind);
@@ -585,9 +584,9 @@
           data: {
             labels,
             datasets: [
-              { type: 'line', label: 'Temp °C', data: temps, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
+              { type: 'line', label: 'Temp °C', data: temps, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 3, pointRadius: 4, yAxisID: 'yTemp' },
               { type: 'line', label: 'Wind km/h', data: wind, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yWind' },
-              { type: 'line', label: 'Rain mm', data: rain, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.45)', tension: 0, borderWidth: 2, pointRadius: 1, borderDash: rain.every(v => v === 0) ? [5, 5] : [], yAxisID: 'yRain' },
+              { type: 'line', label: 'Rain mm', data: rain, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.45)', tension: 0, borderWidth: 2, pointRadius: 3, borderDash: rain.every(v => v === 0) ? [5, 5] : [], yAxisID: 'yRain' },
               { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yBaro' }
             ]
           },
@@ -600,9 +599,8 @@
               x: { 
                 ticks: { 
                   color: '#94a3b8', 
-                  maxRotation: 45,
-                  autoSkip: true,
-                  maxTicksLimit: 21
+                  maxRotation: 0,
+                  autoSkip: false
                 }, 
                 grid: { color: 'rgba(51, 65, 85, 0.25)' } 
               },
