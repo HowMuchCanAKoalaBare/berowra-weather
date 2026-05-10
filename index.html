@@ -444,7 +444,7 @@
 
       // Extract LAST 12 HOURS data sampling every hour
       // clientrawhour.txt structure: positions 122-181 (wind), 182-200 (temp), need to find pressure/rain positions
-      const hourlyTempData = Array.from({ length: 12 }, (_, i) => toNum(hourData[182 + i])); // Temperature data (hourly)
+      const hourlyTempData = Array.from({ length: 12 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + i))); // Temperature data from clientrawextra.txt (correct range)
       const hourlyWindData = Array.from({ length: 12 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i))); // Wind speed data from clientrawextra.txt (reasonable values)
       // Convert wind to km/h for consistency
       const hourlyWindKmh = hourlyWindData.map(v => Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null);
@@ -458,13 +458,15 @@
 
       const last7 = Array.from({ length: 42 }, (_, i) => {
         const dataIndex = Math.floor((i * 4) / 24) % 24;
-        const tempValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + dataIndex)) || temp;
+        // Use daily data for temperature to get proper range including lows
+        const dailyDataIndex = Math.min(i, 31); // Limit to available daily data
+        const tempValue = toNum(dailyData[dailyDataIndex + 1]) || temp; // Daily high/low data from clientrawdaily.txt
         const windValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + dataIndex)) || 0;
         const baroValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + dataIndex)) || baro;
         const rainValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + dataIndex)) || 0;
         
         return {
-          temp: tempValue, // Use actual temperature instead of high/low
+          temp: tempValue, // Use daily temperature data for proper range
           rain: rainValue,
           baro: baroValue,
           wind: Number.isFinite(windValue) ? +(windValue * 1.852).toFixed(1) : null
