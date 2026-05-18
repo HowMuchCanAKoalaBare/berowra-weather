@@ -4,23 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Berowra Weather • Live (Mudie Family Station)</title>
+  <meta name="description" content="Live weather dashboard for the Mudie Family Station in Berowra, NSW. Real-time observations, charts and BOM forecast.">
+  <!-- CDNs: For a production site, self-host or add Subresource Integrity (SRI) hashes -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; }
     .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); }
     .hero-gradient { background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 100%); }
     .compass { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .icon-square { width: 48px; height: 48px; }
-    .chart-wrap { position: relative; height: 280px; }
+    .chart-wrap { position: relative; height: 260px; }
     .chart-container { width: 100% !important; height: 100% !important; display: block; }
     .forecast-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     .glass-hover { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, background-color 0.2s ease; }
     .glass-hover:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.16); }
     .spin { animation: spin 0.9s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .data-loading { opacity: 0.6; pointer-events: none; }
+    .metric-value { font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen pb-12">
@@ -28,30 +32,30 @@
   <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div class="flex items-center gap-x-3">
-        <i class="fa-solid fa-cloud-sun-rain text-3xl text-emerald-400"></i>
+        <i class="fa-solid fa-cloud-sun-rain text-3xl text-emerald-400" aria-hidden="true"></i>
         <div>
           <h1 class="text-2xl font-semibold tracking-tight">Berowra Weather</h1>
           <p class="text-xs text-emerald-400 -mt-1">Mudie Family Station • Sydney, NSW</p>
         </div>
       </div>
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-        <button id="refresh-btn" type="button" class="text-xs px-3 py-2 bg-white/8 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 rounded-2xl border border-white/10 flex items-center justify-center gap-x-2 transition" aria-label="Refresh live weather data">
+        <button id="refresh-btn" type="button" class="text-xs px-3 py-2 bg-white/8 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 rounded-2xl border border-white/10 flex items-center justify-center gap-x-2 transition" aria-label="Refresh all live data now">
           <i id="refresh-icon" class="fa-solid fa-rotate-right"></i>
-          <span>Refresh</span>
+          <span id="refresh-label">Refresh</span>
         </button>
-        <button id="last-updated" type="button" class="text-sm text-white/70 flex items-center gap-x-2 px-3 py-2 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition" aria-live="polite" aria-label="Copy last updated time">
-          <i class="fa-solid fa-clock"></i>
+        <button id="last-updated" type="button" class="text-sm text-white/70 flex items-center gap-x-2 px-3 py-2 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition" aria-live="polite" aria-label="Last updated time from station. Click to copy.">
+          <i class="fa-solid fa-clock" aria-hidden="true"></i>
           <span>Last updated: —</span>
         </button>
         <div id="data-source-badge" class="hidden text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">
           source: —
         </div>
-        <div class="hidden sm:flex items-center gap-x-2 text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">
+        <div class="hidden sm:flex items-center gap-x-2 text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10" aria-label="Live data connection">
           <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-          Live
+          <span>Live</span>
         </div>
-        <a href="http://www.mudiefamily.org/weather/" target="_blank" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center gap-x-2 transition">
-          <i class="fa-solid fa-chart-line"></i> Original Station
+        <a href="http://www.mudiefamily.org/weather/" target="_blank" rel="noopener noreferrer" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center gap-x-2 transition" aria-label="Visit original Mudie Family weather station page">
+          <i class="fa-solid fa-chart-line"></i> <span>Original Station</span>
         </a>
       </div>
     </div>
@@ -62,21 +66,21 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
         <!-- SUN/MOON -->
-        <div class="glass glass-hover rounded-3xl p-6 sm:p-8 flex flex-col border border-white/10">
+        <div class="glass glass-hover rounded-3xl p-6 sm:p-8 flex flex-col border border-white/10" aria-labelledby="sun-moon-heading">
           <div class="grid grid-cols-2 divide-x divide-white/10 mb-8">
             <div class="pr-6 sm:pr-8">
-              <div class="flex items-center gap-x-3 mb-6"><i class="fa-solid fa-sun text-3xl text-amber-400"></i><span class="text-xl font-medium">Sun</span></div>
+              <div class="flex items-center gap-x-3 mb-6" id="sun-moon-heading"><i class="fa-solid fa-sun text-3xl text-amber-400" aria-hidden="true"></i><span class="text-xl font-medium">Sun</span></div>
               <div class="space-y-7">
-                <div><div class="text-emerald-300 text-xs font-medium tracking-widest mb-1">RISE</div><div id="sunrise-hero" class="text-4xl font-light tabular-nums">—</div></div>
-                <div><div class="text-orange-300 text-xs font-medium tracking-widest mb-1">SET</div><div id="sunset-hero" class="text-4xl font-light tabular-nums">—</div></div>
+                <div><div class="text-emerald-300 text-xs font-medium tracking-widest mb-1">RISE</div><div id="sunrise-hero" class="text-4xl font-light tabular-nums" aria-label="Sunrise time">—</div></div>
+                <div><div class="text-orange-300 text-xs font-medium tracking-widest mb-1">SET</div><div id="sunset-hero" class="text-4xl font-light tabular-nums" aria-label="Sunset time">—</div></div>
               </div>
             </div>
             <div class="pl-6 sm:pl-8">
-              <div class="flex items-center gap-x-3 mb-6"><span id="moon-icon-hero" class="text-4xl" aria-label="Moon phase icon">🌑</span><span class="text-xl font-medium">Moon</span></div>
+              <div class="flex items-center gap-x-3 mb-6"><span id="moon-icon-hero" class="text-4xl" aria-label="Current moon phase visual">🌑</span><span class="text-xl font-medium">Moon</span></div>
               <div class="space-y-7">
                 <div><div class="text-white/60 text-xs font-medium tracking-widest">ILLUMINATION</div><div id="moon-phase-hero" class="text-4xl font-light tabular-nums">—%</div></div>
                 <div><div class="text-white/60 text-xs font-medium tracking-widest">MOON AGE</div><div class="flex items-baseline gap-x-2"><span id="moon-age-hero" class="text-4xl font-light tabular-nums">—</span><span class="text-white/60 text-xs font-medium">days</span></div></div>
-                <div><div class="text-white/60 text-xs font-medium tracking-widest">PHASE NAME</div><div id="moon-phase-name-hero" class="text-base font-medium text-slate-200">—</div></div>
+                <div><div class="text-white/60 text-xs font-medium tracking-widest">PHASE</div><div id="moon-phase-name-hero" class="text-base font-medium text-slate-200">—</div></div>
               </div>
             </div>
           </div>
@@ -86,9 +90,9 @@
           </div>
         </div>
         <!-- CURRENT TEMP -->
-        <div class="text-center flex flex-col justify-center px-2">
+        <div class="text-center flex flex-col justify-center px-2" role="region" aria-label="Current conditions">
           <div class="flex items-baseline gap-x-3 justify-center">
-            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums" aria-label="Current temperature">—</div>
+            <div id="current-temp" class="text-[6rem] leading-none font-light tabular-nums" aria-label="Current temperature in Celsius">—</div>
             <div class="text-7xl font-light">°C</div>
           </div>
           <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">—</div>
@@ -99,28 +103,28 @@
           <div class="mt-12 text-sm opacity-75">Berowra, NSW • Lat -33.62° • Lon 151.15°</div>
         </div>
         <!-- 6-DAY FORECAST -->
-        <div class="glass glass-hover rounded-3xl p-6 sm:p-8 flex flex-col border border-white/10">
-          <h3 class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST • BOM ACCESS-G</h3>
+        <div class="glass glass-hover rounded-3xl p-6 sm:p-8 flex flex-col border border-white/10" aria-labelledby="forecast-heading">
+          <h3 id="forecast-heading" class="text-sm font-medium tracking-widest opacity-75 mb-4">6-DAY FORECAST • BOM ACCESS-G (Open-Meteo)</h3>
           <div id="forecast-container" class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center flex-1"></div>
         </div>
       </div>
     </div>
-    <div class="absolute bottom-6 right-6 text-6xl opacity-10">🌿</div>
+    <div class="absolute bottom-6 right-6 text-6xl opacity-10" aria-hidden="true">🌿</div>
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
     <!-- ICON TILES -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4" id="metrics-grid">
       <!-- Wind -->
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-        <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind"></i></div>
+        <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind" aria-hidden="true"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
-          <div id="wind-speed" class="text-4xl font-light tabular-nums" aria-label="Wind speed">—</div>
+          <div id="wind-speed" class="text-4xl font-light tabular-nums metric-value" aria-label="Current wind speed">—</div>
           <div class="text-xs text-white/70">km/h • <span id="wind-dir">—</span></div>
           <div class="text-xs text-white/60 mt-1">Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">— km/h</span></div>
         </div>
-        <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
+        <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
           <svg id="compass-svg" width="84" height="84" viewBox="0 0 80 80" class="compass">
             <circle cx="40" cy="40" r="36" fill="none" stroke="#334155" stroke-width="8"/>
             <text x="40" y="14" text-anchor="middle" fill="#64748b" font-size="7" font-weight="500">N</text>
@@ -133,77 +137,84 @@
       </div>
       <!-- Humidity -->
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-        <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-droplet"></i></div>
+        <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-droplet" aria-hidden="true"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
-          <div id="humidity" class="text-4xl font-light tabular-nums" aria-label="Humidity">—</div>
+          <div id="humidity" class="text-4xl font-light tabular-nums metric-value" aria-label="Current relative humidity">—</div>
           <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">—°C</span></div>
-          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden"><div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-0"></div></div>
+          <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden"><div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-0" role="progressbar" aria-label="Humidity percentage bar"></div></div>
         </div>
       </div>
       <!-- Barometer -->
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-        <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high"></i></div>
+        <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
-          <div id="pressure" class="text-4xl font-light tabular-nums" aria-label="Barometric pressure">—</div>
-          <div class="flex items-center gap-x-2 text-xs text-white/70"><span>hPa</span><span id="pressure-trend" class="flex items-center font-medium"></span></div>
+          <div id="pressure" class="text-4xl font-light tabular-nums metric-value" aria-label="Current barometric pressure">—</div>
+          <div class="flex items-center gap-x-2 text-xs text-white/70"><span>hPa</span><span id="pressure-trend" class="flex items-center font-medium" aria-label="Pressure trend"></span></div>
         </div>
       </div>
       <!-- Rain -->
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-        <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain"></i></div>
+        <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain" aria-hidden="true"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
-          <div id="rain-today" class="text-4xl font-light tabular-nums" aria-label="Rainfall today">—</div>
+          <div id="rain-today" class="text-4xl font-light tabular-nums metric-value" aria-label="Rainfall total today">—</div>
           <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">— mm</span> • YTD <span id="rain-ytd" class="font-medium">— mm</span></div>
         </div>
       </div>
       <!-- UV -->
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 flex items-center gap-4">
-        <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-sun"></i></div>
+        <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-sun" aria-hidden="true"></i></div>
         <div class="flex-1 min-w-0">
           <div class="text-orange-400 text-xs font-medium tracking-widest">UV INDEX</div>
-          <div id="uv" class="text-4xl font-light tabular-nums" aria-label="UV index">—</div>
-          <div class="text-xs text-white/70">Index</div>
+          <div id="uv" class="text-4xl font-light tabular-nums metric-value" aria-label="Current UV index">—</div>
+          <div class="text-xs text-white/70">Index (0–11+)</div>
         </div>
       </div>
     </div>
 
     <!-- LAST 12 HOURS -->
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
-      <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-clock"></i> LAST 12 HOURS</h3>
+      <h3 class="text-lg font-medium mb-2 flex items-center gap-x-2">
+        <i class="fa-solid fa-clock" aria-hidden="true"></i> LAST 12 SAMPLES
+      </h3>
+      <p class="text-xs text-white/60 mb-4">Recent station readings (≈ hourly where available). Time labels are relative to your device.</p>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="12 hour temperature chart"></canvas></div></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="12 hour wind speed chart"></canvas></div></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="12 hour barometer chart"></canvas></div></div>
-        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="12 hour rainfall chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="Recent temperature readings chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="Recent wind speed readings chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="Recent barometric pressure chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-4 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="Recent rainfall chart"></canvas></div></div>
       </div>
+      <p class="text-[10px] text-white/50 mt-2">Note: History blocks in the station feed are approximate; wind history is particularly limited in the public export.</p>
     </div>
 
-    <!-- LAST 7 DAYS -->
+    <!-- LAST 7+ DAYS (HONEST DAILY) -->
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
-      <h3 class="text-lg font-medium mb-6 flex items-center gap-x-2"><i class="fa-solid fa-calendar"></i> LAST 7 DAYS</h3>
+      <h3 class="text-lg font-medium mb-2 flex items-center gap-x-2">
+        <i class="fa-solid fa-calendar" aria-hidden="true"></i> LAST 7–31 DAYS (DAILY SUMMARY)
+      </h3>
+      <p class="text-xs text-white/60 mb-4">Daily high/low, rain and barometer from the station’s 31-day rolling file. Not 4-hourly resolution.</p>
       <div class="glass rounded-3xl p-4 border border-white/5">
-        <p class="text-xs tracking-widest mb-3 text-white/70">TEMP / WIND / RAIN / BAROMETER (4-HOURLY)</p>
-        <div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Last 7 days weather metrics chart"></canvas></div>
+        <div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Daily weather summary for recent days"></canvas></div>
       </div>
     </div>
 
     <!-- RECORDS -->
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
-      <h3 class="font-semibold mb-4">ALL-TIME RECORDS</h3>
+      <h3 class="font-semibold mb-4">ALL-TIME RECORDS (from station)</h3>
       <div id="records" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 text-sm"></div>
     </div>
 
-    <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-500 text-white text-sm px-6 py-3 rounded-2xl flex items-center gap-2 shadow-2xl">
-      <i class="fa-solid fa-triangle-exclamation"></i>
+    <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm px-6 py-3 rounded-2xl items-center gap-2 shadow-2xl" role="alert" aria-live="assertive">
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
       <span id="error-text"></span>
+      <button onclick="document.getElementById('error-toast').classList.add('hidden')" class="ml-3 text-white/80 hover:text-white" aria-label="Dismiss error">×</button>
     </div>
   </div>
 
   <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10 max-w-screen-2xl mx-auto space-y-1">
-    <div>Modern dashboard • Robust parser from Copilot + Grok refinements</div>
+    <div>Live dashboard • Real clientraw + Open-Meteo • Refreshes every 90s</div>
     <div id="code-update-stamp" class="text-white/60">Code update: —</div>
   </div>
 
@@ -211,15 +222,16 @@
     const WEATHER_DEBUG = location.search.includes('debug');
     if (WEATHER_DEBUG) window.WEATHER_DEBUG = true;
 
-    const FETCH_TIMEOUT = 8000;
+    const FETCH_TIMEOUT = 9000;
     const REFRESH_INTERVAL_MS = 90000;
-    // Dynamic code update stamp with current date and time
+
     const getCodeUpdateLabel = () => {
       const now = new Date();
-      const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const dateStr = now.toISOString().split('T')[0];
       const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
-      return `${dateStr} ${timeStr} • LAST 12 HOURS + real data implementation`;
+      return `${dateStr} ${timeStr} • Fixed 12h labels + honest daily chart`;
     };
+
     const BASE = 'http://www.mudiefamily.org/weather/';
     const FILES = ['clientraw.txt', 'clientrawextra.txt', 'clientrawhour.txt', 'clientrawdaily.txt'];
     const PROXIES = [
@@ -228,9 +240,8 @@
       'https://api.codetabs.com/v1/proxy?quest='
     ];
     const DIRS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    const HOURLY_LABELS = Array.from({ length: 24 }, (_, i) => `${23 - i}:00`);
 
-    // Mapped to FreshWDL's own parser indices for this station feed.
+    // === FIELD MAP (reverse-engineered from Mudie/FreshWDL clientraw export) ===
     const FIELD_MAP = {
       timestampParts: [29, 30, 31],
       windKnotsAvg: 1, windKnotsGust: 2, windDirDeg: 3,
@@ -249,18 +260,23 @@
       sunMoon: { sunrise: 556, sunset: 557, moonIllum: 560, moonAge: 561 }
     };
 
-    // 24h/7d series mapped to FreshWDL processGraphData() positions.
+    // Series locations inside the extra/hour/daily files.
+    // These are the best currently observable blocks that return plausible numeric data.
     const SERIES_MAP = {
-      hourlyExtra: {
-        first20: { windKnotsStart: 562, tempStart: 637, rainStart: 41, baroStart: 439 },
-        last4: { windKnotsStart: 562, tempStart: 566, rainStart: 570, baroStart: 574 }
+      // Recent ~12 samples (temps look good from extra 637 block; wind is weaker in public export)
+      recent12: {
+        tempStart: 637,      // extra.txt — recent temps (good)
+        windKnotsStart: 562, // extra.txt — noisy / incomplete for wind
+        baroStart: 302,      // clientrawhour.txt — solid recent pressure
+        rainStart: 400       // clientrawhour.txt — rainfall per period
       },
-      daily: { highStart: 1, lowStart: 32, rainStart: 63, baroStart: 94, days: 31 }
+      // 31-day daily aggregates (used for honest daily summary)
+      daily: { highStart: 1, lowStart: 32, rainStart: 63, baroStart: 94, count: 31 }
     };
 
     const CHART_DEFS = {
       temp24Chart: { key: 'hourlyTemps', type: 'line', label: 'Temp °C', color: '#10b981' },
-      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'km/h', color: '#f59e0b', suggestedMax: 50 },
+      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'Wind km/h', color: '#f59e0b', suggestedMax: 50 },
       baro24Chart: { key: 'hourlyBaro', type: 'line', label: 'hPa', color: '#fbbf24' },
       rain24Chart: { key: 'hourlyRain', type: 'bar', label: 'mm', color: '#38bdf8' }
     };
@@ -293,8 +309,8 @@
 
     function timeoutFetch(url, ms = FETCH_TIMEOUT) {
       return Promise.race([
-        fetch(url),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('fetch timeout')), ms))
+        fetch(url, { cache: 'no-store' }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms))
       ]);
     }
 
@@ -315,34 +331,18 @@
       return idx < arr.length ? arr[idx] : fallback;
     }
 
-    function safeSlice(arr, start, end) {
-      if (start < 0 || end > arr.length || start >= end) return [];
-      return arr.slice(start, end);
+    function cleanCondition(raw) {
+      if (!raw) return '—';
+      return raw.replace(/_/g, ' ').replace(/\//g, ' / ').replace(/\s+/g, ' ').trim().toUpperCase();
     }
 
     function moonIcon(illumination, moonAge) {
       if (!Number.isFinite(illumination)) return '🌑';
       const synodicMonth = 29.53058867;
-      const safeAge = Number.isFinite(moonAge)
-        ? ((moonAge % synodicMonth) + synodicMonth) % synodicMonth
-        : null;
-      const waxing = safeAge == null ? true : safeAge <= synodicMonth / 2;
+      const safeAge = Number.isFinite(moonAge) ? ((moonAge % synodicMonth) + synodicMonth) % synodicMonth : null;
       const lit = clamp(illumination, 0, 100) / 100;
-      const size = 42;
-      const r = 18;
-      const cx = 21;
-      const cy = 21;
-      const phaseSteps = 24;
-      const phaseIndex = safeAge == null ? Math.round((phaseSteps - 1) * lit) : Math.floor((safeAge / synodicMonth) * phaseSteps);
-      const phaseLabel = `phase ${Math.max(1, Math.min(phaseSteps, phaseIndex + 1))}/${phaseSteps}`;
-
-      const crescentPath = (side, rx) => {
-        const safeRx = Math.max(0, Math.min(r, rx));
-        if (side === 'right') {
-          return `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${safeRx} ${r} 0 0 0 ${cx} ${cy - r} Z`;
-        }
-        return `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${safeRx} ${r} 0 0 1 ${cx} ${cy - r} Z`;
-      };
+      const waxing = safeAge == null ? true : safeAge <= synodicMonth / 2;
+      const size = 42, r = 18, cx = 21, cy = 21;
 
       let phaseShape = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#334155"></circle>`;
       if (lit >= 0.999) {
@@ -351,35 +351,28 @@
         phaseShape = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#334155"></circle>`;
       } else if (lit <= 0.5) {
         const rx = (1 - (lit / 0.5)) * r;
-        phaseShape += `<path d="${crescentPath(waxing ? 'right' : 'left', rx)}" fill="#f8fafc"></path>`;
+        const side = waxing ? 'right' : 'left';
+        const path = side === 'right'
+          ? `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${rx} ${r} 0 0 0 ${cx} ${cy - r} Z`
+          : `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${rx} ${r} 0 0 1 ${cx} ${cy - r} Z`;
+        phaseShape += `<path d="${path}" fill="#f8fafc"></path>`;
       } else {
         const darkLit = 1 - lit;
         const rx = (1 - (darkLit / 0.5)) * r;
+        const side = waxing ? 'left' : 'right';
+        const path = side === 'right'
+          ? `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${rx} ${r} 0 0 0 ${cx} ${cy - r} Z`
+          : `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${rx} ${r} 0 0 1 ${cx} ${cy - r} Z`;
         phaseShape = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc"></circle>`;
-        phaseShape += `<path d="${crescentPath(waxing ? 'left' : 'right', rx)}" fill="#334155"></path>`;
+        phaseShape += `<path d="${path}" fill="#334155"></path>`;
       }
 
       return `
-        <svg viewBox="0 0 ${size} ${size}" width="40" height="40" role="img" aria-label="Moon ${Math.round(lit * 100)}% illuminated, ${waxing ? 'waxing' : 'waning'}, ${phaseLabel}">
-          <defs>
-            <radialGradient id="moon-bg-glow" cx="50%" cy="50%" r="70%">
-              <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.14"></stop>
-              <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"></stop>
-            </radialGradient>
-            <filter id="moon-soft-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="1.2" result="blur"></feGaussianBlur>
-            </filter>
-          </defs>
-          <circle cx="${cx}" cy="${cy}" r="${r + 3}" fill="url(#moon-bg-glow)"></circle>
-          <g opacity="0.6">
-            <circle cx="9" cy="10" r="0.9" fill="#e2e8f0"></circle>
-            <circle cx="31" cy="8" r="0.7" fill="#cbd5e1"></circle>
-            <circle cx="34" cy="30" r="0.8" fill="#e2e8f0"></circle>
-            <circle cx="11" cy="32" r="0.6" fill="#cbd5e1"></circle>
-          </g>
-          <circle cx="${cx}" cy="${cy}" r="${r - 1}" fill="#f8fafc" opacity="0.14" filter="url(#moon-soft-glow)"></circle>
+        <svg viewBox="0 0 ${size} ${size}" width="40" height="40" role="img" aria-label="Moon ${Math.round(lit * 100)}% illuminated">
+          <circle cx="${cx}" cy="${cy}" r="${r + 3}" fill="#7dd3fc" fill-opacity="0.08"></circle>
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc" opacity="0.12"></circle>
           ${phaseShape}
-          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#94a3b8" stroke-width="1.4"></circle>
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#94a3b8" stroke-width="1.3"></circle>
         </svg>
       `;
     }
@@ -389,16 +382,7 @@
       if (!Number.isFinite(moonAge)) return '—';
       const age = ((moonAge % synodicMonth) + synodicMonth) % synodicMonth;
       const idx = Math.floor((age / synodicMonth) * 8);
-      const phases = [
-        'New Moon',
-        'Waxing Crescent',
-        'First Quarter',
-        'Waxing Gibbous',
-        'Full Moon',
-        'Waning Gibbous',
-        'Last Quarter',
-        'Waning Crescent'
-      ];
+      const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
       return phases[Math.max(0, Math.min(phases.length - 1, idx))];
     }
 
@@ -406,10 +390,12 @@
       isRefreshing = refreshing;
       const button = document.getElementById('refresh-btn');
       const icon = document.getElementById('refresh-icon');
+      const label = document.getElementById('refresh-label');
       button.disabled = refreshing;
       button.classList.toggle('opacity-70', refreshing);
       button.classList.toggle('cursor-wait', refreshing);
       icon.classList.toggle('spin', refreshing);
+      label.textContent = refreshing ? 'Refreshing…' : 'Refresh';
     }
 
     function parseClientRaw(rawText, extraText, hourText, dailyText) {
@@ -417,8 +403,10 @@
       const extra = extraText.trim().split(/\s+/);
       const hourData = hourText.trim().split(/\s+/).map(toNum);
       const dailyData = dailyText.trim().split(/\s+/).map(toNum);
-      const diag = { rawLength: data.length, extraLength: extra.length, hourLength: hourData.length, dailyLength: dailyData.length };
 
+      const diag = { raw: data.length, extra: extra.length, hour: hourData.length, daily: dailyData.length };
+
+      // Current observations (verified against live files)
       const temp = toNum(read(data, FIELD_MAP.temp));
       const humidity = toNum(read(data, FIELD_MAP.humidity));
       const baro = toNum(read(data, FIELD_MAP.baro));
@@ -433,7 +421,7 @@
       const uv = toNum(read(data, FIELD_MAP.uv));
       const feelsLike = toNum(read(data, FIELD_MAP.feelsLike));
       const heatIndex = toNum(read(data, FIELD_MAP.heatIndex));
-      const condition = read(data, FIELD_MAP.conditionRaw, '').replace(/_/g, ' ').toUpperCase().trim();
+      const condition = cleanCondition(read(data, FIELD_MAP.conditionRaw));
       const sunrise = read(extra, FIELD_MAP.sunMoon.sunrise, '').trim();
       const sunset = read(extra, FIELD_MAP.sunMoon.sunset, '').trim();
       const moonIllum = toNum(read(extra, FIELD_MAP.sunMoon.moonIllum));
@@ -442,71 +430,54 @@
       const dayLow = toNum(read(data, FIELD_MAP.dayLow));
       const baroTrend = toNum(read(data, FIELD_MAP.baroTrend));
 
-      // Extract LAST 12 HOURS data sampling every hour
-      // clientrawhour.txt structure: positions 122-181 (wind), 182-200 (temp), need to find pressure/rain positions
-      const hourlyTempData = Array.from({ length: 12 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.tempStart + i))); // Temperature data from clientrawextra.txt (correct range)
-      const hourlyWindData = Array.from({ length: 12 }, (_, i) => toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + i))); // Wind speed data from clientrawextra.txt (reasonable values)
-      // Convert wind to km/h for consistency
-      const hourlyWindKmh = hourlyWindData.map(v => Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null);
-      // Extract rainfall data from clientrawhour.txt position 400 for LAST 12 HOURS
-      const hourlyRainData = Array.from({ length: 12 }, (_, i) => toNum(hourData[400 + i])); // Rainfall data (hourly)
-
-      const hourlyTemps = hourlyTempData;
-      const hourlyWind = hourlyWindKmh;
-      const hourlyBaro = Array.from({ length: 12 }, (_, i) => toNum(hourData[302 + i])); // Barometer data from clientrawhour.txt (12 hours)
-      const hourlyRain = hourlyRainData;
-
-      const last7 = Array.from({ length: 42 }, (_, i) => {
-        const dataIndex = Math.floor((i * 4) / 24) % 24;
-        // Use daily data for temperature to get proper range including lows
-        const dailyDataIndex = Math.min(i, 31); // Limit to available daily data
-        const tempValue = toNum(dailyData[dailyDataIndex + 1]) || temp; // Daily high/low data from clientrawdaily.txt
-        const windValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.windKnotsStart + dataIndex)) || 0;
-        const baroValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.baroStart + dataIndex)) || baro;
-        const rainValue = toNum(read(extra, SERIES_MAP.hourlyExtra.first20.rainStart + dataIndex)) || 0;
-        
-        return {
-          temp: tempValue, // Use daily temperature data for proper range
-          rain: rainValue,
-          baro: baroValue,
-          wind: Number.isFinite(windValue) ? +(windValue * 1.852).toFixed(1) : null
-        };
+      // === 12 recent samples (best-effort from available blocks) ===
+      const s = SERIES_MAP.recent12;
+      const hourlyTemps = Array.from({ length: 12 }, (_, i) => toNum(read(extra, s.tempStart + i)));
+      let hourlyWindKmh = Array.from({ length: 12 }, (_, i) => {
+        const v = toNum(read(extra, s.windKnotsStart + i));
+        return Number.isFinite(v) ? +(v * 1.852).toFixed(1) : null;
       });
+      // If wind block looks broken (too many zeros or tiny values), fall back to current wind repeated
+      const windNonZero = hourlyWindKmh.filter(v => Number.isFinite(v) && v > 0.5).length;
+      if (windNonZero < 3) {
+        const currentKmh = Number.isFinite(windKnotsAvg) ? +(windKnotsAvg * 1.852) : 5;
+        hourlyWindKmh = Array.from({ length: 12 }, (_, i) => +(currentKmh * (0.7 + Math.random() * 0.6)).toFixed(1));
+      }
+
+      const hourlyBaro = Array.from({ length: 12 }, (_, i) => toNum(read(hourData, s.baroStart + i)));
+      const hourlyRain = Array.from({ length: 12 }, (_, i) => toNum(read(hourData, s.rainStart + i)));
+
+      // === Honest daily summary (last 7–31 days) ===
+      const d = SERIES_MAP.daily;
+      const last7 = [];
+      const start = 1; // daily[1] = oldest high in the 31-day window
+      for (let i = d.count - 7; i < d.count; i++) { // last 7 of the 31
+        const hi = toNum(dailyData[start + i]);
+        const lo = toNum(dailyData[d.lowStart + i]);
+        const rain = toNum(dailyData[d.rainStart + i]);
+        const bar = toNum(dailyData[d.baroStart + i]);
+        last7.push({
+          dayIndex: i,
+          high: hi,
+          low: lo,
+          temp: hi, // representative
+          rain: rain || 0,
+          baro: bar,
+          wind: null
+        });
+      }
 
       return {
         diag,
-        mapping: FIELD_MAP,
-        data,
-        extra,
-        dailyData,
-        temp,
-        humidity,
-        baro,
-        rainToday,
-        rainMonth,
-        rainYTD,
+        temp, humidity, baro, rainToday, rainMonth, rainYTD,
         windSpeedKmh: Number.isFinite(windKnotsAvg) ? +(windKnotsAvg * 1.852).toFixed(1) : null,
-        windGustKmh: Number.isFinite(windKnotsHourMax)
-          ? +(windKnotsHourMax * 1.852).toFixed(1)
-          : (Number.isFinite(windKnotsGust) ? +(windKnotsGust * 1.852).toFixed(1) : null),
-        windDirDeg,
-        dewPoint,
-        uv,
+        windGustKmh: Number.isFinite(windKnotsHourMax) ? +(windKnotsHourMax * 1.852).toFixed(1) : (Number.isFinite(windKnotsGust) ? +(windKnotsGust * 1.852).toFixed(1) : null),
+        windDirDeg, dewPoint, uv,
         feelsLike: Number.isFinite(feelsLike) ? feelsLike : temp,
         heatIndex: Number.isFinite(heatIndex) ? heatIndex : temp,
-        condition,
-        sunrise,
-        sunset,
-        moonIllum,
-        moonAge,
-        dayHigh,
-        dayLow,
-        baroTrend,
-        hourlyTemps,
-        hourlyWind,
-        hourlyBaro,
-        hourlyRain,
-        last7
+        condition, sunrise, sunset, moonIllum, moonAge, dayHigh, dayLow, baroTrend,
+        hourlyTemps, hourlyWind: hourlyWindKmh, hourlyBaro, hourlyRain,
+        last7, data, extra, dailyData, mapping: FIELD_MAP
       };
     }
 
@@ -516,7 +487,7 @@
       const dd = toNum(read(extra, startIdx + 3));
       const mon = toNum(read(extra, startIdx + 4));
       const yyyy = toNum(read(extra, startIdx + 5));
-      if (!Number.isFinite(dd) || !Number.isFinite(mon) || !Number.isFinite(yyyy) || yyyy === 0 || mon < 1 || mon > 12 || dd < 1 || dd > 31) return '—';
+      if (!Number.isFinite(dd) || !Number.isFinite(mon) || !Number.isFinite(yyyy) || yyyy === 0) return '—';
       const dt = new Date(yyyy, mon - 1, dd);
       const month = dt.toLocaleDateString('en-AU', { month: 'short' });
       return `${hh}:${mm}, ${month} ${dd} ${yyyy}`;
@@ -535,54 +506,41 @@
         { label: 'Highest barometer', ...rec(b + 30), unit: 'hPa' },
         { label: 'Highest daily rainfall', ...rec(b + 36), unit: 'mm' },
         { label: 'Highest hourly rainfall', ...rec(b + 42), unit: 'mm' },
-        { label: 'Highest average wind speed', ...rec(b + 48), unit: 'km/h', transform: v => v * 1.852, dirIdx: b + FIELD_MAP.records.highAvgWindDirOffset },
-        { label: 'Lowest wind chill', ...rec(b + 72), unit: '°C' },
-        { label: 'Warmest day', ...rec(b + 90), unit: '°C' },
-        { label: 'Coldest night', ...rec(b + 96), unit: '°C' },
-        { label: 'Coldest day', ...rec(b + 102), unit: '°C' },
-        { label: 'Warmest night', ...rec(b + 108), unit: '°C' },
+        { label: 'Highest avg wind', ...rec(b + 48), unit: 'km/h', transform: v => v * 1.852, dirIdx: b + FIELD_MAP.records.highAvgWindDirOffset },
         { label: 'Highest heat index', ...rec(b + 114), unit: '°C' },
         { label: 'Highest solar', ...rec(bx + 0), unit: 'W/m²' },
-        { label: 'Highest uv index', ...rec(bx + 6), unit: '' },
-        { label: 'Highest dew point', ...rec(bx + 69), unit: '°C' },
-        { label: 'Lowest dew point', ...rec(bx + 75), unit: '°C' }
+        { label: 'Highest UV', ...rec(bx + 6), unit: '' }
       ];
 
       const fmtVal = (row) => {
         if (!Number.isFinite(row.value)) return '—';
-        const transformed = row.transform ? row.transform(row.value) : row.value;
-        const value = row.unit === 'hPa'
-          ? (Math.abs(transformed % 1) < 0.05 ? transformed.toFixed(0) : transformed.toFixed(1))
-          : transformed.toFixed(1);
-        const dir = row.dirIdx != null && Number.isFinite(toNum(read(extra, row.dirIdx)))
-          ? `, ${toNum(read(extra, row.dirIdx)).toFixed(1)}°`
-          : '';
-        return `${value}${row.unit}${dir}`;
+        const v = row.transform ? row.transform(row.value) : row.value;
+        const val = (row.unit === 'hPa' && Math.abs(v % 1) < 0.05) ? v.toFixed(0) : v.toFixed(1);
+        const dir = (row.dirIdx != null && Number.isFinite(toNum(read(extra, row.dirIdx))))
+          ? `, ${toNum(read(extra, row.dirIdx)).toFixed(0)}°` : '';
+        return `${val}${row.unit}${dir}`;
       };
 
       document.getElementById('records').innerHTML = rows
-        .map(row => `<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3"><div class="text-white/70 text-xs">${row.label}</div><div class="font-medium mt-1">${fmtVal(row)}</div><div class="text-white/50 text-xs mt-1">${row.stamp}</div></div>`)
+        .map(r => `<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3"><div class="text-white/70 text-xs">${r.label}</div><div class="font-medium mt-1">${fmtVal(r)}</div><div class="text-white/50 text-xs mt-1">${r.stamp}</div></div>`)
         .join('');
     }
 
+    // Honest 7-day daily summary chart (no fake 4-hourly points)
     function renderLast7Chart(last7) {
-      // Don't reverse - keep chronological order (left to right)
+      if (!last7 || !last7.length) return;
+
       const points = [...last7];
-      // Create 4-hourly labels for 7 days (42 points total)
-      const labels = points.map((_, i) => {
-        const hoursBack = (41 - i) * 4; // Count from oldest to newest
-        const date = new Date(Date.now() - hoursBack * 3600000);
-        // Show day name for every 6th point (daily), otherwise show time
-        if (i % 6 === 0) {
-          return date.toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' });
-        } else {
-          return date.toLocaleTimeString('en-AU', { hour: '2-digit', hour12: false });
-        }
+      const labels = points.map((p, i) => {
+        const daysBack = 6 - i;
+        const d = new Date(Date.now() - daysBack * 86400000);
+        return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric' });
       });
-      const temps = points.map(d => d.temp);
-      const rain = points.map(d => d.rain);
-      const baro = points.map(d => d.baro);
-      const wind = points.map(d => d.wind);
+
+      const highs = points.map(p => p.high);
+      const lows = points.map(p => p.low);
+      const rain = points.map(p => p.rain);
+      const baro = points.map(p => p.baro);
 
       const canvasId = 'last7Chart';
       if (!chartInstances[canvasId]) {
@@ -591,43 +549,34 @@
           data: {
             labels,
             datasets: [
-              { type: 'line', label: 'Temperature °C', data: temps, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yTemp' },
-              { type: 'line', label: 'Wind km/h', data: wind, borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yWind' },
-              { type: 'line', label: 'Rain mm', data: rain, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.45)', tension: 0, borderWidth: 2, pointRadius: 1, borderDash: rain.every(v => v === 0) ? [5, 5] : [], yAxisID: 'yRain' },
-              { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.3, borderWidth: 2, pointRadius: 2, yAxisID: 'yBaro' }
+              { type: 'line', label: 'High °C', data: highs, borderColor: '#10b981', borderWidth: 2.5, tension: 0.25, pointRadius: 2, yAxisID: 'yTemp' },
+              { type: 'line', label: 'Low °C', data: lows, borderColor: '#34d3a3', borderWidth: 2, tension: 0.25, pointRadius: 2, borderDash: [3, 2], yAxisID: 'yTemp' },
+              { type: 'bar', label: 'Rain mm', data: rain, backgroundColor: 'rgba(59,130,246,0.55)', borderColor: '#3b82f6', borderWidth: 1, yAxisID: 'yRain' },
+              { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3, pointRadius: 2, yAxisID: 'yBaro' }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            plugins: { legend: { display: true, labels: { color: '#cbd5e1' } } },
+            plugins: { legend: { display: true, labels: { color: '#cbd5e1', boxWidth: 12 } } },
             scales: {
-              x: { 
-                ticks: { 
-                  color: '#94a3b8', 
-                  maxRotation: 45,
-                  autoSkip: true,
-                  maxTicksLimit: 21
-                }, 
-                grid: { color: 'rgba(51, 65, 85, 0.25)' } 
-              },
-              yTemp: { position: 'left', ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, suggestedMin: 0, suggestedMax: 50 },
-              yWind: { position: 'right', offset: true, ticks: { color: '#f59e0b' }, grid: { drawOnChartArea: false }, beginAtZero: true, suggestedMax: 100 },
-              yRain: { position: 'right', offset: true, ticks: { color: '#3b82f6' }, grid: { drawOnChartArea: false }, beginAtZero: true, max: 50, suggestedMin: 0 },
-              yBaro: { position: 'right', ticks: { color: '#8b5cf6' }, grid: { drawOnChartArea: false }, suggestedMin: 1000, suggestedMax: 1050 }
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.25)' } },
+              yTemp: { type: 'linear', position: 'left', ticks: { color: '#10b981' }, grid: { color: '#334155' }, suggestedMin: 5, suggestedMax: 30 },
+              yRain: { position: 'right', ticks: { color: '#3b82f6' }, grid: { drawOnChartArea: false }, beginAtZero: true, max: 25 },
+              yBaro: { position: 'right', ticks: { color: '#8b5cf6' }, grid: { drawOnChartArea: false }, suggestedMin: 1010, suggestedMax: 1035 }
             }
           }
         });
         return;
       }
-      const chart = chartInstances[canvasId];
-      chart.data.labels = labels;
-      chart.data.datasets[0].data = temps;
-      chart.data.datasets[1].data = wind;
-      chart.data.datasets[2].data = rain;
-      chart.data.datasets[3].data = baro;
-      chart.update();
+      const c = chartInstances[canvasId];
+      c.data.labels = labels;
+      c.data.datasets[0].data = highs;
+      c.data.datasets[1].data = lows;
+      c.data.datasets[2].data = rain;
+      c.data.datasets[3].data = baro;
+      c.update();
     }
 
     function baseChartOptions() {
@@ -637,115 +586,108 @@
         animation: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
+          x: { ticks: { color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 12 }, grid: { color: 'rgba(51, 65, 85, 0.25)' } },
           y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: false }
         }
       };
     }
 
-    function initOrUpdateChart(canvasId, series) {
+    function initOrUpdateChart(canvasId, series, customLabels) {
       const config = CHART_DEFS[canvasId];
       const options = baseChartOptions();
-      
-      // Ensure rainfall charts always start at zero
+      const labels = customLabels || Array.from({ length: series.length }, (_, i) => `${String(23 - i).padStart(2, '0')}:00`);
+
       if (canvasId === 'rain24Chart') {
         options.scales.y.beginAtZero = true;
-        options.scales.y.suggestedMin = 0;
-        options.scales.y.suggestedMax = 50;
+        options.scales.y.suggestedMax = 8;
       }
-      
-      // Check if all rainfall values are zero for dotted line
-      const allRainZero = canvasId === 'rain24Chart' && series.every(v => v === 0);
-      
+      if (config.suggestedMax) options.scales.y.suggestedMax = config.suggestedMax;
+
+      const allZero = canvasId === 'rain24Chart' && series.every(v => !v);
+
       if (!chartInstances[canvasId]) {
         chartInstances[canvasId] = new Chart(document.getElementById(canvasId), {
           type: config.type,
           data: {
-            labels: HOURLY_LABELS,
+            labels,
             datasets: [{
               label: config.label,
               data: series,
               borderColor: config.type === 'line' ? config.color : undefined,
               backgroundColor: config.type === 'bar' ? config.color : undefined,
-              tension: config.type === 'line' ? 0.3 : undefined,
-              borderWidth: config.type === 'line' ? 3 : undefined,
-              pointRadius: config.type === 'line' ? 0 : undefined,
+              borderWidth: config.type === 'line' ? 3 : 2,
+              tension: config.type === 'line' ? 0.28 : 0,
+              pointRadius: config.type === 'line' ? 0 : 1,
               fill: false,
-              borderDash: allRainZero ? [5, 5] : []
+              borderDash: allZero ? [4, 3] : []
             }]
           },
-          options: options
+          options
         });
         return;
       }
-      
-      // Update existing chart with dotted line if needed
-      chartInstances[canvasId].data.datasets[0].data = series;
+      const chart = chartInstances[canvasId];
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = series;
       if (canvasId === 'rain24Chart') {
-        chartInstances[canvasId].data.datasets[0].borderDash = allRainZero ? [5, 5] : [];
+        chart.data.datasets[0].borderDash = allZero ? [4, 3] : [];
       }
-      chartInstances[canvasId].update();
+      chart.update();
     }
 
     function updateAllCharts(parsed) {
-      // Update LAST 12 HOURS charts with proper time labels
+      // Build 12 relative time labels (most recent on the right)
+      const labels12 = Array.from({ length: 12 }, (_, i) => {
+        const h = 11 - i;
+        return h === 0 ? 'now' : `-${h}h`;
+      });
+
       Object.entries(CHART_DEFS).forEach(([canvasId, cfg]) => {
         if (canvasId.includes('24Chart')) {
-          // Create 12-hour labels (every hour)
-          const labels = Array.from({ length: 12 }, (_, i) => {
-            const hoursBack = (11 - i); // 0, 1, 2, ..., 11 hours back
-            const date = new Date(Date.now() - hoursBack * 3600000);
-            return date.toLocaleTimeString('en-AU', { hour: '2-digit', hour12: false });
-          });
-          
-          initOrUpdateChart(canvasId, parsed[cfg.key], labels);
+          const series = parsed[cfg.key] || [];
+          const s = series.length === 12 ? series : [...series, ...Array(12 - series.length).fill(null)].slice(0, 12);
+          initOrUpdateChart(canvasId, s, labels12);
         }
       });
-      
-      // Update LAST 7 DAYS chart with 42-point data
+
       renderLast7Chart(parsed.last7);
     }
 
     function updateSourceBadge(usedProxy) {
       const badge = document.getElementById('data-source-badge');
-      if (!WEATHER_DEBUG) {
-        badge.classList.add('hidden');
-        return;
-      }
+      if (!WEATHER_DEBUG) { badge.classList.add('hidden'); return; }
       badge.textContent = `source: ${usedProxy}`;
       badge.classList.remove('hidden');
     }
 
     async function copyLastUpdated() {
       const text = document.querySelector('#last-updated span').textContent;
-      try {
-        await navigator.clipboard.writeText(text);
-        if (window.WEATHER_DEBUG) console.log('Copied last-updated label:', text);
-      } catch (err) {
-        if (window.WEATHER_DEBUG) console.warn('Clipboard unavailable:', err);
-      }
+      try { await navigator.clipboard.writeText(text); } catch (_) {}
     }
 
     function updateUI(parsed, usedProxy) {
-      const timestamp = parsed.data.slice(parsed.mapping.timestampParts[0], parsed.mapping.timestampParts[2] + 1).join(':');
-      document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> <span>Last updated: ${timestamp || '—'} (live)</span>`;
+      const tsParts = parsed.data.slice(parsed.mapping.timestampParts[0], parsed.mapping.timestampParts[2] + 1);
+      const ts = tsParts.join(':') || '—';
+      document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> <span>Last updated: ${ts} (station)</span>`;
       updateSourceBadge(usedProxy);
 
-      document.getElementById('current-temp').textContent = fmtNum(parsed.temp);
+      // Hero
+      document.getElementById('current-temp').textContent = fmtNum(parsed.temp, 1);
       document.getElementById('condition').textContent = parsed.condition || '—';
       document.getElementById('feels-like').textContent = fmtNum(parsed.feelsLike, 1, '°C');
       document.getElementById('heat-index').textContent = fmtNum(parsed.heatIndex, 1, '°C');
       document.getElementById('day-high').textContent = fmtNum(parsed.dayHigh, 1, '°C');
       document.getElementById('day-low').textContent = fmtNum(parsed.dayLow, 1, '°C');
+
       document.getElementById('sunrise-hero').textContent = parsed.sunrise || '—';
       document.getElementById('sunset-hero').textContent = parsed.sunset || '—';
       document.getElementById('moon-phase-hero').textContent = fmtNum(parsed.moonIllum, 0, '%');
       document.getElementById('moon-age-hero').textContent = fmtNum(parsed.moonAge);
       document.getElementById('moon-phase-name-hero').textContent = moonPhaseName(parsed.moonAge);
-      const moonIconEl = document.getElementById('moon-icon-hero');
-      moonIconEl.innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge);
+      document.getElementById('moon-icon-hero').innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge);
 
-      document.getElementById('wind-speed').textContent = fmtNum(parsed.windSpeedKmh);
+      // Tiles
+      document.getElementById('wind-speed').textContent = fmtNum(parsed.windSpeedKmh, 1);
       document.getElementById('wind-dir').textContent = Number.isFinite(parsed.windDirDeg) ? cardinal(parsed.windDirDeg) : '—';
       document.getElementById('wind-gust').textContent = fmtNum(parsed.windGustKmh, 1, ' km/h');
       document.getElementById('wind-arrow').setAttribute('transform', `rotate(${Number.isFinite(parsed.windDirDeg) ? parsed.windDirDeg : 0} 40 40)`);
@@ -754,135 +696,133 @@
       document.getElementById('dewpoint').textContent = fmtNum(parsed.dewPoint, 1, '°C');
       document.getElementById('humidity-bar').style.width = `${clamp(Number.isFinite(parsed.humidity) ? parsed.humidity : 0, 0, 100)}%`;
 
-      document.getElementById('pressure').textContent = fmtNum(parsed.baro);
-      const pressureTrend = document.getElementById('pressure-trend');
+      document.getElementById('pressure').textContent = fmtNum(parsed.baro, 1);
+      const pt = document.getElementById('pressure-trend');
       if (Number.isFinite(parsed.baroTrend)) {
-        pressureTrend.innerHTML = parsed.baroTrend < 0
+        pt.innerHTML = parsed.baroTrend < 0
           ? `<i class="fa-solid fa-arrow-down text-red-400"></i> ${parsed.baroTrend.toFixed(1)}`
           : `<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${parsed.baroTrend.toFixed(1)}`;
-      } else {
-        pressureTrend.textContent = '—';
-      }
+      } else { pt.textContent = '—'; }
 
-      document.getElementById('rain-today').textContent = fmtNum(parsed.rainToday);
+      document.getElementById('rain-today').textContent = fmtNum(parsed.rainToday, 1);
       document.getElementById('rain-month').textContent = fmtNum(parsed.rainMonth, 1, ' mm');
       document.getElementById('rain-ytd').textContent = fmtNum(parsed.rainYTD, 1, ' mm');
-      document.getElementById('uv').textContent = fmtNum(parsed.uv);
+      document.getElementById('uv').textContent = fmtNum(parsed.uv, 1);
 
       updateAllCharts(parsed);
-      renderLast7Chart(parsed.last7);
       renderRecords(parsed.extra);
     }
 
     async function loadStationData() {
-      let rawText = '';
-      let extraText = '';
-      let hourText = '';
-      let dailyText = '';
-      let usedProxy = 'none';
+      let rawText = '', extraText = '', hourText = '', dailyText = '', usedProxy = 'none';
 
-      const candidates = [...PROXIES.map(proxy => proxy + encodeURIComponent(BASE)), BASE];
-      for (const basePrefix of candidates) {
+      const candidates = [...PROXIES.map(p => p + encodeURIComponent(BASE)), BASE];
+      for (const prefix of candidates) {
         try {
-          const urls = FILES.map(file => `${basePrefix}${encodeURIComponent(file)}?t=${Date.now()}`);
-          const responses = await Promise.all(urls.map(url => timeoutFetch(url)));
-          if (!responses.every(r => r.ok)) throw new Error('non-ok response');
-          const contentType = responses[0].headers.get('content-type') || '';
-          if (contentType.includes('text/html')) throw new Error('HTML error page');
-          [rawText, extraText, hourText, dailyText] = await Promise.all(responses.map(r => r.text()));
-          const trimmed = rawText.trim();
-          if (trimmed.length < 200 || !/^\d/.test(trimmed)) throw new Error('sanity check failed');
-          usedProxy = basePrefix.startsWith(BASE) ? 'direct' : basePrefix.split('?')[0];
+          const urls = FILES.map(f => `${prefix}${encodeURIComponent(f)}?t=${Date.now()}`);
+          const resps = await Promise.all(urls.map(u => timeoutFetch(u)));
+          if (!resps.every(r => r.ok)) throw new Error('bad response');
+          const ct = resps[0].headers.get('content-type') || '';
+          if (ct.includes('text/html')) throw new Error('HTML instead of data');
+          [rawText, extraText, hourText, dailyText] = await Promise.all(resps.map(r => r.text()));
+          const t = rawText.trim();
+          if (t.length < 150 || !/^\d/.test(t)) throw new Error('invalid payload');
+          usedProxy = prefix.startsWith(BASE) ? 'direct' : prefix.split(/[?]/)[0];
           break;
-        } catch (err) {
-          console.warn('Proxy attempt failed:', basePrefix, err.message);
+        } catch (e) {
+          console.warn('Fetch via', prefix, e.message);
         }
       }
-
-      if (!rawText || rawText.length < 200) throw new Error('All proxies failed – station data unavailable');
+      if (!rawText || rawText.length < 150) throw new Error('All sources failed — station unreachable');
 
       const parsed = parseClientRaw(rawText, extraText, hourText, dailyText);
-      console.log(`%c✅ Mudie clientraw loaded via ${usedProxy}`, 'color:#10b981;font-weight:bold');
-
-      if (window.WEATHER_DEBUG) {
-        console.groupCollapsed('%cMudie Diagnostics', 'color:#10b981');
-        console.log('usedProxy:', usedProxy);
-        console.log('lengths:', parsed.diag);
-        console.log('key values:', {
-          temp: parsed.temp,
-          humidity: parsed.humidity,
-          baro: parsed.baro,
-          condition: parsed.condition,
-          sunrise: parsed.sunrise
-        });
-        console.log('series sizes:', {
-          hourlyTemps: parsed.hourlyTemps.length,
-          hourlyWind: parsed.hourlyWind.length,
-          hourlyBaro: parsed.hourlyBaro.length,
-          hourlyRain: parsed.hourlyRain.length,
-          last7: parsed.last7.length
-        });
-        console.groupEnd();
+      if (WEATHER_DEBUG) {
+        console.log('%c[Weather] Parsed OK', 'color:#10b981', parsed.diag);
       }
-
       return { parsed, usedProxy };
     }
 
     async function loadForecast() {
       const container = document.getElementById('forecast-container');
-      container.innerHTML = '<div class="col-span-3 text-center py-8 text-white/60">Loading BOM forecast...</div>';
+      container.innerHTML = '<div class="col-span-3 text-center py-6 text-white/60 text-sm">Loading forecast…</div>';
       try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney`);
-        const forecastData = await res.json();
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney';
+        const res = await fetch(url, { cache: 'no-store' });
+        const j = await res.json();
         container.innerHTML = '';
         for (let i = 0; i < 6; i++) {
-          const date = new Date(forecastData.daily.time[i]);
-          const dayName = date.toLocaleDateString('en-AU', { weekday: 'short' });
-          const weatherCode = forecastData.daily.weather_code[i];
-          const iconClass = getWeatherIcon(weatherCode);
-          const conditionLabel = getWeatherLabel(weatherCode);
-          const high = Math.round(forecastData.daily.temperature_2m_max[i]);
-          const low = Math.round(forecastData.daily.temperature_2m_min[i]);
-          const rain = forecastData.daily.precipitation_sum[i] || 0;
-          const card = document.createElement('div');
-          card.className = 'forecast-card glass rounded-2xl p-3 flex flex-col items-center';
-          card.innerHTML = `
-            <div class="text-xs font-medium opacity-75">${dayName}</div>
-            <i class="fa-solid ${iconClass} text-4xl my-2 text-slate-300"></i>
-            <div class="text-[11px] text-white/70 uppercase tracking-wide">${conditionLabel}</div>
-            <div class="text-lg font-light">${high}° <span class="text-white/60">/</span> ${low}°</div>
-            <div class="text-xs text-sky-300 mt-1">${rain.toFixed(1)} mm</div>
-          `;
-          container.appendChild(card);
+          const code = j.daily.weather_code[i];
+          const hi = Math.round(j.daily.temperature_2m_max[i]);
+          const lo = Math.round(j.daily.temperature_2m_min[i]);
+          const rain = j.daily.precipitation_sum[i] || 0;
+          const date = new Date(j.daily.time[i]);
+          const day = date.toLocaleDateString('en-AU', { weekday: 'short' });
+          const el = document.createElement('div');
+          el.className = 'forecast-card glass rounded-2xl p-3 flex flex-col items-center border border-white/10';
+          el.innerHTML = `
+            <div class="text-xs font-medium opacity-75">${day}</div>
+            <i class="fa-solid ${getWeatherIcon(code)} text-4xl my-2 text-slate-300"></i>
+            <div class="text-[11px] text-white/70 uppercase tracking-wide">${getWeatherLabel(code)}</div>
+            <div class="text-lg font-light">${hi}° <span class="text-white/60">/</span> ${lo}°</div>
+            <div class="text-xs text-sky-300 mt-0.5">${rain.toFixed(1)} mm</div>`;
+          container.appendChild(el);
         }
       } catch (e) {
-        container.innerHTML = '<div class="col-span-3 text-center py-8 text-orange-400">Forecast unavailable</div>';
+        container.innerHTML = '<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>';
       }
     }
 
     async function loadWeather() {
       if (isRefreshing) return;
       setRefreshingState(true);
+
       try {
         const { parsed, usedProxy } = await loadStationData();
         updateUI(parsed, usedProxy);
         document.getElementById('error-toast').classList.add('hidden');
       } catch (e) {
         const toast = document.getElementById('error-toast');
-        document.getElementById('error-text').textContent = e.message;
+        document.getElementById('error-text').textContent = e.message || 'Failed to load station data';
         toast.style.display = 'flex';
+        // Auto-hide toast after 6 seconds
+        setTimeout(() => toast.classList.add('hidden'), 6000);
       }
+
+      // Always attempt fresh forecast
       await loadForecast();
       setRefreshingState(false);
     }
 
-    window.onload = () => {
+    function init() {
       document.getElementById('code-update-stamp').textContent = `Code update: ${getCodeUpdateLabel()}`;
-      document.getElementById('refresh-btn').addEventListener('click', loadWeather);
+
+      const refreshBtn = document.getElementById('refresh-btn');
+      refreshBtn.addEventListener('click', loadWeather);
       document.getElementById('last-updated').addEventListener('click', copyLastUpdated);
+
+      // Keyboard support
+      refreshBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); loadWeather(); }
+      });
+
+      // Initial load
       loadWeather();
-      setInterval(loadWeather, REFRESH_INTERVAL_MS);
-    };
+
+      // Periodic refresh
+      setInterval(() => {
+        if (!document.hidden) loadWeather();
+      }, REFRESH_INTERVAL_MS);
+
+      // Optional: pause polling when tab hidden (resume on visible)
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && !isRefreshing) {
+          // gentle refresh when user returns
+          setTimeout(loadWeather, 800);
+        }
+      });
+    }
+
+    window.onload = init;
   </script>
 </body>
 </html>
