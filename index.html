@@ -47,6 +47,31 @@
       letter-spacing: 0.5px;
       color: #cbd5e1;
     }
+
+    /* NEW: Glass metric alignment system */
+    .glass-metric {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .glass-metric .content {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+    .glass-metric .value {
+      font-size: 2.25rem;
+      line-height: 1.05;
+    }
+    .glass-metric .label {
+      letter-spacing: 1.5px;
+      font-weight: 500;
+    }
+    .glass-metric .subtext {
+      font-size: 0.75rem;
+      line-height: 1.25;
+      color: rgb(148 163 184);
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen pb-12">
@@ -183,17 +208,18 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-7 relative z-10">
-    <!-- ICON TILES -->
+    <!-- ICON TILES - FULLY ALIGNED -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5" id="metrics-grid">
+      
       <!-- Wind -->
-      <div class="glass glass-hover rounded-3xl p-4.5 border border-white/10 flex items-center gap-4">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind" aria-hidden="true"></i></div>
-        <div class="flex-1 min-w-0">
-          <div class="text-emerald-400 text-xs font-medium tracking-widest">WIND</div>
-          <div id="wind-speed" class="text-4xl font-light tabular-nums metric-value" aria-label="Current wind speed">—</div>
-          <div class="text-xs text-white/70">km/h • <span id="wind-dir">—</span></div>
-          <div class="text-xs text-white/60 mt-1">Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">— km/h</span></div>
-          <div class="mt-2"><svg id="spark-wind" width="92" height="22" class="sparkline" aria-hidden="true"></svg></div>
+        <div class="content">
+          <div class="label text-emerald-400 text-xs tracking-widest">WIND</div>
+          <div id="wind-speed" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">km/h • <span id="wind-dir">—</span></div>
+          <div class="subtext mt-1">Max gust <span id="wind-gust" class="font-medium text-orange-400">— km/h</span></div>
+          <div class="mt-3"><svg id="spark-wind" width="110" height="22" class="sparkline" aria-hidden="true"></svg></div>
         </div>
         <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
           <svg id="compass-svg" width="84" height="84" viewBox="0 0 80 80" class="compass">
@@ -206,44 +232,48 @@
           </svg>
         </div>
       </div>
+
       <!-- Humidity -->
-      <div class="glass glass-hover rounded-3xl p-4.5 border border-white/10 flex items-center gap-4">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-droplet" aria-hidden="true"></i></div>
-        <div class="flex-1 min-w-0">
-          <div class="text-sky-400 text-xs font-medium tracking-widest">HUMIDITY</div>
-          <div id="humidity" class="text-4xl font-light tabular-nums metric-value" aria-label="Current relative humidity">—</div>
-          <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">—°C</span></div>
+        <div class="content">
+          <div class="label text-sky-400 text-xs tracking-widest">HUMIDITY</div>
+          <div id="humidity" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">% • Dew point <span id="dewpoint" class="font-medium">—°C</span></div>
           <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden"><div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-0" role="progressbar" aria-label="Humidity percentage bar"></div></div>
-          <div class="mt-1"><svg id="spark-humidity" width="92" height="20" class="sparkline" aria-hidden="true"></svg></div>
+          <div class="mt-2"><svg id="spark-humidity" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
+
       <!-- Barometer -->
-      <div class="glass glass-hover rounded-3xl p-4.5 border border-white/10 flex items-center gap-4">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></div>
-        <div class="flex-1 min-w-0">
-          <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
-          <div id="pressure" class="text-4xl font-light tabular-nums metric-value" aria-label="Current barometric pressure">—</div>
-          <div class="flex items-center gap-x-2 text-xs text-white/70"><span>hPa</span><span id="pressure-trend" class="flex items-center font-medium" aria-label="Pressure trend"></span></div>
-          <div class="mt-1.5"><svg id="spark-baro" width="92" height="20" class="sparkline" aria-hidden="true"></svg></div>
+        <div class="content">
+          <div class="label text-amber-400 text-xs tracking-widest">BAROMETER</div>
+          <div id="pressure" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext flex items-center gap-x-2"><span>hPa</span><span id="pressure-trend" class="flex items-center font-medium" aria-label="Pressure trend"></span></div>
+          <div class="mt-2"><svg id="spark-baro" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
+
       <!-- Rain -->
-      <div class="glass glass-hover rounded-3xl p-4.5 border border-white/10 flex items-center gap-4">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain" aria-hidden="true"></i></div>
-        <div class="flex-1 min-w-0">
-          <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
-          <div id="rain-today" class="text-4xl font-light tabular-nums metric-value" aria-label="Rainfall total today">—</div>
-          <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">— mm</span> • YTD <span id="rain-ytd" class="font-medium">— mm</span></div>
-          <div class="mt-1.5"><svg id="spark-rain" width="92" height="20" class="sparkline" aria-hidden="true"></svg></div>
+        <div class="content">
+          <div class="label text-blue-400 text-xs tracking-widest">RAIN</div>
+          <div id="rain-today" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">mm today • Monthly <span id="rain-month" class="font-medium">— mm</span> • YTD <span id="rain-ytd" class="font-medium">— mm</span></div>
+          <div class="mt-2"><svg id="spark-rain" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
+
       <!-- UV -->
-      <div class="glass glass-hover rounded-3xl p-4.5 border border-white/10 flex items-center gap-4">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-sun" aria-hidden="true"></i></div>
-        <div class="flex-1 min-w-0">
-          <div class="text-orange-400 text-xs font-medium tracking-widest">UV INDEX</div>
-          <div id="uv" class="text-4xl font-light tabular-nums metric-value" aria-label="Current UV index">—</div>
-          <div class="text-xs text-white/70">Index (0–11+)</div>
+        <div class="content">
+          <div class="label text-orange-400 text-xs tracking-widest">UV INDEX</div>
+          <div id="uv" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">Index (0–11+)</div>
         </div>
       </div>
     </div>
