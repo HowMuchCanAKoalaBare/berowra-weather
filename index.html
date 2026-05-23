@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,6 +24,9 @@
     .glass-hover:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.16); }
     .spin { animation: spin 0.9s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .sparkline { display: block; opacity: 0.85; }
+    .sparkline line { stroke: #64748b; stroke-opacity: 0.25; }
     .data-loading { opacity: 0.6; pointer-events: none; }
     .metric-value { font-variant-numeric: tabular-nums; }
   </style>
@@ -53,6 +57,12 @@
         <div class="hidden sm:flex items-center gap-x-2 text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10" aria-label="Live data connection">
           <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
           <span>Live</span>
+        </div>
+
+        <!-- Freshness indicator (populated by JS) -->
+        <div id="freshness" class="hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border border-white/10 bg-white/5 text-white/70" aria-live="polite">
+          <i class="fa-solid fa-sync fa-sm"></i>
+          <span id="freshness-text">—</span>
         </div>
         <a href="http://www.mudiefamily.org/weather/" target="_blank" rel="noopener noreferrer" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center gap-x-2 transition" aria-label="Visit original Mudie Family weather station page">
           <i class="fa-solid fa-chart-line"></i> <span>Original Station</span>
@@ -123,6 +133,7 @@
           <div id="wind-speed" class="text-4xl font-light tabular-nums metric-value" aria-label="Current wind speed">—</div>
           <div class="text-xs text-white/70">km/h • <span id="wind-dir">—</span></div>
           <div class="text-xs text-white/60 mt-1">Max gust last hour <span id="wind-gust" class="font-medium text-orange-400">— km/h</span></div>
+          <div class="mt-2"><svg id="spark-wind" width="92" height="22" class="sparkline" aria-hidden="true"></svg></div>
         </div>
         <div class="relative w-20 h-20 flex items-center justify-center flex-shrink-0" aria-hidden="true">
           <svg id="compass-svg" width="84" height="84" viewBox="0 0 80 80" class="compass">
@@ -143,6 +154,7 @@
           <div id="humidity" class="text-4xl font-light tabular-nums metric-value" aria-label="Current relative humidity">—</div>
           <div class="text-xs text-white/70">% • Dew point <span id="dewpoint" class="font-medium">—°C</span></div>
           <div class="mt-3 h-2 bg-white/10 rounded-full overflow-hidden"><div id="humidity-bar" class="h-2 bg-sky-400 rounded-full w-0" role="progressbar" aria-label="Humidity percentage bar"></div></div>
+          <div class="mt-1"><svg id="spark-humidity" width="92" height="20" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
       <!-- Barometer -->
@@ -152,6 +164,7 @@
           <div class="text-amber-400 text-xs font-medium tracking-widest">BAROMETER</div>
           <div id="pressure" class="text-4xl font-light tabular-nums metric-value" aria-label="Current barometric pressure">—</div>
           <div class="flex items-center gap-x-2 text-xs text-white/70"><span>hPa</span><span id="pressure-trend" class="flex items-center font-medium" aria-label="Pressure trend"></span></div>
+          <div class="mt-1.5"><svg id="spark-baro" width="92" height="20" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
       <!-- Rain -->
@@ -161,6 +174,7 @@
           <div class="text-blue-400 text-xs font-medium tracking-widest">RAIN</div>
           <div id="rain-today" class="text-4xl font-light tabular-nums metric-value" aria-label="Rainfall total today">—</div>
           <div class="text-xs text-white/70">mm today • Monthly <span id="rain-month" class="font-medium">— mm</span> • YTD <span id="rain-ytd" class="font-medium">— mm</span></div>
+          <div class="mt-1.5"><svg id="spark-rain" width="92" height="20" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
       <!-- UV -->
@@ -192,9 +206,9 @@
     <!-- LAST 7+ DAYS (HONEST DAILY) -->
     <div class="mt-8 glass glass-hover rounded-3xl p-6 border border-white/10">
       <h3 class="text-lg font-medium mb-2 flex items-center gap-x-2">
-        <i class="fa-solid fa-calendar" aria-hidden="true"></i> LAST 7–31 DAYS (DAILY SUMMARY)
+        <i class="fa-solid fa-calendar" aria-hidden="true"></i> LAST 7 DAYS (DAILY SUMMARY)
       </h3>
-      <p class="text-xs text-white/60 mb-4">Daily high/low, rain and barometer from the station’s 31-day rolling file. Not 4-hourly resolution.</p>
+      <p class="text-xs text-white/60 mb-4">Daily temperature range (high/low band) + rainfall from the station’s 31-day file. Clean daily view, not interpolated.</p>
       <div class="glass rounded-3xl p-4 border border-white/5">
         <div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Daily weather summary for recent days"></canvas></div>
       </div>
@@ -214,7 +228,7 @@
   </div>
 
   <div class="mt-12 text-center text-xs bg-white/5 rounded-3xl py-4 px-8 border border-white/10 max-w-screen-2xl mx-auto space-y-1">
-    <div>Live dashboard • Real clientraw + Open-Meteo • Refreshes every 90s</div>
+    <div>Live dashboard • Reliable proxy + sparklines + honest daily range • Refreshes every 90s</div>
     <div id="code-update-stamp" class="text-white/60">Code update: —</div>
   </div>
 
@@ -224,6 +238,15 @@
 
     const FETCH_TIMEOUT = 9000;
     const REFRESH_INTERVAL_MS = 90000;
+
+    // === PROXY CONFIGURATION ===
+    // Set USE_CUSTOM_PROXY = true and put your deployed Cloudflare Worker URL here.
+    // This is the #1 reliability improvement for the dashboard.
+    const USE_CUSTOM_PROXY = false; // ← CHANGE TO true AFTER DEPLOYING THE WORKER
+    const CUSTOM_PROXY_BASE = 'https://your-worker-name.yourname.workers.dev/';
+
+    // If you want to force the old public proxies for testing, set this to true
+    const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
       const now = new Date();
@@ -265,10 +288,11 @@
     const SERIES_MAP = {
       // Recent ~12 samples (temps look good from extra 637 block; wind is weaker in public export)
       recent12: {
-        tempStart: 637,      // extra.txt — recent temps (good)
-        windKnotsStart: 562, // extra.txt — noisy / incomplete for wind
-        baroStart: 302,      // clientrawhour.txt — solid recent pressure
-        rainStart: 400       // clientrawhour.txt — rainfall per period
+        tempStart: 637,       // extra.txt — recent temps (good)
+        windKnotsStart: 562,  // extra.txt — noisy / incomplete for wind
+        baroStart: 302,       // clientrawhour.txt — solid recent pressure
+        rainStart: 400,       // clientrawhour.txt — rainfall per period
+        humidityStart: 623    // extra.txt — recent humidity % right before temp block
       },
       // 31-day daily aggregates (used for honest daily summary)
       daily: { highStart: 1, lowStart: 32, rainStart: 63, baroStart: 94, count: 31 }
@@ -446,6 +470,7 @@
 
       const hourlyBaro = Array.from({ length: 12 }, (_, i) => toNum(read(hourData, s.baroStart + i)));
       const hourlyRain = Array.from({ length: 12 }, (_, i) => toNum(read(hourData, s.rainStart + i)));
+      const hourlyHumidity = Array.from({ length: 12 }, (_, i) => toNum(read(extra, s.humidityStart + i)));
 
       // === Honest daily summary (last 7–31 days) ===
       const d = SERIES_MAP.daily;
@@ -476,7 +501,7 @@
         feelsLike: Number.isFinite(feelsLike) ? feelsLike : temp,
         heatIndex: Number.isFinite(heatIndex) ? heatIndex : temp,
         condition, sunrise, sunset, moonIllum, moonAge, dayHigh, dayLow, baroTrend,
-        hourlyTemps, hourlyWind: hourlyWindKmh, hourlyBaro, hourlyRain,
+        hourlyTemps, hourlyWind: hourlyWindKmh, hourlyBaro, hourlyRain, hourlyHumidity,
         last7, data, extra, dailyData, mapping: FIELD_MAP
       };
     }
@@ -526,21 +551,24 @@
         .join('');
     }
 
-    // Honest 7-day daily summary chart (no fake 4-hourly points)
+    // Honest 7-day daily summary chart — redesigned with temperature range + rain focus
     function renderLast7Chart(last7) {
       if (!last7 || !last7.length) return;
 
       const points = [...last7];
+
+      // Generate nicer labels (Mon 19, Tue 20, etc.)
       const labels = points.map((p, i) => {
         const daysBack = 6 - i;
         const d = new Date(Date.now() - daysBack * 86400000);
-        return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric' });
+        const wd = d.toLocaleDateString('en-AU', { weekday: 'short' });
+        const day = d.getDate();
+        return `${wd} ${day}`;
       });
 
-      const highs = points.map(p => p.high);
-      const lows = points.map(p => p.low);
-      const rain = points.map(p => p.rain);
-      const baro = points.map(p => p.baro);
+      const highs = points.map(p => Number.isFinite(p.high) ? p.high : null);
+      const lows = points.map(p => Number.isFinite(p.low) ? p.low : null);
+      const rain = points.map(p => Number.isFinite(p.rain) ? p.rain : 0);
 
       const canvasId = 'last7Chart';
       if (!chartInstances[canvasId]) {
@@ -549,33 +577,99 @@
           data: {
             labels,
             datasets: [
-              { type: 'line', label: 'High °C', data: highs, borderColor: '#10b981', borderWidth: 2.5, tension: 0.25, pointRadius: 2, yAxisID: 'yTemp' },
-              { type: 'line', label: 'Low °C', data: lows, borderColor: '#34d3a3', borderWidth: 2, tension: 0.25, pointRadius: 2, borderDash: [3, 2], yAxisID: 'yTemp' },
-              { type: 'bar', label: 'Rain mm', data: rain, backgroundColor: 'rgba(59,130,246,0.55)', borderColor: '#3b82f6', borderWidth: 1, yAxisID: 'yRain' },
-              { type: 'line', label: 'Baro hPa', data: baro, borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3, pointRadius: 2, yAxisID: 'yBaro' }
+              // High temperature line (top of range)
+              {
+                type: 'line',
+                label: 'High',
+                data: highs,
+                borderColor: '#4ade80',
+                borderWidth: 2,
+                tension: 0.3,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                yAxisID: 'yTemp',
+                order: 1
+              },
+              // Low temperature — fills upward to the High dataset
+              {
+                type: 'line',
+                label: 'Low',
+                data: lows,
+                borderColor: '#22c55e',
+                borderWidth: 1.5,
+                tension: 0.3,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                fill: '-1',                 // fills between Low and High
+                backgroundColor: 'rgba(52, 211, 153, 0.18)',
+                yAxisID: 'yTemp',
+                order: 2
+              },
+              // Rainfall bars
+              {
+                type: 'bar',
+                label: 'Rain mm',
+                data: rain,
+                backgroundColor: 'rgba(96, 165, 250, 0.65)',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                borderRadius: 3,
+                yAxisID: 'yRain',
+                order: 0
+              }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            plugins: { legend: { display: true, labels: { color: '#cbd5e1', boxWidth: 12 } } },
+            plugins: {
+              legend: {
+                display: true,
+                labels: { color: '#cbd5e1', boxWidth: 10, padding: 12, font: { size: 11 } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    if (ctx.dataset.label === 'Rain mm') return `${ctx.raw.toFixed(1)} mm`;
+                    return `${ctx.raw.toFixed(1)} °C`;
+                  }
+                }
+              }
+            },
             scales: {
-              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,0.25)' } },
-              yTemp: { type: 'linear', position: 'left', ticks: { color: '#10b981' }, grid: { color: '#334155' }, suggestedMin: 5, suggestedMax: 30 },
-              yRain: { position: 'right', ticks: { color: '#3b82f6' }, grid: { drawOnChartArea: false }, beginAtZero: true, max: 25 },
-              yBaro: { position: 'right', ticks: { color: '#8b5cf6' }, grid: { drawOnChartArea: false }, suggestedMin: 1010, suggestedMax: 1035 }
+              x: {
+                ticks: { color: '#94a3b8', font: { size: 11 } },
+                grid: { color: 'rgba(51,65,85,0.3)' }
+              },
+              yTemp: {
+                type: 'linear',
+                position: 'left',
+                ticks: { color: '#4ade80', stepSize: 5 },
+                grid: { color: '#334155' },
+                suggestedMin: 5,
+                suggestedMax: 28,
+                title: { display: true, text: '°C', color: '#4ade80', font: { size: 10 } }
+              },
+              yRain: {
+                position: 'right',
+                ticks: { color: '#60a5fa' },
+                grid: { drawOnChartArea: false },
+                beginAtZero: true,
+                suggestedMax: 12,
+                title: { display: true, text: 'mm', color: '#60a5fa', font: { size: 10 } }
+              }
             }
           }
         });
         return;
       }
+
       const c = chartInstances[canvasId];
       c.data.labels = labels;
       c.data.datasets[0].data = highs;
       c.data.datasets[1].data = lows;
       c.data.datasets[2].data = rain;
-      c.data.datasets[3].data = baro;
       c.update();
     }
 
@@ -635,6 +729,50 @@
       chart.update();
     }
 
+    function renderSparkline(svg, values, color) {
+      if (!svg || !Array.isArray(values)) return;
+      const clean = values.map(v => Number.isFinite(v) ? v : null);
+      const nums = clean.filter(v => v !== null);
+      if (nums.length < 2) {
+        svg.innerHTML = '';
+        return;
+      }
+
+      const w = 92, h = 20;
+      const min = Math.min(...nums);
+      const max = Math.max(...nums);
+      const range = (max - min) || 1;
+
+      const pts = nums.map((v, i) => {
+        const x = (i / (nums.length - 1)) * w;
+        const y = h - 1 - ((v - min) / range) * (h - 3);
+        return [x, y];
+      });
+
+      const linePoints = pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+      const firstX = pts[0][0], lastX = pts[pts.length - 1][0];
+      const firstY = pts[0][1], lastY = pts[pts.length - 1][1];
+
+      // area under the line
+      let areaD = `M0,${h} L`;
+      areaD += pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+      areaD += ` L${w},${h} Z`;
+
+      const gradId = 'spark-' + (svg.id || 'g').replace(/[^a-z0-9]/gi, '');
+
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="10%" stop-color="${color}" stop-opacity="0.32"/>
+            <stop offset="95%" stop-color="${color}" stop-opacity="0.03"/>
+          </linearGradient>
+        </defs>
+        <path d="${areaD}" fill="url(#${gradId})"/>
+        <polyline points="${linePoints}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="1.6" fill="${color}"/>
+      `;
+    }
+
     function updateAllCharts(parsed) {
       // Build 12 relative time labels (most recent on the right)
       const labels12 = Array.from({ length: 12 }, (_, i) => {
@@ -658,6 +796,40 @@
       if (!WEATHER_DEBUG) { badge.classList.add('hidden'); return; }
       badge.textContent = `source: ${usedProxy}`;
       badge.classList.remove('hidden');
+    }
+
+    function updateFreshnessUI() {
+      const el = document.getElementById('freshness');
+      const textEl = document.getElementById('freshness-text');
+      if (!el || !textEl) return;
+
+      const last = window.lastSuccessfulFetch || Number(localStorage.getItem('lastSuccessfulFetch') || 0);
+      if (!last) {
+        el.classList.add('hidden');
+        return;
+      }
+
+      const ageMs = Date.now() - last;
+      const ageMin = Math.floor(ageMs / 60000);
+      const ageSec = Math.floor(ageMs / 1000);
+
+      let label = '';
+      let colorClass = 'text-emerald-400 border-emerald-400/30';
+
+      if (ageSec < 45) {
+        label = 'just now';
+      } else if (ageMin < 2) {
+        label = `${ageSec}s ago`;
+      } else if (ageMin < 8) {
+        label = `${ageMin}m ago`;
+      } else {
+        label = `${ageMin}m ago`;
+        colorClass = ageMin > 12 ? 'text-orange-400 border-orange-400/30' : 'text-yellow-400 border-yellow-400/30';
+      }
+
+      textEl.textContent = label;
+      el.className = `hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border bg-white/5 ${colorClass}`;
+      el.classList.remove('hidden');
     }
 
     async function copyLastUpdated() {
@@ -709,14 +881,35 @@
       document.getElementById('rain-ytd').textContent = fmtNum(parsed.rainYTD, 1, ' mm');
       document.getElementById('uv').textContent = fmtNum(parsed.uv, 1);
 
+      // Mini sparklines (last ~12 samples)
+      renderSparkline(document.getElementById('spark-wind'), parsed.hourlyWind, '#34d399');
+      renderSparkline(document.getElementById('spark-baro'), parsed.hourlyBaro, '#fbbf24');
+      renderSparkline(document.getElementById('spark-rain'), parsed.hourlyRain, '#60a5fa');
+      renderSparkline(document.getElementById('spark-humidity'), parsed.hourlyHumidity, '#38bdf8');
+
       updateAllCharts(parsed);
       renderRecords(parsed.extra);
+      updateFreshnessUI();
     }
 
     async function loadStationData() {
       let rawText = '', extraText = '', hourText = '', dailyText = '', usedProxy = 'none';
 
-      const candidates = [...PROXIES.map(p => p + encodeURIComponent(BASE)), BASE];
+      // Build list of sources to try (custom proxy first if enabled)
+      let candidates = [];
+
+      if (USE_CUSTOM_PROXY && CUSTOM_PROXY_BASE && !FORCE_PUBLIC_PROXIES) {
+        // Preferred path — your own reliable Cloudflare Worker
+        const base = CUSTOM_PROXY_BASE.endsWith('/') ? CUSTOM_PROXY_BASE : CUSTOM_PROXY_BASE + '/';
+        candidates.push(base);
+        usedProxy = 'custom-proxy';
+      }
+
+      if (candidates.length === 0 || FORCE_PUBLIC_PROXIES) {
+        // Fallback to the old public proxies + direct
+        candidates = [...PROXIES.map(p => p + encodeURIComponent(BASE)), BASE];
+      }
+
       for (const prefix of candidates) {
         try {
           const urls = FILES.map(f => `${prefix}${encodeURIComponent(f)}?t=${Date.now()}`);
@@ -727,12 +920,21 @@
           [rawText, extraText, hourText, dailyText] = await Promise.all(resps.map(r => r.text()));
           const t = rawText.trim();
           if (t.length < 150 || !/^\d/.test(t)) throw new Error('invalid payload');
-          usedProxy = prefix.startsWith(BASE) ? 'direct' : prefix.split(/[?]/)[0];
+
+          // Record successful fetch time for freshness display
+          const fetchTime = Date.now();
+          localStorage.setItem('lastSuccessfulFetch', String(fetchTime));
+          window.lastSuccessfulFetch = fetchTime;
+
+          usedProxy = prefix.startsWith(BASE) ? 'direct'
+                    : (prefix.includes('workers.dev') || prefix.includes('your-worker')) ? 'custom-proxy'
+                    : prefix.split(/[?]/)[0];
           break;
         } catch (e) {
           console.warn('Fetch via', prefix, e.message);
         }
       }
+
       if (!rawText || rawText.length < 150) throw new Error('All sources failed — station unreachable');
 
       const parsed = parseClientRaw(rawText, extraText, hourText, dailyText);
@@ -807,8 +1009,15 @@
 
       // Initial load
       loadWeather();
+      // Show cached freshness on first paint
+      setTimeout(updateFreshnessUI, 120);
 
-      // Periodic refresh
+      // Keep the "X min ago" freshness label updated (cheap, no network call)
+      setInterval(() => {
+        if (!document.hidden) updateFreshnessUI();
+      }, 30000);
+
+      // Periodic full refresh
       setInterval(() => {
         if (!document.hidden) loadWeather();
       }, REFRESH_INTERVAL_MS);
