@@ -380,9 +380,13 @@
     const REFRESH_INTERVAL_MS = 90000;
 
     // === PROXY CONFIGURATION ===
-    // Set USE_CUSTOM_PROXY = true and put your deployed Cloudflare Worker URL here.
-    // This is the #1 reliability improvement for the dashboard.
-    const USE_CUSTOM_PROXY = false; // ← CHANGE TO true AFTER DEPLOYING THE WORKER
+    // Public proxies (allorigins, codetabs, corsproxy, etc.) are unreliable and frequently
+    // break for this station. This is the #1 cause of "no weather data" on the dashboard.
+    //
+    // Deploy a tiny Cloudflare Worker (see the berowra-weather README or typical
+    // "cors proxy worker" examples — ~10 lines) that forwards the four clientraw*.txt files
+    // with proper CORS headers, then set the values below and redeploy.
+    const USE_CUSTOM_PROXY = false; // ← CHANGE TO true + set URL AFTER DEPLOYING YOUR WORKER
     const CUSTOM_PROXY_BASE = 'https://your-worker-name.yourname.workers.dev/';
 
     // If you want to force the old public proxies for testing, set this to true
@@ -450,12 +454,12 @@
 
     function cardinal(dir) {
       return DIRS[Math.round((Number(dir) || 0) / 22.5) % 16];
-    };
+    }
 
     function getWeatherIcon(code) {
       const map = { 0: 'fa-sun', 1: 'fa-cloud-sun', 2: 'fa-cloud-sun', 3: 'fa-cloud', 45: 'fa-smog', 48: 'fa-smog', 51: 'fa-cloud-rain', 53: 'fa-cloud-rain', 55: 'fa-cloud-rain', 61: 'fa-cloud-showers-heavy', 63: 'fa-cloud-showers-heavy', 65: 'fa-cloud-showers-heavy', 71: 'fa-snowflake', 73: 'fa-snowflake', 75: 'fa-snowflake', 80: 'fa-cloud-rain', 81: 'fa-cloud-showers-heavy', 82: 'fa-cloud-showers-heavy', 95: 'fa-bolt', 96: 'fa-bolt', 99: 'fa-bolt' };
       return map[code] || 'fa-cloud';
-    };
+    }
 
     function getWeatherLabel(code) {
       if (code === 0) return 'Sunny';
@@ -469,36 +473,36 @@
       if (code === 80 || code === 81 || code === 82) return 'Showers';
       if (code === 95 || code === 96 || code === 99) return 'Thunderstorm';
       return 'Cloudy';
-    };
+    }
 
     function timeoutFetch(url, ms = FETCH_TIMEOUT) {
       return Promise.race([
         fetch(url, { cache: 'no-store' }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms))
       ]);
-    };
+    }
 
     function toNum(v) {
       const n = Number(v);
       return Number.isFinite(n) ? n : null;
-    };
+    }
 
     function fmtNum(v, digits = 1, suffix = '') {
       return Number.isFinite(v) ? `${v.toFixed(digits)}${suffix}` : '—';
-    };
+    }
 
     function clamp(v, min, max) {
       return Math.min(max, Math.max(min, v));
-    };
+    }
 
     function read(arr, idx, fallback = '') {
       return idx < arr.length ? arr[idx] : fallback;
-    };
+    }
 
     function cleanCondition(raw) {
       if (!raw) return '—';
-      return raw.replace(/_/g, ' ').replace(///g, ' / ').replace(/\/s+/g, ' ').trim().toUpperCase();
-    };
+      return raw.replace(/_/g, ' ').replace(/\//g, ' / ').replace(/\s+/g, ' ').trim().toUpperCase();
+    }
 
     function moonIcon(illumination, moonAge, size = 40) {
       if (!Number.isFinite(illumination)) return '🌑';
@@ -544,7 +548,7 @@
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#94a3b8" stroke-width="${strokeW}"></circle>
         </svg>
       `;
-    };
+    }
 
     function moonPhaseName(moonAge) {
       const synodicMonth = 29.53058867;
@@ -553,7 +557,7 @@
       const idx = Math.floor((age / synodicMonth) * 8);
       const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
       return phases[Math.max(0, Math.min(phases.length - 1, idx))];
-    };
+    }
 
     function setRefreshingState(refreshing) {
       isRefreshing = refreshing;
@@ -565,7 +569,7 @@
       button.classList.toggle('cursor-wait', refreshing);
       icon.classList.toggle('spin', refreshing);
       label.textContent = refreshing ? 'Refreshing…' : 'Refresh';
-    };
+    }
 
     function setInitialLoadingState(loading) {
       // Hero big temp + condition
@@ -587,7 +591,7 @@
           canvas.parentElement.classList.toggle('skeleton', loading);
         }
       });
-    };
+    }
 
     function parseClientRaw(rawText, extraText, hourText, dailyText) {
       const data = rawText.trim().split(/\s+/);
@@ -686,7 +690,7 @@
         last7, data, extra, dailyData, mapping: FIELD_MAP,
         windHistorySynthesized, sanity
       };
-    };
+    }
 
     function fmtRecordStamp(extra, startIdx) {
       const hh = read(extra, startIdx + 1, '').padStart(2, '0');
@@ -698,7 +702,7 @@
       const dt = new Date(yyyy, mon - 1, dd);
       const month = dt.toLocaleDateString('en-AU', { month: 'short' });
       return `${hh}:${mm}, ${month} ${dd} ${yyyy}`;
-    };
+    }
 
     function renderRecords(extra) {
       const rec = (startIdx) => ({ value: toNum(read(extra, startIdx)), stamp: fmtRecordStamp(extra, startIdx) });
@@ -743,7 +747,7 @@
       document.getElementById('records').innerHTML = rows
         .map(r => `<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3"><div class="text-white/70 text-xs">${iconFor(r.label)} ${r.label}</div><div class="font-medium mt-1">${fmtVal(r)}</div><div class="text-white/50 text-xs mt-1">${r.stamp}</div></div>`)
         .join('');
-    };
+    }
 
     // Honest 7-day daily summary chart — redesigned with temperature range + rain focus
     function renderLast7Chart(last7) {
@@ -865,7 +869,7 @@
       c.data.datasets[1].data = lows;
       c.data.datasets[2].data = rain;
       c.update();
-    };
+    }
 
     function baseChartOptions() {
       return {
@@ -878,7 +882,7 @@
           y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: false }
         }
       };
-    };
+    }
 
     function initOrUpdateChart(canvasId, series, customLabels, extra = {}) {
       const config = CHART_DEFS[canvasId];
@@ -931,7 +935,7 @@
         chart.data.datasets[0].borderDash = allZero ? [4, 3] : [];
       }
       chart.update();
-    };
+    }
 
     function renderSparkline(svg, values, color) {
       if (!svg || !Array.isArray(values)) return;
@@ -975,7 +979,7 @@
         <polyline points="${linePoints}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="1.6" fill="${color}"/>
       `;
-    };
+    }
 
     function updateAllCharts(parsed) {
       // Build 12 relative time labels (most recent on the right)
@@ -999,14 +1003,14 @@
       });
 
       renderLast7Chart(parsed.last7);
-    };
+    }
 
     function updateSourceBadge(usedProxy) {
       const badge = document.getElementById('data-source-badge');
       if (!WEATHER_DEBUG) { badge.classList.add('hidden'); return; }
       badge.textContent = `source: ${usedProxy}`;
       badge.classList.remove('hidden');
-    };
+    }
 
     function updateDebugPanel(parsed) {
       const panel = document.getElementById('debug-panel');
@@ -1029,7 +1033,7 @@
         <div>wind synthesized: <span class="${parsed.windHistorySynthesized ? 'text-orange-400' : 'text-emerald-400'}">${synth}</span></div>
         <div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}</div>
       `;
-    };
+    }
 
     function updateFreshnessUI() {
       const el = document.getElementById('freshness');
@@ -1063,12 +1067,12 @@
       textEl.textContent = label;
       el.className = `hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border bg-white/5 ${colorClass}`;
       el.classList.remove('hidden');
-    };
+    }
 
     async function copyLastUpdated() {
       const text = document.querySelector('#last-updated span').textContent;
       try { await navigator.clipboard.writeText(text); } catch (_) {}
-    };
+    }
 
     function updateUI(parsed, usedProxy) {
       const tsParts = parsed.data.slice(parsed.mapping.timestampParts[0], parsed.mapping.timestampParts[2] + 1);
@@ -1127,29 +1131,43 @@
       renderRecords(parsed.extra);
       updateFreshnessUI();
       updateDebugPanel(parsed);
-    };
+    }
 
     async function loadStationData() {
       let rawText = '', extraText = '', hourText = '', dailyText = '', usedProxy = 'none';
 
       // Build list of sources to try (custom proxy first if enabled)
-      let candidates = [];
+      // NOTE: Public proxies are inherently fragile. Deploying the Cloudflare Worker (see comment above)
+      // and setting USE_CUSTOM_PROXY=true is the only reliable long-term solution.
+      const tryList = [];
 
       if (USE_CUSTOM_PROXY && CUSTOM_PROXY_BASE && !FORCE_PUBLIC_PROXIES) {
-        // Preferred path — your own reliable Cloudflare Worker
         const base = CUSTOM_PROXY_BASE.endsWith('/') ? CUSTOM_PROXY_BASE : CUSTOM_PROXY_BASE + '/';
-        candidates.push(base);
-        usedProxy = 'custom-proxy';
+        tryList.push({ type: 'custom', base, label: 'custom-proxy' });
       }
 
-      if (candidates.length === 0 || FORCE_PUBLIC_PROXIES) {
-        // Fallback to the old public proxies + direct
-        candidates = [...PROXIES.map(p => p + encodeURIComponent(BASE)), BASE];
+      if (tryList.length === 0 || FORCE_PUBLIC_PROXIES) {
+        // Direct (will usually fail CORS from the browser, kept for completeness)
+        tryList.push({ type: 'direct', base: BASE, label: 'direct' });
+        // Public proxies — construct FULL target URL for each service
+        PROXIES.forEach(p => tryList.push({ type: 'proxy', base: p }));
       }
 
-      for (const prefix of candidates) {
+      for (const entry of tryList) {
         try {
-          const urls = FILES.map(f => `${prefix}${encodeURIComponent(f)}?t=${Date.now()}`);
+          let urls;
+          if (entry.type === 'direct' || entry.type === 'custom') {
+            urls = FILES.map(f => `${entry.base}${f}?t=${Date.now()}`);
+          } else {
+            // Public proxy: attach the *complete* station file URL to the proxy's param
+            // e.g. allorigins: ...?url=ENCODED_FULL , codetabs: ...?quest=ENCODED_FULL
+            urls = FILES.map(f => {
+              const fullTarget = BASE + f;
+              const sep = entry.base.includes('?') ? '&' : '?';
+              return `${entry.base}${encodeURIComponent(fullTarget)}${sep}cb=${Date.now()}`;
+            });
+          }
+
           const resps = await Promise.all(urls.map(u => timeoutFetch(u)));
           if (!resps.every(r => r.ok)) throw new Error('bad response');
           const ct = resps[0].headers.get('content-type') || '';
@@ -1163,16 +1181,14 @@
           localStorage.setItem('lastSuccessfulFetch', String(fetchTime));
           window.lastSuccessfulFetch = fetchTime;
 
-          usedProxy = prefix.startsWith(BASE) ? 'direct'
-                    : (prefix.includes('workers.dev') || prefix.includes('your-worker')) ? 'custom-proxy'
-                    : prefix.split(/[?]/)[0];
+          usedProxy = entry.label || (entry.type === 'proxy' ? entry.base.split(/[?]/)[0] : entry.type);
           break;
         } catch (e) {
-          console.warn('Fetch via', prefix, e.message);
+          console.warn('Fetch via', entry.base || entry.type, e.message);
         }
       }
 
-      if (!rawText || rawText.length < 150) throw new Error('All sources failed — station unreachable');
+      if (!rawText || rawText.length < 150) throw new Error('All sources failed — station unreachable via public proxies (deploy custom Cloudflare Worker for reliability)');
 
       const parsed = parseClientRaw(rawText, extraText, hourText, dailyText);
       if (WEATHER_DEBUG) {
@@ -1182,7 +1198,7 @@
         }
       }
       return { parsed, usedProxy };
-    };
+    }
 
     async function loadForecast() {
       const container = document.getElementById('forecast-container');
@@ -1212,7 +1228,7 @@
       } catch (e) {
         container.innerHTML = '<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>';
       }
-    };
+    }
 
     async function loadWeather() {
       if (isRefreshing) return;
@@ -1228,14 +1244,14 @@
         const toast = document.getElementById('error-toast');
         document.getElementById('error-text').textContent = e.message || 'Failed to load station data';
         toast.style.display = 'flex';
-        // Auto-hide toast after 6 seconds
-        setTimeout(() => toast.classList.add('hidden'), 6000);
+        // Keep error visible (user can dismiss with ×). Public proxies are unreliable; see the
+        // USE_CUSTOM_PROXY comment near the top of this script for the recommended fix.
       }
 
       // Always attempt fresh forecast
       await loadForecast();
       setRefreshingState(false);
-    };
+    }
 
     function init() {
       document.getElementById('code-update-stamp').textContent = `Code update: ${getCodeUpdateLabel()}`;
@@ -1272,7 +1288,7 @@
           setTimeout(loadWeather, 800);
         }
       });
-    };
+    }
 
     window.onload = init;
   </script>
