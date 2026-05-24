@@ -162,42 +162,42 @@
         <!-- SUN / MOON + DAILY EXTREMES -->
         <div class="glass glass-hover rounded-3xl p-5 sm:p-6 flex flex-col border border-white/10" aria-labelledby="sun-moon-heading">
           
-          <!-- Sun + Moon columns -->
-          <div class="grid grid-cols-2 gap-x-5 sm:gap-x-7 pb-4 border-b border-white/10">
+          <!-- Sun + Moon columns (fills available height for symmetry) -->
+          <div class="grid grid-cols-2 gap-x-6 sm:gap-x-8 pb-4 border-b border-white/10 flex-1">
             
             <!-- SUN -->
-            <div>
-              <div class="flex items-center gap-x-2 mb-2" id="sun-moon-heading">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-x-2 mb-3" id="sun-moon-heading">
                 <i class="fa-solid fa-sun text-lg text-amber-400" aria-hidden="true"></i>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">SUN</span>
               </div>
-              <div class="space-y-4">
+              <div class="flex flex-col justify-between flex-1 space-y-3 text-left">
                 <div>
                   <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">RISE</div>
-                  <div id="sunrise-hero" class="text-[1.85rem] font-light tabular-nums leading-none">—</div>
+                  <div id="sunrise-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div>
                 </div>
                 <div>
                   <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">SET</div>
-                  <div id="sunset-hero" class="text-[1.85rem] font-light tabular-nums leading-none">—</div>
+                  <div id="sunset-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div>
                 </div>
               </div>
             </div>
             
             <!-- MOON -->
-            <div>
-              <div class="flex items-center gap-x-2 mb-2">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-x-2 mb-3">
                 <span id="moon-icon-hero" class="inline-flex w-5 h-5 items-center justify-center flex-shrink-0" aria-label="Current moon phase visual"></span>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">MOON</span>
               </div>
-              <div class="space-y-4">
+              <div class="flex flex-col justify-between flex-1 space-y-3 text-left">
                 <div>
                   <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">ILLUMINATION</div>
-                  <div id="moon-phase-hero" class="text-[1.85rem] font-light tabular-nums leading-none">—%</div>
+                  <div id="moon-phase-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—%</div>
                 </div>
                 <div>
                   <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">AGE</div>
                   <div class="flex items-baseline gap-x-1">
-                    <span id="moon-age-hero" class="text-[1.85rem] font-light tabular-nums leading-none">—</span>
+                    <span id="moon-age-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</span>
                     <span class="text-white/50 text-[11px] font-medium">days</span>
                   </div>
                 </div>
@@ -210,16 +210,16 @@
             
           </div>
           
-          <!-- High / Low since midnight -->
-          <div class="grid grid-cols-2 pt-4 gap-6">
-            <div class="text-center">
+          <!-- High / Low since midnight (symmetrical, fills width) -->
+          <div class="grid grid-cols-2 pt-4 gap-4 text-center">
+            <div>
               <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">HIGH</div>
-              <div id="day-high" class="text-[1.85rem] font-light tabular-nums leading-none">—°C</div>
+              <div id="day-high" class="text-[1.9rem] font-light tabular-nums leading-none">—°C</div>
               <div class="text-[10px] text-white/45 mt-0.5">since midnight</div>
             </div>
-            <div class="text-center border-l border-white/10 pl-6">
+            <div class="border-l border-white/10 pl-4">
               <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">LOW</div>
-              <div id="day-low" class="text-[1.85rem] font-light tabular-nums leading-none">—°C</div>
+              <div id="day-low" class="text-[1.9rem] font-light tabular-nums leading-none">—°C</div>
               <div class="text-[10px] text-white/45 mt-0.5">since midnight</div>
             </div>
           </div>
@@ -1040,7 +1040,7 @@
       const textEl = document.getElementById('freshness-text');
       if (!el || !textEl) return;
 
-      const last = window.lastSuccessfulFetch || Number(localStorage.getItem('lastSuccessfulFetch') || 0);
+      const last = window.lastSuccessfulFetch || Number(localStorage.getItem('lastSuccessfulFetch') || 0));
       if (!last) {
         el.classList.add('hidden');
         return;
