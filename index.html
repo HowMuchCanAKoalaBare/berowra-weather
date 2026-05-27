@@ -160,18 +160,18 @@
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
         <!-- SUN / MOON + DAILY EXTREMES -->
-        <div class="glass glass-hover rounded-3xl p-5 sm:p-6 flex flex-col border border-white/10" aria-labelledby="sun-moon-heading">
+        <div class="glass glass-hover rounded-3xl p-6 sm:p-7 flex flex-col border border-white/10" aria-labelledby="sun-moon-heading">
           
-          <!-- Sun + Moon columns (fills available height for symmetry) -->
-          <div class="grid grid-cols-2 gap-x-6 sm:gap-x-8 pb-4 border-b border-white/10 flex-1">
+          <!-- Sun + Moon columns (vertically centered data for aesthetic fill + symmetry) -->
+          <div class="grid grid-cols-2 gap-x-5 sm:gap-x-6 pb-4 border-b border-white/10 flex-1">
             
             <!-- SUN -->
-            <div class="flex flex-col">
+            <div class="flex flex-col h-full items-center">
               <div class="flex items-center gap-x-2 mb-3" id="sun-moon-heading">
-                <i class="fa-solid fa-sun text-lg text-amber-400" aria-hidden="true"></i>
+                <i class="fa-solid fa-sun text-xl text-amber-400" aria-hidden="true"></i>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">SUN</span>
               </div>
-              <div class="flex flex-col justify-between flex-1 space-y-3 text-left">
+              <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
                 <div>
                   <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">RISE</div>
                   <div id="sunrise-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div>
@@ -184,40 +184,40 @@
             </div>
             
             <!-- MOON -->
-            <div class="flex flex-col">
+            <div class="flex flex-col h-full items-center">
               <div class="flex items-center gap-x-2 mb-3">
-                <span id="moon-icon-hero" class="inline-flex w-5 h-5 items-center justify-center flex-shrink-0" aria-label="Current moon phase visual"></span>
+                <span id="moon-icon-hero" class="inline-flex w-6 h-6 items-center justify-center flex-shrink-0" aria-label="Current moon phase visual"></span>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">MOON</span>
               </div>
-              <div class="flex flex-col justify-between flex-1 space-y-3 text-left">
+              <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
                 <div>
                   <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">ILLUMINATION</div>
                   <div id="moon-phase-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—%</div>
                 </div>
                 <div>
-                  <div class="text-white/60 text-[10px] font-medium tracking->[2px] mb-0.5">AGE</div>
-                  <div class="flex items-baseline gap-x-1">
+                  <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">AGE</div>
+                  <div class="flex items-baseline gap-x-1 justify-center">
                     <span id="moon-age-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</span>
                     <span class="text-white/50 text-[11px] font-medium">days</span>
                   </div>
                 </div>
                 <div>
                   <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">PHASE</div>
-                  <div id="moon-phase-name-hero" class="text-sm font-medium text-white/85 leading-tight">—</div>
+                  <div id="moon-phase-name-hero" class="text-sm font-medium text-white/90 leading-tight">—</div>
                 </div>
               </div>
             </div>
             
           </div>
           
-          <!-- High / Low since midnight (symmetrical, fills width) -->
-          <div class="grid grid-cols-2 pt-4 gap-4 text-center">
-            <div>
+          <!-- High / Low since midnight (symmetrical + balanced padding around divider) -->
+          <div class="grid grid-cols-2 pt-4 gap-3 text-center">
+            <div class="pr-2">
               <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">HIGH</div>
               <div id="day-high" class="text-[1.9rem] font-light tabular-nums leading-none">—°C</div>
               <div class="text-[10px] text-white/45 mt-0.5">since midnight</div>
             </div>
-            <div class="border-l border-white/10 pl-4">
+            <div class="pl-2 border-l border-white/10">
               <div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">LOW</div>
               <div id="day-low" class="text-[1.9rem] font-light tabular-nums leading-none">—°C</div>
               <div class="text-[10px] text-white/45 mt-0.5">since midnight</div>
@@ -897,7 +897,7 @@
 
       const allZero = canvasId === 'rain24Chart' && series.every(v => !v);
 
-      // Visual distinction when wind history was synthesized (not real observations)
+      // Visual distinction when wind history was synthesized (not real station readings)
       const isSynthesizedWind = canvasId === 'wind24Chart' && extra.synthesized;
       const windColor = isSynthesizedWind ? '#fb923c' : config.color; // warmer orange for estimated
       const windDash = isSynthesizedWind ? [3, 2] : (allZero ? [4, 3] : []);
@@ -1001,47 +1001,108 @@
           }
         }
       });
+
+      renderLast7Chart(parsed.last7);
+    }
+
+    function updateSourceBadge(usedProxy) {
+      const badge = document.getElementById('data-source-badge');
+      if (!WEATHER_DEBUG) { badge.classList.add('hidden'); return; }
+      badge.textContent = `source: ${usedProxy}`;
+      badge.classList.remove('hidden');
+    }
+
+    function updateDebugPanel(parsed) {
+      const panel = document.getElementById('debug-panel');
+      const content = document.getElementById('debug-content');
+      if (!panel || !content || !WEATHER_DEBUG) {
+        if (panel) panel.classList.add('hidden');
+        return;
+      }
+      panel.classList.remove('hidden');
+
+      const s = parsed.sanity || {};
+      const synth = parsed.windHistorySynthesized ? 'YES (orange/dashed)' : 'no';
+      const core = s.hasCore ? 'OK' : 'MISSING';
+      const tempOk = s.plausibleTemp ? 'OK' : 'RANGE?';
+      const baroOk = s.plausibleBaro ? 'OK' : 'RANGE?';
+
+      content.innerHTML = `
+        <div>raw:${s.rawLen ?? '?'} extra:${s.extraLen ?? '?'} hour:${s.hourLen ?? '?'} daily:${s.dailyLen ?? '?'}</div>
+        <div>core:${core} temp:${tempOk} baro:${baroOk} hum:${s.plausibleHumidity ? 'OK' : '?'}</div>
+        <div>wind synthesized: <span class="${parsed.windHistorySynthesized ? 'text-orange-400' : 'text-emerald-400'}">${synth}</span></div>
+        <div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}</div>
+      `;
+    }
+
+    function updateFreshnessUI() {
+      const el = document.getElementById('freshness');
+      const textEl = document.getElementById('freshness-text');
+      if (!el || !textEl) return;
+
+      const last = window.lastSuccessfulFetch || Number(localStorage.getItem('lastSuccessfulFetch') || 0);
+      if (!last) {
+        el.classList.add('hidden');
+        return;
+      }
+
+      const ageMs = Date.now() - last;
+      const ageMin = Math.floor(ageMs / 60000);
+      const ageSec = Math.floor(ageMs / 1000);
+
+      let label = '';
+      let colorClass = 'text-emerald-400 border-emerald-400/30';
+
+      if (ageSec < 45) {
+        label = 'just now';
+      } else if (ageMin < 2) {
+        label = `${ageSec}s ago`;
+      } else if (ageMin < 8) {
+        label = `${ageMin}m ago`;
+      } else {
+        label = `${ageMin}m ago`;
+        colorClass = ageMin > 12 ? 'text-orange-400 border-orange-400/30' : 'text-yellow-400 border-yellow-400/30';
+      }
+
+      textEl.textContent = label;
+      el.className = `hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border bg-white/5 ${colorClass}`;
+      el.classList.remove('hidden');
+    }
+
+    async function copyLastUpdated() {
+      const text = document.querySelector('#last-updated span').textContent;
+      try { await navigator.clipboard.writeText(text); } catch (_) {}
     }
 
     function updateUI(parsed, usedProxy) {
-      // Remove any loading skeletons
-      setInitialLoadingState(false);
+      const tsParts = parsed.data.slice(parsed.mapping.timestampParts[0], parsed.mapping.timestampParts[2] + 1);
+      const ts = tsParts.join(':') || '—';
+      document.getElementById('last-updated').innerHTML = `<i class="fa-solid fa-clock"></i> <span>Last updated: ${ts} (station)</span>`;
+      updateSourceBadge(usedProxy);
 
       // Hero
       document.getElementById('current-temp').textContent = fmtNum(parsed.temp, 1);
       document.getElementById('condition').textContent = parsed.condition || '—';
       document.getElementById('feels-like').textContent = fmtNum(parsed.feelsLike, 1, '°C');
       document.getElementById('heat-index').textContent = fmtNum(parsed.heatIndex, 1, '°C');
-
-      // Sun / Moon / High / Low
-      document.getElementById('sunrise-hero').textContent = parsed.sunrise || '—';
-      document.getElementById('sunset-hero').textContent = parsed.sunset || '—';
-      document.getElementById('moon-phase-hero').textContent = Number.isFinite(parsed.moonIllum) ? parsed.moonIllum.toFixed(0) + '%' : '—';
-      document.getElementById('moon-age-hero').textContent = Number.isFinite(parsed.moonAge) ? parsed.moonAge.toFixed(1) : '—';
-      document.getElementById('moon-phase-name-hero').textContent = moonPhaseName(parsed.moonAge);
-      const moonIconEl = document.getElementById('moon-icon-hero');
-      if (moonIconEl) moonIconEl.innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge, 40);
-
       document.getElementById('day-high').textContent = fmtNum(parsed.dayHigh, 1, '°C');
       document.getElementById('day-low').textContent = fmtNum(parsed.dayLow, 1, '°C');
 
-      // Metrics
-      const windKmh = parsed.windSpeedKmh;
-      const windDir = cardinal(parsed.windDirDeg);
-      const gustKmh = parsed.windGustKmh;
+      document.getElementById('sunrise-hero').textContent = parsed.sunrise || '—';
+      document.getElementById('sunset-hero').textContent = parsed.sunset || '—';
+      document.getElementById('moon-phase-hero').textContent = fmtNum(parsed.moonIllum, 0, '%');
+      document.getElementById('moon-age-hero').textContent = fmtNum(parsed.moonAge);
+      document.getElementById('moon-phase-name-hero').textContent = moonPhaseName(parsed.moonAge);
+      // Small icon for the header in the Sun/Moon tile
+      document.getElementById('moon-icon-hero').innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge, 22);
 
-      const windEl = document.getElementById('wind-speed');
-      if (parsed.windHistorySynthesized) {
-        windEl.innerHTML = `${fmtNum(windKmh, 1)} <span class="text-orange-400 text-sm font-medium">(est.)</span>`;
-        windEl.classList.add('text-orange-300');
-      } else {
-        windEl.textContent = fmtNum(windKmh, 1);
-        windEl.classList.remove('text-orange-300');
-      }
-      document.getElementById('wind-dir').textContent = windDir || '—';
-      document.getElementById('wind-gust').textContent = fmtNum(gustKmh, 1, ' km/h');
+      // Tiles
+      document.getElementById('wind-speed').textContent = fmtNum(parsed.windSpeedKmh, 1);
+      document.getElementById('wind-dir').textContent = Number.isFinite(parsed.windDirDeg) ? cardinal(parsed.windDirDeg) : '—';
+      document.getElementById('wind-gust').textContent = fmtNum(parsed.windGustKmh, 1, ' km/h');
+      document.getElementById('wind-arrow').setAttribute('transform', `rotate(${Number.isFinite(parsed.windDirDeg) ? parsed.windDirDeg : 0} 40 40)`);
 
-      document.getElementById('humidity').textContent = fmtNum(parsed.humidity, 0, '%');
+      document.getElementById('humidity').textContent = fmtNum(parsed.humidity, 0);
       document.getElementById('dewpoint').textContent = fmtNum(parsed.dewPoint, 1, '°C');
       document.getElementById('humidity-bar').style.width = `${clamp(Number.isFinite(parsed.humidity) ? parsed.humidity : 0, 0, 100)}%`;
 
@@ -1070,73 +1131,6 @@
       renderRecords(parsed.extra);
       updateFreshnessUI();
       updateDebugPanel(parsed);
-    }
-
-    function updateFreshnessUI() {
-      const el = document.getElementById('freshness');
-      const textEl = document.getElementById('freshness-text');
-      if (!el || !textEl) return;
-
-      const last = window.lastSuccessfulFetch || Number(localStorage.getItem('lastSuccessfulFetch') || 0);
-      if (!last) {
-        el.classList.add('hidden');
-        return;
-      }
-
-      const ageMs = Date.now() - last;
-      const ageMin = Math.floor(ageMs / 60000);
-      const ageSec = Math.floor(ageMs / 1000);
-
-      let label = '';
-      let colorClass = 'text-emerald-400 border-emerald-400/30';
-
-      if (ageMin < 2) {
-        label = 'Just now';
-      } else if (ageMin < 10) {
-        label = `${ageMin}m ago`;
-      } else if (ageMin < 60) {
-        label = `${ageMin}m ago`;
-        colorClass = 'text-amber-400 border-amber-400/30';
-      } else {
-        const hrs = Math.floor(ageMin / 60);
-        label = `${hrs}h ago`;
-        colorClass = 'text-orange-400 border-orange-400/30';
-      }
-
-      textEl.textContent = label;
-      el.className = `hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border bg-white/5 ${colorClass}`;
-      el.classList.remove('hidden');
-    }
-
-    function updateDebugPanel(parsed) {
-      if (!window.WEATHER_DEBUG) return;
-      const panel = document.getElementById('debug-panel');
-      const content = document.getElementById('debug-content');
-      if (!panel || !content) return;
-
-      panel.classList.remove('hidden');
-      const s = parsed.sanity || {};
-      const synth = parsed.windHistorySynthesized ? 'true' : 'false';
-
-      content.innerHTML = `
-        <div>raw:${s.rawLen ?? '?'} extra:${s.extraLen ?? '?'} hour:${s.hourLen ?? '?'} daily:${s.dailyLen ?? '?'}</div>
-        <div>hasCore:${s.hasCore} tempOK:${s.plausibleTemp} baroOK:${s.plausibleBaro} humOK:${s.plausibleHumidity}</div>
-        <div>wind synthesized: <span class="${parsed.windHistorySynthesized ? 'text-orange-400' : 'text-emerald-400'}">${synth}</span></div>
-        <div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}</div>
-      `;
-    }
-
-    function copyLastUpdated() {
-      const btn = document.getElementById('last-updated');
-      const originalText = btn.innerHTML;
-      navigator.clipboard.writeText('Last updated: ' + (btn.textContent || '')).then(() => {
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>Copied!</span>';
-        setTimeout(() => { btn.innerHTML = originalText; }, 1200);
-      }).catch(() => {
-        // Fallback
-        const text = btn.textContent || '';
-        prompt('Copy this:', text);
-      });
     }
 
     async function loadStationData() {
