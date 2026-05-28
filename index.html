@@ -167,8 +167,8 @@
             
             <!-- SUN -->
             <div class="flex flex-col h-full items-center">
-              <div class="flex items-center gap-x-2 mb-3" id="sun-moon-heading">
-                <i class="fa-solid fa-sun text-xl text-amber-400" aria-hidden="true"></i>
+              <div class="flex items-center gap-x-2.5 mb-3" id="sun-moon-heading">
+                <i class="fa-solid fa-sun text-2xl text-amber-400" aria-hidden="true"></i>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">SUN</span>
               </div>
               <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
@@ -185,8 +185,8 @@
             
             <!-- MOON -->
             <div class="flex flex-col h-full items-center">
-              <div class="flex items-center gap-x-2 mb-3">
-                <span id="moon-icon-hero" class="inline-flex w-6 h-6 items-center justify-center flex-shrink-0" aria-label="Current moon phase visual"></span>
+              <div class="flex items-center gap-x-2.5 mb-3">
+                <span id="moon-icon-hero" class="inline-flex w-7 h-7 items-center justify-center flex-shrink-0" aria-label="Current moon phase visual"></span>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">MOON</span>
               </div>
               <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
@@ -1094,7 +1094,7 @@
       document.getElementById('moon-age-hero').textContent = fmtNum(parsed.moonAge);
       document.getElementById('moon-phase-name-hero').textContent = moonPhaseName(parsed.moonAge);
       // Small icon for the header in the Sun/Moon tile
-      document.getElementById('moon-icon-hero').innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge, 22);
+      document.getElementById('moon-icon-hero').innerHTML = moonIcon(parsed.moonIllum, parsed.moonAge, 26);
 
       // Tiles
       document.getElementById('wind-speed').textContent = fmtNum(parsed.windSpeedKmh, 1);
