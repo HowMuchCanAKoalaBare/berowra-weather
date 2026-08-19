@@ -5,19 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Berowra Weather • Live (Mudie Family Station)</title>
   <meta name="description" content="Live weather dashboard for the Mudie Family Station in Berowra, NSW. Real-time observations, charts and BOM forecast.">
-  <!-- CDNs: For a production site, self-host or add Subresource Integrity (SRI) hashes -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; }
-    .glass { 
-      background: rgba(15, 23, 42, 0.82); 
-      backdrop-filter: blur(20px); 
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
-    }
+    .glass { background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
     .hero-gradient { background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 100%); }
     .compass { transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
     .icon-square { width: 46px; height: 46px; }
@@ -27,91 +21,27 @@
     @media (min-width: 1280px) { .chart-wrap { height: 240px; } }
     .chart-container { width: 100% !important; height: 100% !important; display: block; }
     .forecast-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-    .glass-hover { 
-      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                  border-color 0.2s ease, 
-                  background-color 0.2s ease; 
-    }
-    .glass-hover:hover { 
-      transform: translateY(-1px); 
-      border-color: rgba(255, 255, 255, 0.13); 
-      background: rgba(15, 23, 42, 0.88);
-    }
+    .glass-hover { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, background-color 0.2s ease; }
+    .glass-hover:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.13); background: rgba(15, 23, 42, 0.88); }
     .spin { animation: spin 0.9s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-    /* Lightweight skeleton for first-load experience */
-    .skeleton {
-      position: relative;
-      overflow: hidden;
-      border-radius: 9999px;
-    }
-    .skeleton::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(148,163,184,0.12), transparent);
-      animation: skeleton-shimmer 1.35s infinite linear;
-      pointer-events: none;
-    }
-    @keyframes skeleton-shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    .skeleton-text {
-      background: rgba(148,163,184,0.18);
-      border-radius: 4px;
-      display: inline-block;
-    }
-
+    .skeleton { position: relative; overflow: hidden; border-radius: 9999px; }
+    .skeleton::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(148,163,184,0.12), transparent); animation: skeleton-shimmer 1.35s infinite linear; pointer-events: none; }
+    @keyframes skeleton-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .skeleton-text { background: rgba(148,163,184,0.18); border-radius: 4px; display: inline-block; }
     .sparkline { display: block; opacity: 0.9; }
     .sparkline line { stroke: #64748b; stroke-opacity: 0.3; }
-
     .metric-value { font-variant-numeric: tabular-nums; }
-    .section-header { 
-      font-size: 0.875rem; 
-      font-weight: 500; 
-      letter-spacing: 0.5px;
-      color: #cbd5e1;
-    }
-
-    /* NEW: Glass metric alignment system */
-    .glass-metric {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      min-height: 138px;
-    }
-    .glass-metric .content {
-      flex: 1;
-      min-width: 0;
-      text-align: left;
-    }
-    .glass-metric .value {
-      font-size: 2.25rem;
-      line-height: 1.05;
-    }
-    .glass-metric .label {
-      letter-spacing: 1.5px;
-      font-weight: 500;
-    }
-    .glass-metric .subtext {
-      font-size: 0.75rem;
-      line-height: 1.25;
-      color: rgb(148 163 184);
-    }
-
-    /* Respect reduced motion preference */
+    .section-header { font-size: 0.875rem; font-weight: 500; letter-spacing: 0.5px; color: #cbd5e1; }
+    .glass-metric { display: flex; align-items: flex-start; gap: 1rem; min-height: 138px; }
+    .glass-metric .content { flex: 1; min-width: 0; text-align: left; }
+    .glass-metric .value { font-size: 2.25rem; line-height: 1.05; }
+    .glass-metric .label { letter-spacing: 1.5px; font-weight: 500; }
+    .glass-metric .subtext { font-size: 0.75rem; line-height: 1.25; color: rgb(148 163 184); }
     @media (prefers-reduced-motion: reduce) {
-      .glass-hover, .compass, .forecast-card {
-        transition: none !important;
-      }
-      .spin, .skeleton::after {
-        animation: none !important;
-      }
-      .glass-hover:hover {
-        transform: none;
-      }
+      .glass-hover, .compass, .forecast-card { transition: none !important; }
+      .spin, .skeleton::after { animation: none !important; }
+      .glass-hover:hover { transform: none; }
     }
   </style>
 </head>
@@ -135,18 +65,12 @@
           <i class="fa-solid fa-clock" aria-hidden="true"></i>
           <span>Last updated: —</span>
         </button>
-        <div id="data-source-badge" class="hidden text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">
-          source: —
-        </div>
+        <div id="data-source-badge" class="hidden text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">source: —</div>
         <div class="hidden sm:flex items-center gap-x-2 text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10" aria-label="Live data connection">
-          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-          <span>Live</span>
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span><span>Live</span>
         </div>
-
-        <!-- Freshness indicator (populated by JS) -->
         <div id="freshness" class="hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border border-white/10 bg-white/5 text-white/70" aria-live="polite">
-          <i class="fa-solid fa-sync fa-sm"></i>
-          <span id="freshness-text">—</span>
+          <i class="fa-solid fa-sync fa-sm"></i><span id="freshness-text">—</span>
         </div>
         <a href="http://www.mudiefamily.org/weather/" target="_blank" rel="noopener noreferrer" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center gap-x-2 transition" aria-label="Visit original Mudie Family weather station page">
           <i class="fa-solid fa-chart-line"></i> <span>Original Station</span>
@@ -155,43 +79,177 @@
     </div>
   </nav>
 
-  <!-- HERO + TILES + CHARTS + RECORDS (full structure preserved exactly as prior) -->
-  <!-- [Full HTML body content truncated here for brevity in response; the complete file includes all prior sections unchanged: hero, metrics-grid, last-12-samples charts, last-7-days chart, records, error-toast, footer] -->
-  <!-- Paste the entire previous index.html content here and replace only the <script> block + minor error UI tweaks below. -->
-
-  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-7 relative z-10">
-    <!-- ICON TILES, CHARTS, RECORDS sections unchanged from your current index.html -->
-    <!-- ... (full prior content) ... -->
+  <!-- HERO -->
+  <div id="hero" class="hero-gradient text-white py-14 sm:py-16 px-4 sm:px-6 relative overflow-hidden">
+    <div class="max-w-screen-2xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+        <div class="glass glass-hover rounded-3xl p-6 sm:p-7 flex flex-col border border-white/10" aria-labelledby="sun-moon-heading">
+          <div class="grid grid-cols-2 gap-x-5 sm:gap-x-6 pb-4 border-b border-white/10 flex-1">
+            <div class="flex flex-col h-full items-center">
+              <div class="flex items-center gap-x-2.5 mb-3" id="sun-moon-heading">
+                <i class="fa-solid fa-sun text-2xl text-amber-400" aria-hidden="true"></i>
+                <span class="font-semibold tracking-[1.5px] text-xs text-white/80">SUN</span>
+              </div>
+              <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
+                <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">RISE</div><div id="sunrise-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div></div>
+                <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">SET</div><div id="sunset-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div></div>
+              </div>
+            </div>
+            <div class="flex flex-col h-full items-center">
+              <div class="flex items-center gap-x-2.5 mb-3">
+                <span id="moon-icon-hero" class="inline-flex w-7 h-7 items-center justify-center flex-shrink-0" aria-label="Current moon phase visual"></span>
+                <span class="font-semibold tracking-[1.5px] text-xs text-white/80">MOON</span>
+              </div>
+              <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
+                <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">ILLUMINATION</div><div id="moon-phase-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—%</div></div>
+                <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">AGE</div><div class="flex items-baseline gap-x-1 justify-center"><span id="moon-age-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</span><span class="text-white/50 text-[11px] font-medium">days</span></div></div>
+                <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">PHASE</div><div id="moon-phase-name-hero" class="text-sm font-medium text-white/90 leading-tight">—</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 pt-4 gap-3 text-center">
+            <div class="pr-2"><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">HIGH</div><div id="day-high" class="text-[1.9rem] font-light tabular-nums leading-none">—°C</div><div class="text-[10px] text-white/45 mt-0.5">since midnight</div></div>
+            <div class="pl-2 border-l border-white/10"><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">LOW</div><div id="day-low" class="text-[1.9rem] font-light tabular-nums leading-none">—°C</div><div class="text-[10px] text-white/45 mt-0.5">since midnight</div></div>
+          </div>
+        </div>
+        <div class="text-center flex flex-col justify-center px-2" role="region" aria-label="Current conditions">
+          <div class="flex items-baseline gap-x-3 justify-center">
+            <div id="current-temp" class="text-[3.8rem] sm:text-[4.75rem] md:text-[5.25rem] lg:text-[5.75rem] xl:text-[6rem] leading-none font-light tabular-nums" aria-label="Current temperature in Celsius">—</div>
+            <div class="text-5xl sm:text-6xl lg:text-7xl font-light">°C</div>
+          </div>
+          <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">—</div>
+          <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-x-10 mt-6 text-base sm:text-lg">
+            <div>Feels like <span id="feels-like" class="font-medium">—°C</span></div>
+            <div>Heat index <span id="heat-index" class="font-medium">—°C</span></div>
+          </div>
+          <div class="mt-8 text-xs opacity-60 tracking-wide">Berowra, NSW • −33.62° • 151.15°</div>
+        </div>
+        <div class="glass glass-hover rounded-3xl p-5 sm:p-6 flex flex-col border border-white/10" aria-labelledby="forecast-heading">
+          <h3 id="forecast-heading" class="text-xs font-semibold tracking-[2px] text-white/70 mb-3">6-DAY FORECAST • OPEN-METEO</h3>
+          <div id="forecast-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center flex-1"></div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-6 right-6 text-6xl opacity-10" aria-hidden="true">🌿</div>
   </div>
 
-  <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm px-6 py-3 rounded-2xl items-center gap-2 shadow-2xl" role="alert" aria-live="assertive">
-    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-    <span id="error-text"></span>
-    <button onclick="document.getElementById('error-toast').classList.add('hidden')" class="ml-3 text-white/80 hover:text-white" aria-label="Dismiss error">×</button>
+  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-7 relative z-10">
+    <!-- METRICS TILES -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5" id="metrics-grid">
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
+        <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind" aria-hidden="true"></i></div>
+        <div class="content">
+          <div class="label text-emerald-400 text-xs tracking-widest">WIND</div>
+          <div id="wind-speed" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext"><span id="wind-dir">—</span> • Gust <span id="wind-gust">—</span></div>
+          <div class="mt-2 flex items-center gap-2">
+            <svg width="40" height="40" viewBox="0 0 80 80" class="compass" aria-hidden="true">
+              <circle cx="40" cy="40" r="36" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+              <path id="wind-arrow" d="M40 12 L48 40 L40 34 L32 40 Z" fill="#34d399" transform="rotate(0 40 40)"/>
+            </svg>
+            <svg id="spark-wind" width="110" height="20" class="sparkline" aria-hidden="true"></svg>
+          </div>
+        </div>
+      </div>
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
+        <div class="icon-square bg-sky-500/10 text-sky-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-droplet" aria-hidden="true"></i></div>
+        <div class="content">
+          <div class="label text-sky-400 text-xs tracking-widest">HUMIDITY</div>
+          <div id="humidity" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">Dew <span id="dewpoint">—</span></div>
+          <div class="mt-2 h-1.5 w-full rounded-full bg-white/10 overflow-hidden"><div id="humidity-bar" class="h-full bg-sky-400 rounded-full transition-all" style="width:0%"></div></div>
+          <div class="mt-1"><svg id="spark-humidity" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
+        </div>
+      </div>
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
+        <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></div>
+        <div class="content">
+          <div class="label text-amber-400 text-xs tracking-widest">PRESSURE</div>
+          <div id="pressure" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext" id="pressure-trend">—</div>
+          <div class="mt-2"><svg id="spark-baro" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
+        </div>
+      </div>
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
+        <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain" aria-hidden="true"></i></div>
+        <div class="content">
+          <div class="label text-blue-400 text-xs tracking-widest">RAIN</div>
+          <div id="rain-today" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">mm today • Monthly <span id="rain-month">—</span> • YTD <span id="rain-ytd">—</span></div>
+          <div class="mt-2"><svg id="spark-rain" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
+        </div>
+      </div>
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
+        <div class="icon-square bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-sun" aria-hidden="true"></i></div>
+        <div class="content">
+          <div class="label text-orange-400 text-xs tracking-widest">UV INDEX</div>
+          <div id="uv" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">Index (0–11+)</div>
+          <div class="mt-2.5">
+            <div class="h-1.5 w-full rounded-full bg-gradient-to-r from-emerald-400 via-yellow-400 via-orange-400 to-red-500" aria-hidden="true"></div>
+            <div class="flex justify-between text-[9px] text-white/40 mt-0.5 font-medium tracking-wider"><span>0</span><span>3</span><span>6</span><span>8</span><span>11+</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAST 12 SAMPLES -->
+    <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
+      <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-clock text-base" aria-hidden="true"></i> LAST 12 SAMPLES</h3>
+      <p class="text-[11px] text-white/55 mb-4">Recent station readings (≈ hourly). Labels relative to your device.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="Recent temperature readings chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="Recent wind speed readings chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="Recent barometric pressure chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="Recent rainfall chart"></canvas></div></div>
+      </div>
+      <p class="text-[10px] text-amber-400/80 mt-2">Note: Station history blocks are approximate. <span class="font-medium">Wind data is frequently incomplete</span> in the public export — the chart may show estimated values when real readings are missing.</p>
+    </div>
+
+    <!-- LAST 7 DAYS -->
+    <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
+      <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-calendar text-base" aria-hidden="true"></i> LAST 7 DAYS (DAILY)</h3>
+      <p class="text-[11px] text-white/55 mb-4">Temperature range + rainfall from the station’s 31-day file.</p>
+      <div class="glass rounded-3xl p-3.5 border border-white/5"><div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Daily weather summary for recent days"></canvas></div></div>
+    </div>
+
+    <!-- RECORDS -->
+    <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
+      <h3 class="section-header mb-3">ALL-TIME RECORDS</h3>
+      <div id="records" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 text-sm"></div>
+    </div>
+
+    <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm px-6 py-3 rounded-2xl items-center gap-2 shadow-2xl" role="alert" aria-live="assertive">
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      <span id="error-text"></span>
+      <button onclick="document.getElementById('error-toast').classList.add('hidden')" class="ml-3 text-white/80 hover:text-white" aria-label="Dismiss error">×</button>
+    </div>
   </div>
 
   <div class="mt-10 text-center text-[11px] text-white/50 max-w-screen-2xl mx-auto">
     Live • 90s refresh • <span id="code-update-stamp">—</span>
   </div>
 
+  <div id="debug-panel" class="hidden fixed bottom-4 right-4 z-50 max-w-[280px] text-[10px] font-mono bg-slate-900/95 border border-white/20 rounded-2xl p-3 shadow-xl text-emerald-300/90">
+    <div class="flex items-center gap-2 mb-1.5 text-emerald-400"><i class="fa-solid fa-bug"></i><span class="font-semibold tracking-widest text-xs">DATA QUALITY</span></div>
+    <div id="debug-content" class="space-y-0.5 text-[9px] leading-tight text-white/70"></div>
+  </div>
+
   <script>
-    // === FULL SCRIPT (updated proxy section + error handling + stamp) ===
     const WEATHER_DEBUG = location.search.includes('debug');
     if (WEATHER_DEBUG) window.WEATHER_DEBUG = true;
 
     const FETCH_TIMEOUT = 9000;
     const REFRESH_INTERVAL_MS = 90000;
 
-    // === PROXY CONFIGURATION (key fix) ===
-    const USE_CUSTOM_PROXY = false; // ← Set true + deploy Worker for reliability
-    const CUSTOM_PROXY_BASE = 'https://your-worker-name.yourname.workers.dev/';
-    const FORCE_PUBLIC_PROXIES = false; // Temporary test flag
+    // === PROXY CONFIGURATION ===
+    const USE_CUSTOM_PROXY = true;
+    const CUSTOM_PROXY_BASE = 'https://berowra-proxy.rodmiles478.workers.dev/';
+    const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
       const now = new Date();
-      const dateStr = now.toISOString().split('T')[0];
-      const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false });
-      return `${dateStr} ${timeStr} • Proxy resilience + error UI`;
+      return `${now.toISOString().split('T')[0]} ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false})} • Custom Worker + full restore`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -201,15 +259,474 @@
       'https://api.allorigins.win/raw?url=',
       'https://corsproxy.io/?'
     ];
-    // ... (rest of constants: FIELD_MAP, SERIES_MAP, CHART_DEFS, DIRS, etc. — identical to prior)
+    const DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
 
-    // [Include all functions: cardinal, timeoutFetch, parseClientRaw, moonIcon, updateUI, loadStationData, loadForecast, loadWeather, init, etc. — unchanged except enhanced error messages]
+    const FIELD_MAP = {
+      timestampParts: [29,30,31],
+      windKnotsAvg: 1, windKnotsGust: 2, windDirDeg: 3,
+      temp: 4, humidity: 5, baro: 6,
+      rainToday: 7, rainMonth: 8, rainYTD: 9,
+      dewPoint: 72, uv: 79,
+      conditionRaw: 49, feelsLike: 130, heatIndex: 112,
+      dayHigh: 46, dayLow: 47, baroTrend: 50,
+      hourMaxGustKnots: 71,
+      records: { allTimeBase: 313, allTimeExtraBase: 684, highGustDirOffset: 78, highAvgWindDirOffset: 84 },
+      sunMoon: { sunrise: 556, sunset: 557, moonIllum: 560, moonAge: 561 }
+    };
 
-    // In loadStationData error fallback:
-    // throw new Error('All sources failed — station unreachable via public proxies (deploy custom Cloudflare Worker for reliability)');
+    const SERIES_MAP = {
+      recent12: { tempStart: 637, windKnotsStart: 562, baroStart: 302, rainStart: 400, humidityStart: 623 },
+      daily: { highStart: 1, lowStart: 32, rainStart: 63, baroStart: 94, count: 31 }
+    };
 
-    // ... full prior script logic ...
-    window.onload = init;
+    const CHART_DEFS = {
+      temp24Chart: { key: 'hourlyTemps', type: 'line', label: 'Temp °C', color: '#10b981' },
+      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'Wind km/h', color: '#f59e0b', suggestedMax: 50 },
+      baro24Chart: { key: 'hourlyBaro', type: 'line', label: 'hPa', color: '#fbbf24' },
+      rain24Chart: { key: 'hourlyRain', type: 'bar', label: 'mm', color: '#38bdf8' }
+    };
+
+    const chartInstances = {};
+    let isRefreshing = false;
+
+    function cardinal(dir) { return DIRS[Math.round((Number(dir)||0)/22.5)%16]; }
+    function getWeatherIcon(code) {
+      const map = {0:'fa-sun',1:'fa-cloud-sun',2:'fa-cloud-sun',3:'fa-cloud',45:'fa-smog',48:'fa-smog',51:'fa-cloud-rain',53:'fa-cloud-rain',55:'fa-cloud-rain',61:'fa-cloud-showers-heavy',63:'fa-cloud-showers-heavy',65:'fa-cloud-showers-heavy',71:'fa-snowflake',73:'fa-snowflake',75:'fa-snowflake',80:'fa-cloud-rain',81:'fa-cloud-showers-heavy',82:'fa-cloud-showers-heavy',95:'fa-bolt',96:'fa-bolt',99:'fa-bolt'};
+      return map[code]||'fa-cloud';
+    }
+    function getWeatherLabel(code) {
+      if (code===0) return 'Sunny'; if (code===1) return 'Mostly Sunny'; if (code===2) return 'Partly Cloudy'; if (code===3) return 'Overcast';
+      if (code===45||code===48) return 'Fog'; if ([51,53,55].includes(code)) return 'Drizzle'; if ([61,63,65].includes(code)) return 'Rain';
+      if ([71,73,75].includes(code)) return 'Snow'; if ([80,81,82].includes(code)) return 'Showers'; if ([95,96,99].includes(code)) return 'Thunderstorm';
+      return 'Cloudy';
+    }
+    function timeoutFetch(url, ms=FETCH_TIMEOUT) {
+      return Promise.race([fetch(url,{cache:'no-store'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('Request timed out')),ms))]);
+    }
+    function toNum(v) { const n=Number(v); return Number.isFinite(n)?n:null; }
+    function fmtNum(v, digits=1, suffix='') { return Number.isFinite(v)?`${v.toFixed(digits)}${suffix}`:'—'; }
+    function clamp(v,min,max){ return Math.min(max,Math.max(min,v)); }
+    function read(arr,idx,fallback=''){ return idx<arr.length?arr[idx]:fallback; }
+    function cleanCondition(raw){ if(!raw) return '—'; return raw.replace(/_/g,' ').replace(/\//g,' / ').replace(/\s+/g,' ').trim().toUpperCase(); }
+
+    function moonIcon(illumination, moonAge, size=40) {
+      if (!Number.isFinite(illumination)) return '🌑';
+      const synodicMonth=29.53058867;
+      const safeAge=Number.isFinite(moonAge)?((moonAge%synodicMonth)+synodicMonth)%synodicMonth:null;
+      const lit=clamp(illumination,0,100)/100;
+      const waxing=safeAge==null?true:safeAge<=synodicMonth/2;
+      const r=size*0.43, cx=size/2, cy=size/2;
+      let phaseShape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#334155"></circle>`;
+      if (lit>=0.999) phaseShape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc"></circle>`;
+      else if (lit<=0.001) phaseShape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#334155"></circle>`;
+      else if (lit<=0.5) {
+        const rx=(1-(lit/0.5))*r; const side=waxing?'right':'left';
+        const path=side==='right'?`M ${cx} ${cy-r} A ${r} ${r} 0 0 1 ${cx} ${cy+r} A ${rx} ${r} 0 0 0 ${cx} ${cy-r} Z`:`M ${cx} ${cy-r} A ${r} ${r} 0 0 0 ${cx} ${cy+r} A ${rx} ${r} 0 0 1 ${cx} ${cy-r} Z`;
+        phaseShape+=`<path d="${path}" fill="#f8fafc"></path>`;
+      } else {
+        const darkLit=1-lit; const rx=(1-(darkLit/0.5))*r; const side=waxing?'left':'right';
+        const path=side==='right'?`M ${cx} ${cy-r} A ${r} ${r} 0 0 1 ${cx} ${cy+r} A ${rx} ${r} 0 0 0 ${cx} ${cy-r} Z`:`M ${cx} ${cy-r} A ${r} ${r} 0 0 0 ${cx} ${cy+r} A ${rx} ${r} 0 0 1 ${cx} ${cy-r} Z`;
+        phaseShape=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc"></circle><path d="${path}" fill="#334155"></path>`;
+      }
+      const glowR=r*1.17, strokeW=size>30?1.3:1.1;
+      return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="Moon ${Math.round(lit*100)}% illuminated"><circle cx="${cx}" cy="${cy}" r="${glowR}" fill="#7dd3fc" fill-opacity="0.08"></circle><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f8fafc" opacity="0.12"></circle>${phaseShape}<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#94a3b8" stroke-width="${strokeW}"></circle></svg>`;
+    }
+    function moonPhaseName(moonAge) {
+      const synodicMonth=29.53058867;
+      if (!Number.isFinite(moonAge)) return '—';
+      const age=((moonAge%synodicMonth)+synodicMonth)%synodicMonth;
+      const idx=Math.floor((age/synodicMonth)*8);
+      const phases=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+      return phases[Math.max(0,Math.min(phases.length-1,idx))];
+    }
+
+    function setRefreshingState(refreshing) {
+      isRefreshing=refreshing;
+      const button=document.getElementById('refresh-btn');
+      const icon=document.getElementById('refresh-icon');
+      const label=document.getElementById('refresh-label');
+      button.disabled=refreshing;
+      button.classList.toggle('opacity-70',refreshing);
+      button.classList.toggle('cursor-wait',refreshing);
+      icon.classList.toggle('spin',refreshing);
+      label.textContent=refreshing?'Refreshing…':'Refresh';
+    }
+    function setInitialLoadingState(loading) {
+      const tempEl=document.getElementById('current-temp');
+      const condEl=document.getElementById('condition');
+      if (tempEl) tempEl.classList.toggle('skeleton',loading);
+      if (condEl) condEl.classList.toggle('skeleton-text',loading);
+      ['wind-speed','humidity','pressure','rain-today','uv'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('skeleton-text',loading); });
+      ['temp24Chart','wind24Chart','baro24Chart','rain24Chart'].forEach(id=>{ const c=document.getElementById(id); if(c&&c.parentElement) c.parentElement.classList.toggle('skeleton',loading); });
+    }
+
+    function parseClientRaw(rawText, extraText, hourText, dailyText) {
+      const data=rawText.trim().split(/\s+/);
+      const extra=extraText.trim().split(/\s+/);
+      const hourData=hourText.trim().split(/\s+/).map(toNum);
+      const dailyData=dailyText.trim().split(/\s+/).map(toNum);
+      const diag={raw:data.length,extra:extra.length,hour:hourData.length,daily:dailyData.length};
+      const sanity={
+        rawLen:data.length,extraLen:extra.length,hourLen:hourData.length,dailyLen:dailyData.length,
+        hasCore:Number.isFinite(toNum(read(data,FIELD_MAP.temp)))&&Number.isFinite(toNum(read(data,FIELD_MAP.baro))),
+        plausibleTemp:(()=>{const t=toNum(read(data,FIELD_MAP.temp));return Number.isFinite(t)&&t>-25&&t<55;})(),
+        plausibleBaro:(()=>{const b=toNum(read(data,FIELD_MAP.baro));return Number.isFinite(b)&&b>940&&b<1060;})(),
+        plausibleHumidity:(()=>{const h=toNum(read(data,FIELD_MAP.humidity));return Number.isFinite(h)&&h>=0&&h<=100;})()
+      };
+      const temp=toNum(read(data,FIELD_MAP.temp));
+      const humidity=toNum(read(data,FIELD_MAP.humidity));
+      const baro=toNum(read(data,FIELD_MAP.baro));
+      const rainToday=toNum(read(data,FIELD_MAP.rainToday));
+      const rainMonth=toNum(read(data,FIELD_MAP.rainMonth));
+      const rainYTD=toNum(read(data,FIELD_MAP.rainYTD));
+      const windKnotsAvg=toNum(read(data,FIELD_MAP.windKnotsAvg));
+      const windKnotsGust=toNum(read(data,FIELD_MAP.windKnotsGust));
+      const windKnotsHourMax=toNum(read(data,FIELD_MAP.hourMaxGustKnots));
+      const windDirDeg=toNum(read(data,FIELD_MAP.windDirDeg));
+      const dewPoint=toNum(read(data,FIELD_MAP.dewPoint));
+      const uv=toNum(read(data,FIELD_MAP.uv));
+      const feelsLike=toNum(read(data,FIELD_MAP.feelsLike));
+      const heatIndex=toNum(read(data,FIELD_MAP.heatIndex));
+      const condition=cleanCondition(read(data,FIELD_MAP.conditionRaw));
+      const sunrise=read(extra,FIELD_MAP.sunMoon.sunrise,'').trim();
+      const sunset=read(extra,FIELD_MAP.sunMoon.sunset,'').trim();
+      const moonIllum=toNum(read(extra,FIELD_MAP.sunMoon.moonIllum));
+      const moonAge=toNum(read(extra,FIELD_MAP.sunMoon.moonAge));
+      const dayHigh=toNum(read(data,FIELD_MAP.dayHigh));
+      const dayLow=toNum(read(data,FIELD_MAP.dayLow));
+      const baroTrend=toNum(read(data,FIELD_MAP.baroTrend));
+
+      const s=SERIES_MAP.recent12;
+      const hourlyTemps=Array.from({length:12},(_,i)=>toNum(read(extra,s.tempStart+i)));
+      let hourlyWindKmh=Array.from({length:12},(_,i)=>{const v=toNum(read(extra,s.windKnotsStart+i));return Number.isFinite(v)?+(v*1.852).toFixed(1):null;});
+      const windNonZero=hourlyWindKmh.filter(v=>Number.isFinite(v)&&v>0.5).length;
+      const windHistorySynthesized=windNonZero<3;
+      if (windHistorySynthesized) {
+        const currentKmh=Number.isFinite(windKnotsAvg)?+(windKnotsAvg*1.852):5;
+        hourlyWindKmh=Array.from({length:12},(_,i)=>+(currentKmh*(0.7+Math.random()*0.6)).toFixed(1));
+      }
+      const hourlyBaro=Array.from({length:12},(_,i)=>toNum(read(hourData,s.baroStart+i)));
+      const hourlyRain=Array.from({length:12},(_,i)=>toNum(read(hourData,s.rainStart+i)));
+      const hourlyHumidity=Array.from({length:12},(_,i)=>toNum(read(extra,s.humidityStart+i)));
+
+      const d=SERIES_MAP.daily;
+      const last7=[];
+      for (let i=d.count-7;i<d.count;i++) {
+        const hi=toNum(dailyData[d.highStart+i]);
+        const lo=toNum(dailyData[d.lowStart+i]);
+        const rain=toNum(dailyData[d.rainStart+i]);
+        const bar=toNum(dailyData[d.baroStart+i]);
+        last7.push({dayIndex:i,high:hi,low:lo,temp:hi,rain:rain||0,baro:bar,wind:null});
+      }
+
+      return {
+        diag,temp,humidity,baro,rainToday,rainMonth,rainYTD,
+        windSpeedKmh:Number.isFinite(windKnotsAvg)?+(windKnotsAvg*1.852).toFixed(1):null,
+        windGustKmh:Number.isFinite(windKnotsHourMax)?+(windKnotsHourMax*1.852).toFixed(1):(Number.isFinite(windKnotsGust)?+(windKnotsGust*1.852).toFixed(1):null),
+        windDirDeg,dewPoint,uv,
+        feelsLike:Number.isFinite(feelsLike)?feelsLike:temp,
+        heatIndex:Number.isFinite(heatIndex)?heatIndex:temp,
+        condition,sunrise,sunset,moonIllum,moonAge,dayHigh,dayLow,baroTrend,
+        hourlyTemps,hourlyWind:hourlyWindKmh,hourlyBaro,hourlyRain,hourlyHumidity,
+        last7,data,extra,dailyData,mapping:FIELD_MAP,windHistorySynthesized,sanity
+      };
+    }
+
+    function fmtRecordStamp(extra,startIdx) {
+      const hh=read(extra,startIdx+1,'').padStart(2,'0');
+      const mm=read(extra,startIdx+2,'').padStart(2,'0');
+      const dd=toNum(read(extra,startIdx+3));
+      const mon=toNum(read(extra,startIdx+4));
+      const yyyy=toNum(read(extra,startIdx+5));
+      if (!Number.isFinite(dd)||!Number.isFinite(mon)||!Number.isFinite(yyyy)||yyyy===0) return '—';
+      const dt=new Date(yyyy,mon-1,dd);
+      return `${hh}:${mm}, ${dt.toLocaleDateString('en-AU',{month:'short'})} ${dd} ${yyyy}`;
+    }
+    function renderRecords(extra) {
+      const rec=(startIdx)=>({value:toNum(read(extra,startIdx)),stamp:fmtRecordStamp(extra,startIdx)});
+      const b=FIELD_MAP.records.allTimeBase;
+      const bx=FIELD_MAP.records.allTimeExtraBase;
+      const iconFor=l=>{if(l.includes('temperature'))return'🌡️';if(l.includes('gust'))return'💨';if(l.includes('rain'))return'🌧️';if(l.includes('barometer'))return'📉';if(l.includes('wind'))return'🌬️';if(l.includes('heat'))return'🔥';if(l.includes('solar')||l.includes('UV'))return'☀️';return'📊';};
+      const rows=[
+        {label:'Highest temperature',...rec(b+0),unit:'°C'},
+        {label:'Lowest temperature',...rec(b+6),unit:'°C'},
+        {label:'Highest gust',...rec(b+12),unit:'km/h',transform:v=>v*1.852,dirIdx:b+FIELD_MAP.records.highGustDirOffset},
+        {label:'Highest rain rate',...rec(b+18),unit:'mm/min'},
+        {label:'Lowest barometer',...rec(b+24),unit:'hPa'},
+        {label:'Highest barometer',...rec(b+30),unit:'hPa'},
+        {label:'Highest daily rainfall',...rec(b+36),unit:'mm'},
+        {label:'Highest hourly rainfall',...rec(b+42),unit:'mm'},
+        {label:'Highest avg wind',...rec(b+48),unit:'km/h',transform:v=>v*1.852,dirIdx:b+FIELD_MAP.records.highAvgWindDirOffset},
+        {label:'Highest heat index',...rec(b+114),unit:'°C'},
+        {label:'Highest solar',...rec(bx+0),unit:'W/m²'},
+        {label:'Highest UV',...rec(bx+6),unit:''}
+      ];
+      const fmtVal=row=>{
+        if(!Number.isFinite(row.value))return'—';
+        const v=row.transform?row.transform(row.value):row.value;
+        const val=(row.unit==='hPa'&&Math.abs(v%1)<0.05)?v.toFixed(0):v.toFixed(1);
+        const dir=(row.dirIdx!=null&&Number.isFinite(toNum(read(extra,row.dirIdx))))?`, ${toNum(read(extra,row.dirIdx)).toFixed(0)}°`:'';
+        return `${val}${row.unit}${dir}`;
+      };
+      document.getElementById('records').innerHTML=rows.map(r=>`<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3"><div class="text-white/70 text-xs">${iconFor(r.label)} ${r.label}</div><div class="font-medium mt-1">${fmtVal(r)}</div><div class="text-white/50 text-xs mt-1">${r.stamp}</div></div>`).join('');
+    }
+
+    function renderSparkline(svg, data, color) {
+      if (!svg||!data) return;
+      const vals=data.filter(v=>Number.isFinite(v));
+      if (vals.length<2) { svg.innerHTML=''; return; }
+      const min=Math.min(...vals), max=Math.max(...vals);
+      const range=max-min||1;
+      const w=110, h=20, pad=2;
+      const pts=vals.map((v,i)=>{
+        const x=pad+(i/(vals.length-1))*(w-pad*2);
+        const y=h-pad-((v-min)/range)*(h-pad*2);
+        return `${x},${y}`;
+      }).join(' ');
+      svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+
+    function initOrUpdateChart(canvasId, series, labels, opts={}) {
+      const canvas=document.getElementById(canvasId);
+      if (!canvas) return;
+      const def=CHART_DEFS[canvasId];
+      if (!def) return;
+      const data=series||[];
+      if (chartInstances[canvasId]) {
+        chartInstances[canvasId].data.labels=labels;
+        chartInstances[canvasId].data.datasets[0].data=data;
+        if (opts.synthesized) chartInstances[canvasId].data.datasets[0].borderDash=[4,3];
+        else chartInstances[canvasId].data.datasets[0].borderDash=[];
+        chartInstances[canvasId].update('none');
+        return;
+      }
+      chartInstances[canvasId]=new Chart(canvas,{
+        type:def.type,
+        data:{labels,datasets:[{label:def.label,data,borderColor:def.color,backgroundColor:def.type==='bar'?def.color+'99':def.color+'33',borderWidth:2,tension:0.3,pointRadius:2,fill:def.type==='line'}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#94a3b8',maxRotation:0,font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},suggestedMax:def.suggestedMax}}}
+      });
+    }
+
+    function renderLast7Chart(last7) {
+      const canvas=document.getElementById('last7Chart');
+      if (!canvas||!last7?.length) return;
+      const labels=last7.map((_,i)=>`D-${6-i}`);
+      const highs=last7.map(d=>d.high);
+      const lows=last7.map(d=>d.low);
+      const rains=last7.map(d=>d.rain);
+      if (chartInstances.last7Chart) {
+        chartInstances.last7Chart.data.labels=labels;
+        chartInstances.last7Chart.data.datasets[0].data=highs;
+        chartInstances.last7Chart.data.datasets[1].data=lows;
+        chartInstances.last7Chart.data.datasets[2].data=rains;
+        chartInstances.last7Chart.update('none');
+        return;
+      }
+      chartInstances.last7Chart=new Chart(canvas,{
+        type:'bar',
+        data:{labels,datasets:[
+          {label:'High °C',data:highs,backgroundColor:'#f59e0b99',borderColor:'#f59e0b',borderWidth:1,yAxisID:'y'},
+          {label:'Low °C',data:lows,backgroundColor:'#38bdf899',borderColor:'#38bdf8',borderWidth:1,yAxisID:'y'},
+          {label:'Rain mm',data:rains,type:'line',borderColor:'#60a5fa',backgroundColor:'#60a5fa33',borderWidth:2,yAxisID:'y1',tension:0.3}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#cbd5e1',boxWidth:12,font:{size:11}}}},scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},y:{position:'left',ticks:{color:'#94a3b8'},grid:{color:'rgba(255,255,255,0.05)'}},y1:{position:'right',ticks:{color:'#60a5fa'},grid:{drawOnChartArea:false}}}}
+      });
+    }
+
+    function updateAllCharts(parsed) {
+      const labels12=Array.from({length:12},(_,i)=>`-${11-i}h`);
+      Object.keys(CHART_DEFS).forEach(canvasId=>{
+        const def=CHART_DEFS[canvasId];
+        const s=parsed[def.key];
+        if (canvasId==='wind24Chart'&&parsed.windHistorySynthesized) initOrUpdateChart(canvasId,s,labels12,{synthesized:true});
+        else initOrUpdateChart(canvasId,s,labels12);
+      });
+      renderLast7Chart(parsed.last7);
+    }
+
+    function updateSourceBadge(usedProxy) {
+      const badge=document.getElementById('data-source-badge');
+      if (!WEATHER_DEBUG){badge.classList.add('hidden');return;}
+      badge.textContent=`source: ${usedProxy}`;
+      badge.classList.remove('hidden');
+    }
+    function updateDebugPanel(parsed) {
+      const panel=document.getElementById('debug-panel');
+      const content=document.getElementById('debug-content');
+      if (!panel||!content||!WEATHER_DEBUG){if(panel)panel.classList.add('hidden');return;}
+      panel.classList.remove('hidden');
+      const s=parsed.sanity||{};
+      const synth=parsed.windHistorySynthesized?'YES (orange/dashed)':'no';
+      content.innerHTML=`<div>raw:${s.rawLen??'?'} extra:${s.extraLen??'?'} hour:${s.hourLen??'?'} daily:${s.dailyLen??'?'}</div><div>core:${s.hasCore?'OK':'MISSING'} temp:${s.plausibleTemp?'OK':'RANGE?'} baro:${s.plausibleBaro?'OK':'RANGE?'} hum:${s.plausibleHumidity?'OK':'?'}</div><div>wind synthesized: <span class="${parsed.windHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synth}</span></div><div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;
+    }
+    function updateFreshnessUI() {
+      const el=document.getElementById('freshness');
+      const textEl=document.getElementById('freshness-text');
+      if (!el||!textEl) return;
+      const last=window.lastSuccessfulFetch||Number(localStorage.getItem('lastSuccessfulFetch')||0);
+      if (!last){el.classList.add('hidden');return;}
+      const ageMs=Date.now()-last;
+      const ageMin=Math.floor(ageMs/60000);
+      const ageSec=Math.floor(ageMs/1000);
+      let label='', colorClass='text-emerald-400 border-emerald-400/30';
+      if (ageSec<45) label='just now';
+      else if (ageMin<2) label=`${ageSec}s ago`;
+      else if (ageMin<8) label=`${ageMin}m ago`;
+      else { label=`${ageMin}m ago`; colorClass=ageMin>12?'text-orange-400 border-orange-400/30':'text-yellow-400 border-yellow-400/30'; }
+      textEl.textContent=label;
+      el.className=`hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border bg-white/5 ${colorClass}`;
+      el.classList.remove('hidden');
+    }
+    async function copyLastUpdated() {
+      const text=document.querySelector('#last-updated span').textContent;
+      try{await navigator.clipboard.writeText(text);}catch(_){}
+    }
+
+    function updateUI(parsed, usedProxy) {
+      const tsParts=parsed.data.slice(parsed.mapping.timestampParts[0],parsed.mapping.timestampParts[2]+1);
+      const ts=tsParts.join(':')||'—';
+      document.getElementById('last-updated').innerHTML=`<i class="fa-solid fa-clock"></i> <span>Last updated: ${ts} (station)</span>`;
+      updateSourceBadge(usedProxy);
+      document.getElementById('current-temp').textContent=fmtNum(parsed.temp,1);
+      document.getElementById('condition').textContent=parsed.condition||'—';
+      document.getElementById('feels-like').textContent=fmtNum(parsed.feelsLike,1,'°C');
+      document.getElementById('heat-index').textContent=fmtNum(parsed.heatIndex,1,'°C');
+      document.getElementById('day-high').textContent=fmtNum(parsed.dayHigh,1,'°C');
+      document.getElementById('day-low').textContent=fmtNum(parsed.dayLow,1,'°C');
+      document.getElementById('sunrise-hero').textContent=parsed.sunrise||'—';
+      document.getElementById('sunset-hero').textContent=parsed.sunset||'—';
+      document.getElementById('moon-phase-hero').textContent=fmtNum(parsed.moonIllum,0,'%');
+      document.getElementById('moon-age-hero').textContent=fmtNum(parsed.moonAge);
+      document.getElementById('moon-phase-name-hero').textContent=moonPhaseName(parsed.moonAge);
+      document.getElementById('moon-icon-hero').innerHTML=moonIcon(parsed.moonIllum,parsed.moonAge,26);
+      document.getElementById('wind-speed').textContent=fmtNum(parsed.windSpeedKmh,1);
+      document.getElementById('wind-dir').textContent=Number.isFinite(parsed.windDirDeg)?cardinal(parsed.windDirDeg):'—';
+      document.getElementById('wind-gust').textContent=fmtNum(parsed.windGustKmh,1,' km/h');
+      document.getElementById('wind-arrow').setAttribute('transform',`rotate(${Number.isFinite(parsed.windDirDeg)?parsed.windDirDeg:0} 40 40)`);
+      document.getElementById('humidity').textContent=fmtNum(parsed.humidity,0);
+      document.getElementById('dewpoint').textContent=fmtNum(parsed.dewPoint,1,'°C');
+      document.getElementById('humidity-bar').style.width=`${clamp(Number.isFinite(parsed.humidity)?parsed.humidity:0,0,100)}%`;
+      document.getElementById('pressure').textContent=fmtNum(parsed.baro,1);
+      const pt=document.getElementById('pressure-trend');
+      if (Number.isFinite(parsed.baroTrend)) {
+        pt.innerHTML=parsed.baroTrend<0?`<i class="fa-solid fa-arrow-down text-red-400"></i> ${parsed.baroTrend.toFixed(1)}`:`<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${parsed.baroTrend.toFixed(1)}`;
+      } else pt.textContent='—';
+      document.getElementById('rain-today').textContent=fmtNum(parsed.rainToday,1);
+      document.getElementById('rain-month').textContent=fmtNum(parsed.rainMonth,1,' mm');
+      document.getElementById('rain-ytd').textContent=fmtNum(parsed.rainYTD,1,' mm');
+      document.getElementById('uv').textContent=fmtNum(parsed.uv,1);
+      const windSparkColor=parsed.windHistorySynthesized?'#fb923c':'#34d399';
+      renderSparkline(document.getElementById('spark-wind'),parsed.hourlyWind,windSparkColor);
+      renderSparkline(document.getElementById('spark-baro'),parsed.hourlyBaro,'#fbbf24');
+      renderSparkline(document.getElementById('spark-rain'),parsed.hourlyRain,'#60a5fa');
+      renderSparkline(document.getElementById('spark-humidity'),parsed.hourlyHumidity,'#38bdf8');
+      updateAllCharts(parsed);
+      renderRecords(parsed.extra);
+      updateFreshnessUI();
+      updateDebugPanel(parsed);
+    }
+
+    async function loadStationData() {
+      let rawText='',extraText='',hourText='',dailyText='',usedProxy='none';
+      const tryList=[];
+      if (USE_CUSTOM_PROXY&&CUSTOM_PROXY_BASE&&!FORCE_PUBLIC_PROXIES) {
+        const base=CUSTOM_PROXY_BASE.endsWith('/')?CUSTOM_PROXY_BASE:CUSTOM_PROXY_BASE+'/';
+        tryList.push({type:'custom',base,label:'custom-proxy'});
+      }
+      if (tryList.length===0||FORCE_PUBLIC_PROXIES) {
+        tryList.push({type:'direct',base:BASE,label:'direct'});
+        PROXIES.forEach(p=>tryList.push({type:'proxy',base:p}));
+      }
+      for (const entry of tryList) {
+        try {
+          let urls;
+          if (entry.type==='direct'||entry.type==='custom') {
+            urls=FILES.map(f=>entry.type==='custom'?`${entry.base}?url=${encodeURIComponent(BASE+f)}&t=${Date.now()}`:`${entry.base}${f}?t=${Date.now()}`);
+          } else {
+            urls=FILES.map(f=>{
+              const fullTarget=BASE+f;
+              const sep=entry.base.includes('?')?'&':'?';
+              return `${entry.base}${encodeURIComponent(fullTarget)}${sep}cb=${Date.now()}`;
+            });
+          }
+          const resps=await Promise.all(urls.map(u=>timeoutFetch(u)));
+          if (!resps.every(r=>r.ok)) throw new Error('bad response');
+          const ct=resps[0].headers.get('content-type')||'';
+          if (ct.includes('text/html')) throw new Error('HTML instead of data');
+          [rawText,extraText,hourText,dailyText]=await Promise.all(resps.map(r=>r.text()));
+          const t=rawText.trim();
+          if (t.length<150||!/^\d/.test(t)) throw new Error('invalid payload');
+          const fetchTime=Date.now();
+          localStorage.setItem('lastSuccessfulFetch',String(fetchTime));
+          window.lastSuccessfulFetch=fetchTime;
+          usedProxy=entry.label||(entry.type==='proxy'?entry.base.split(/[?]/)[0]:entry.type);
+          break;
+        } catch(e){ console.warn('Fetch via',entry.base||entry.type,e.message); }
+      }
+      if (!rawText||rawText.length<150) throw new Error('All sources failed — check Worker or public proxies');
+      const parsed=parseClientRaw(rawText,extraText,hourText,dailyText);
+      if (WEATHER_DEBUG) {
+        console.log('%c[Weather] Parsed OK','color:#10b981',parsed.diag,parsed.sanity);
+        if (!parsed.sanity.plausibleTemp||!parsed.sanity.plausibleBaro) console.warn('%c[Weather] Sanity check failed','color:#f59e0b',parsed.sanity);
+      }
+      return {parsed,usedProxy};
+    }
+
+    async function loadForecast() {
+      const container=document.getElementById('forecast-container');
+      container.innerHTML='<div class="col-span-3 text-center py-6 text-white/60 text-sm">Loading forecast…</div>';
+      try {
+        const url='https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney';
+        const res=await fetch(url,{cache:'no-store'});
+        const j=await res.json();
+        container.innerHTML='';
+        for (let i=0;i<6;i++) {
+          const code=j.daily.weather_code[i];
+          const hi=Math.round(j.daily.temperature_2m_max[i]);
+          const lo=Math.round(j.daily.temperature_2m_min[i]);
+          const rain=j.daily.precipitation_sum[i]||0;
+          const date=new Date(j.daily.time[i]);
+          const day=date.toLocaleDateString('en-AU',{weekday:'short'});
+          const el=document.createElement('div');
+          el.className='forecast-card glass rounded-2xl p-3 flex flex-col items-center border border-white/10';
+          el.innerHTML=`<div class="text-xs font-medium opacity-75">${day}</div><i class="fa-solid ${getWeatherIcon(code)} text-4xl my-2 text-slate-300"></i><div class="text-[11px] text-white/70 uppercase tracking-wide">${getWeatherLabel(code)}</div><div class="text-lg font-light">${hi}° <span class="text-white/60">/</span> ${lo}°</div><div class="text-xs text-sky-300 mt-0.5">${rain.toFixed(1)} mm</div>`;
+          container.appendChild(el);
+        }
+      } catch(e){ container.innerHTML='<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>'; }
+    }
+
+    async function loadWeather() {
+      if (isRefreshing) return;
+      setRefreshingState(true);
+      try {
+        const {parsed,usedProxy}=await loadStationData();
+        updateUI(parsed,usedProxy);
+        setInitialLoadingState(false);
+        document.getElementById('error-toast').classList.add('hidden');
+      } catch(e) {
+        setInitialLoadingState(false);
+        const toast=document.getElementById('error-toast');
+        document.getElementById('error-text').textContent=e.message||'Failed to load station data';
+        toast.style.display='flex';
+      }
+      await loadForecast();
+      setRefreshingState(false);
+    }
+
+    function init() {
+      document.getElementById('code-update-stamp').textContent=`Code update: ${getCodeUpdateLabel()}`;
+      const refreshBtn=document.getElementById('refresh-btn');
+      refreshBtn.addEventListener('click',loadWeather);
+      document.getElementById('last-updated').addEventListener('click',copyLastUpdated);
+      refreshBtn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();loadWeather();}});
+      setInitialLoadingState(true);
+      loadWeather();
+      setTimeout(updateFreshnessUI,120);
+      setInterval(()=>{if(!document.hidden)updateFreshnessUI();},30000);
+      setInterval(()=>{if(!document.hidden)loadWeather();},REFRESH_INTERVAL_MS);
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!isRefreshing)setTimeout(loadWeather,800);});
+    }
+    window.onload=init;
   </script>
 </body>
 </html>
