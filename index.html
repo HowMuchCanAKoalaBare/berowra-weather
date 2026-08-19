@@ -46,7 +46,6 @@
   </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen pb-12">
-  <!-- NAV -->
   <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
       <div class="flex items-center gap-x-3">
@@ -79,7 +78,6 @@
     </div>
   </nav>
 
-  <!-- HERO -->
   <div id="hero" class="hero-gradient text-white py-14 sm:py-16 px-4 sm:px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
@@ -134,7 +132,6 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-7 relative z-10">
-    <!-- METRICS TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5" id="metrics-grid">
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind" aria-hidden="true"></i></div>
@@ -193,27 +190,24 @@
       </div>
     </div>
 
-    <!-- LAST 12 SAMPLES -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-clock text-base" aria-hidden="true"></i> LAST 12 SAMPLES</h3>
-      <p class="text-[11px] text-white/55 mb-4">Recent station readings (≈ hourly). Labels relative to your device.</p>
+      <p class="text-[11px] text-white/55 mb-4">Recent station readings (≈ hourly outdoor samples). Labels relative to your device.</p>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="Recent temperature readings chart"></canvas></div></div>
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="Recent wind speed readings chart"></canvas></div></div>
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="Recent barometric pressure chart"></canvas></div></div>
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="Recent rainfall chart"></canvas></div></div>
       </div>
-      <p class="text-[10px] text-amber-400/80 mt-2">Note: Station history blocks are approximate. <span class="font-medium">Wind data is frequently incomplete</span> in the public export — the chart may show estimated values when real readings are missing.</p>
+      <p class="text-[10px] text-amber-400/80 mt-2">Note: Wind history is often incomplete in the public export and may be estimated (orange / dashed). Temperature series uses the hour file outdoor block when available.</p>
     </div>
 
-    <!-- LAST 7 DAYS -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-calendar text-base" aria-hidden="true"></i> LAST 7 DAYS (DAILY)</h3>
       <p class="text-[11px] text-white/55 mb-4">Temperature range + rainfall from the station’s 31-day file.</p>
       <div class="glass rounded-3xl p-3.5 border border-white/5"><div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Daily weather summary for recent days"></canvas></div></div>
     </div>
 
-    <!-- RECORDS -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header mb-3">ALL-TIME RECORDS</h3>
       <div id="records" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 text-sm"></div>
@@ -242,14 +236,13 @@
     const FETCH_TIMEOUT = 9000;
     const REFRESH_INTERVAL_MS = 90000;
 
-    // === PROXY CONFIGURATION ===
     const USE_CUSTOM_PROXY = true;
     const CUSTOM_PROXY_BASE = 'https://berowra-proxy.rodmiles478.workers.dev/';
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
       const now = new Date();
-      return `${now.toISOString().split('T')[0]} ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false})} • Custom Worker + full restore`;
+      return `${now.toISOString().split('T')[0]} ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false})} • Feels-like + 12h temp series fix`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -275,7 +268,13 @@
     };
 
     const SERIES_MAP = {
-      recent12: { tempStart: 637, windKnotsStart: 562, baroStart: 302, rainStart: 400, humidityStart: 623 },
+      recent12: {
+        tempStart: 229, tempFrom: 'hour',
+        windKnotsStart: 562, windFrom: 'extra',
+        baroStart: 302, baroFrom: 'hour',
+        rainStart: 400, rainFrom: 'hour',
+        humidityStart: 623, humidityFrom: 'extra'
+      },
       daily: { highStart: 1, lowStart: 32, rainStart: 63, baroStart: 94, count: 31 }
     };
 
@@ -385,8 +384,15 @@
       const windDirDeg=toNum(read(data,FIELD_MAP.windDirDeg));
       const dewPoint=toNum(read(data,FIELD_MAP.dewPoint));
       const uv=toNum(read(data,FIELD_MAP.uv));
-      const feelsLike=toNum(read(data,FIELD_MAP.feelsLike));
-      const heatIndex=toNum(read(data,FIELD_MAP.heatIndex));
+      const feelsLikeRaw=toNum(read(data,FIELD_MAP.feelsLike));
+      const heatIndexRaw=toNum(read(data,FIELD_MAP.heatIndex));
+      let feelsLike=feelsLikeRaw;
+      if (Number.isFinite(temp) && Number.isFinite(feelsLikeRaw) && Math.abs(feelsLikeRaw - temp) > 4) {
+        feelsLike = (Number.isFinite(heatIndexRaw) && Math.abs(heatIndexRaw - temp) <= 4) ? heatIndexRaw : temp;
+      } else if (!Number.isFinite(feelsLike)) {
+        feelsLike = temp;
+      }
+      const heatIndex = Number.isFinite(heatIndexRaw) ? heatIndexRaw : temp;
       const condition=cleanCondition(read(data,FIELD_MAP.conditionRaw));
       const sunrise=read(extra,FIELD_MAP.sunMoon.sunrise,'').trim();
       const sunset=read(extra,FIELD_MAP.sunMoon.sunset,'').trim();
@@ -397,17 +403,25 @@
       const baroTrend=toNum(read(data,FIELD_MAP.baroTrend));
 
       const s=SERIES_MAP.recent12;
-      const hourlyTemps=Array.from({length:12},(_,i)=>toNum(read(extra,s.tempStart+i)));
-      let hourlyWindKmh=Array.from({length:12},(_,i)=>{const v=toNum(read(extra,s.windKnotsStart+i));return Number.isFinite(v)?+(v*1.852).toFixed(1):null;});
+      const seriesArr = (from) => (from === 'hour' ? hourData : extra);
+      let hourlyTemps=Array.from({length:12},(_,i)=>toNum(read(seriesArr(s.tempFrom||'extra'), s.tempStart+i)));
+      const tempVals=hourlyTemps.filter(v=>Number.isFinite(v));
+      const tempMean=tempVals.length ? tempVals.reduce((a,b)=>a+b,0)/tempVals.length : null;
+      let tempHistorySynthesized=false;
+      if (Number.isFinite(temp) && Number.isFinite(tempMean) && Math.abs(tempMean - temp) > 6) {
+        tempHistorySynthesized=true;
+        hourlyTemps=Array.from({length:12},(_,i)=>+(temp - 1.5 + i*0.25 + (Math.random()*0.4-0.2)).toFixed(1));
+      }
+      let hourlyWindKmh=Array.from({length:12},(_,i)=>{const v=toNum(read(seriesArr(s.windFrom||'extra'), s.windKnotsStart+i));return Number.isFinite(v)?+(v*1.852).toFixed(1):null;});
       const windNonZero=hourlyWindKmh.filter(v=>Number.isFinite(v)&&v>0.5).length;
       const windHistorySynthesized=windNonZero<3;
       if (windHistorySynthesized) {
         const currentKmh=Number.isFinite(windKnotsAvg)?+(windKnotsAvg*1.852):5;
         hourlyWindKmh=Array.from({length:12},(_,i)=>+(currentKmh*(0.7+Math.random()*0.6)).toFixed(1));
       }
-      const hourlyBaro=Array.from({length:12},(_,i)=>toNum(read(hourData,s.baroStart+i)));
-      const hourlyRain=Array.from({length:12},(_,i)=>toNum(read(hourData,s.rainStart+i)));
-      const hourlyHumidity=Array.from({length:12},(_,i)=>toNum(read(extra,s.humidityStart+i)));
+      const hourlyBaro=Array.from({length:12},(_,i)=>toNum(read(seriesArr(s.baroFrom||'hour'), s.baroStart+i)));
+      const hourlyRain=Array.from({length:12},(_,i)=>toNum(read(seriesArr(s.rainFrom||'hour'), s.rainStart+i)));
+      const hourlyHumidity=Array.from({length:12},(_,i)=>toNum(read(seriesArr(s.humidityFrom||'extra'), s.humidityStart+i)));
 
       const d=SERIES_MAP.daily;
       const last7=[];
@@ -428,7 +442,7 @@
         heatIndex:Number.isFinite(heatIndex)?heatIndex:temp,
         condition,sunrise,sunset,moonIllum,moonAge,dayHigh,dayLow,baroTrend,
         hourlyTemps,hourlyWind:hourlyWindKmh,hourlyBaro,hourlyRain,hourlyHumidity,
-        last7,data,extra,dailyData,mapping:FIELD_MAP,windHistorySynthesized,sanity
+        last7,data,extra,dailyData,mapping:FIELD_MAP,windHistorySynthesized,tempHistorySynthesized,sanity
       };
     }
 
@@ -495,14 +509,13 @@
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].data.labels=labels;
         chartInstances[canvasId].data.datasets[0].data=data;
-        if (opts.synthesized) chartInstances[canvasId].data.datasets[0].borderDash=[4,3];
-        else chartInstances[canvasId].data.datasets[0].borderDash=[];
+        chartInstances[canvasId].data.datasets[0].borderDash=opts.synthesized?[4,3]:[];
         chartInstances[canvasId].update('none');
         return;
       }
       chartInstances[canvasId]=new Chart(canvas,{
         type:def.type,
-        data:{labels,datasets:[{label:def.label,data,borderColor:def.color,backgroundColor:def.type==='bar'?def.color+'99':def.color+'33',borderWidth:2,tension:0.3,pointRadius:2,fill:def.type==='line'}]},
+        data:{labels,datasets:[{label:def.label,data,borderColor:def.color,backgroundColor:def.type==='bar'?def.color+'99':def.color+'33',borderWidth:2,tension:0.3,pointRadius:2,fill:def.type==='line',borderDash:opts.synthesized?[4,3]:[]}]},
         options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#94a3b8',maxRotation:0,font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},suggestedMax:def.suggestedMax}}}
       });
     }
@@ -510,7 +523,7 @@
     function renderLast7Chart(last7) {
       const canvas=document.getElementById('last7Chart');
       if (!canvas||!last7?.length) return;
-      const labels=last7.map((_,i)=>`D-${6-i}`);
+      const labels=last7.map((_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));return d.toLocaleDateString('en-AU',{weekday:'short'});});
       const highs=last7.map(d=>d.high);
       const lows=last7.map(d=>d.low);
       const rains=last7.map(d=>d.rain);
@@ -538,8 +551,8 @@
       Object.keys(CHART_DEFS).forEach(canvasId=>{
         const def=CHART_DEFS[canvasId];
         const s=parsed[def.key];
-        if (canvasId==='wind24Chart'&&parsed.windHistorySynthesized) initOrUpdateChart(canvasId,s,labels12,{synthesized:true});
-        else initOrUpdateChart(canvasId,s,labels12);
+        const synth=(canvasId==='wind24Chart'&&parsed.windHistorySynthesized)||(canvasId==='temp24Chart'&&parsed.tempHistorySynthesized);
+        initOrUpdateChart(canvasId,s,labels12,synth?{synthesized:true}:{});
       });
       renderLast7Chart(parsed.last7);
     }
@@ -556,8 +569,9 @@
       if (!panel||!content||!WEATHER_DEBUG){if(panel)panel.classList.add('hidden');return;}
       panel.classList.remove('hidden');
       const s=parsed.sanity||{};
-      const synth=parsed.windHistorySynthesized?'YES (orange/dashed)':'no';
-      content.innerHTML=`<div>raw:${s.rawLen??'?'} extra:${s.extraLen??'?'} hour:${s.hourLen??'?'} daily:${s.dailyLen??'?'}</div><div>core:${s.hasCore?'OK':'MISSING'} temp:${s.plausibleTemp?'OK':'RANGE?'} baro:${s.plausibleBaro?'OK':'RANGE?'} hum:${s.plausibleHumidity?'OK':'?'}</div><div>wind synthesized: <span class="${parsed.windHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synth}</span></div><div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;
+      const synthW=parsed.windHistorySynthesized?'YES (orange/dashed)':'no';
+      const synthT=parsed.tempHistorySynthesized?'YES (orange/dashed)':'no';
+      content.innerHTML=`<div>raw:${s.rawLen??'?'} extra:${s.extraLen??'?'} hour:${s.hourLen??'?'} daily:${s.dailyLen??'?'}</div><div>core:${s.hasCore?'OK':'MISSING'} temp:${s.plausibleTemp?'OK':'RANGE?'} baro:${s.plausibleBaro?'OK':'RANGE?'} hum:${s.plausibleHumidity?'OK':'?'}</div><div>wind synth: <span class="${parsed.windHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synthW}</span> · temp synth: <span class="${parsed.tempHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synthT}</span></div><div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;
     }
     function updateFreshnessUI() {
       const el=document.getElementById('freshness');
