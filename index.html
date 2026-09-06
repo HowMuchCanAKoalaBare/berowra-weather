@@ -15,6 +15,18 @@
     .hero-gradient { background: linear-gradient(90deg, #0ea5e9 0%, #f59e0b 100%); }
     .compass { transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
     .icon-square { width: 46px; height: 46px; }
+    /* Hero sun/moon: scale with viewport and stay matched to each other */
+    .astro-icon {
+      width: clamp(1.35rem, 3.2vw, 1.85rem);
+      height: clamp(1.35rem, 3.2vw, 1.85rem);
+      font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .astro-icon svg { width: 100%; height: 100%; display: block; }
     .chart-wrap { position: relative; height: 180px; }
     @media (min-width: 640px) { .chart-wrap { height: 200px; } }
     @media (min-width: 1024px) { .chart-wrap { height: 220px; } }
@@ -46,6 +58,7 @@
   </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen pb-12">
+  <!-- NAV -->
   <nav class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
       <div class="flex items-center gap-x-3">
@@ -78,6 +91,7 @@
     </div>
   </nav>
 
+  <!-- HERO -->
   <div id="hero" class="hero-gradient text-white py-14 sm:py-16 px-4 sm:px-6 relative overflow-hidden">
     <div class="max-w-screen-2xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
@@ -85,7 +99,7 @@
           <div class="grid grid-cols-2 gap-x-5 sm:gap-x-6 pb-4 border-b border-white/10 flex-1">
             <div class="flex flex-col h-full items-center">
               <div class="flex items-center gap-x-2.5 mb-3" id="sun-moon-heading">
-                <i class="fa-solid fa-sun text-2xl text-amber-400" aria-hidden="true"></i>
+                <i class="fa-solid fa-sun astro-icon text-amber-400" aria-hidden="true"></i>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">SUN</span>
               </div>
               <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
@@ -95,7 +109,7 @@
             </div>
             <div class="flex flex-col h-full items-center">
               <div class="flex items-center gap-x-2.5 mb-3">
-                <span id="moon-icon-hero" class="inline-flex w-7 h-7 items-center justify-center flex-shrink-0" aria-label="Current moon phase visual"></span>
+                <span id="moon-icon-hero" class="astro-icon" aria-label="Current moon phase visual"></span>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">MOON</span>
               </div>
               <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
@@ -132,6 +146,7 @@
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-7 relative z-10">
+    <!-- METRICS TILES -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5" id="metrics-grid">
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind" aria-hidden="true"></i></div>
@@ -190,6 +205,7 @@
       </div>
     </div>
 
+    <!-- LAST 12 SAMPLES -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-clock text-base" aria-hidden="true"></i> LAST 12 SAMPLES</h3>
       <p class="text-[11px] text-white/55 mb-4">Recent station readings (≈ hourly outdoor samples). Labels relative to your device.</p>
@@ -202,12 +218,14 @@
       <p class="text-[10px] text-amber-400/80 mt-2">Note: Wind history is often incomplete in the public export and may be estimated (orange / dashed). Temperature series uses the hour file outdoor block when available.</p>
     </div>
 
+    <!-- LAST 7 DAYS -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-calendar text-base" aria-hidden="true"></i> LAST 7 DAYS (DAILY)</h3>
       <p class="text-[11px] text-white/55 mb-4">Temperature range + rainfall from the station’s 31-day file.</p>
       <div class="glass rounded-3xl p-3.5 border border-white/5"><div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Daily weather summary for recent days"></canvas></div></div>
     </div>
 
+    <!-- RECORDS -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header mb-3">ALL-TIME RECORDS</h3>
       <div id="records" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 text-sm"></div>
@@ -236,13 +254,14 @@
     const FETCH_TIMEOUT = 9000;
     const REFRESH_INTERVAL_MS = 90000;
 
+    // === PROXY CONFIGURATION ===
     const USE_CUSTOM_PROXY = true;
     const CUSTOM_PROXY_BASE = 'https://berowra-proxy.rodmiles478.workers.dev/';
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
       const now = new Date();
-      return `${now.toISOString().split('T')[0]} ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false})} • Feels-like + 12h temp series fix`;
+      return `${now.toISOString().split('T')[0]} ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false})} • Responsive sun/moon icons`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -268,6 +287,7 @@
     };
 
     const SERIES_MAP = {
+      // temp from clientrawhour (verified outdoor recent samples); wind still weak in public export
       recent12: {
         tempStart: 229, tempFrom: 'hour',
         windKnotsStart: 562, windFrom: 'extra',
@@ -386,6 +406,7 @@
       const uv=toNum(read(data,FIELD_MAP.uv));
       const feelsLikeRaw=toNum(read(data,FIELD_MAP.feelsLike));
       const heatIndexRaw=toNum(read(data,FIELD_MAP.heatIndex));
+      // Station field 130 is indoor temp on this export — reject when it diverges from outdoor
       let feelsLike=feelsLikeRaw;
       if (Number.isFinite(temp) && Number.isFinite(feelsLikeRaw) && Math.abs(feelsLikeRaw - temp) > 4) {
         feelsLike = (Number.isFinite(heatIndexRaw) && Math.abs(heatIndexRaw - temp) <= 4) ? heatIndexRaw : temp;
@@ -405,6 +426,7 @@
       const s=SERIES_MAP.recent12;
       const seriesArr = (from) => (from === 'hour' ? hourData : extra);
       let hourlyTemps=Array.from({length:12},(_,i)=>toNum(read(seriesArr(s.tempFrom||'extra'), s.tempStart+i)));
+      // Sanity: if series mean is far from current outdoor temp, mark synthesized and anchor to current
       const tempVals=hourlyTemps.filter(v=>Number.isFinite(v));
       const tempMean=tempVals.length ? tempVals.reduce((a,b)=>a+b,0)/tempVals.length : null;
       let tempHistorySynthesized=false;
@@ -509,13 +531,14 @@
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].data.labels=labels;
         chartInstances[canvasId].data.datasets[0].data=data;
-        chartInstances[canvasId].data.datasets[0].borderDash=opts.synthesized?[4,3]:[];
+        if (opts.synthesized) chartInstances[canvasId].data.datasets[0].borderDash=[4,3];
+        else chartInstances[canvasId].data.datasets[0].borderDash=[];
         chartInstances[canvasId].update('none');
         return;
       }
       chartInstances[canvasId]=new Chart(canvas,{
         type:def.type,
-        data:{labels,datasets:[{label:def.label,data,borderColor:def.color,backgroundColor:def.type==='bar'?def.color+'99':def.color+'33',borderWidth:2,tension:0.3,pointRadius:2,fill:def.type==='line',borderDash:opts.synthesized?[4,3]:[]}]},
+        data:{labels,datasets:[{label:def.label,data,borderColor:def.color,backgroundColor:def.type==='bar'?def.color+'99':def.color+'33',borderWidth:2,tension:0.3,pointRadius:2,fill:def.type==='line'}]},
         options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#94a3b8',maxRotation:0,font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},suggestedMax:def.suggestedMax}}}
       });
     }
@@ -612,7 +635,7 @@
       document.getElementById('moon-phase-hero').textContent=fmtNum(parsed.moonIllum,0,'%');
       document.getElementById('moon-age-hero').textContent=fmtNum(parsed.moonAge);
       document.getElementById('moon-phase-name-hero').textContent=moonPhaseName(parsed.moonAge);
-      document.getElementById('moon-icon-hero').innerHTML=moonIcon(parsed.moonIllum,parsed.moonAge,26);
+      document.getElementById('moon-icon-hero').innerHTML=moonIcon(parsed.moonIllum,parsed.moonAge,36);
       document.getElementById('wind-speed').textContent=fmtNum(parsed.windSpeedKmh,1);
       document.getElementById('wind-dir').textContent=Number.isFinite(parsed.windDirDeg)?cardinal(parsed.windDirDeg):'—';
       document.getElementById('wind-gust').textContent=fmtNum(parsed.windGustKmh,1,' km/h');
