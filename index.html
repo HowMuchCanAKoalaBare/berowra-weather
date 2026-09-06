@@ -27,10 +27,24 @@
       flex-shrink: 0;
     }
     .astro-icon svg { width: 100%; height: 100%; display: block; }
+    .nav-chip {
+      font-size: 0.75rem;
+      line-height: 1.25;
+      padding: 0.5rem 0.75rem;
+      border-radius: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
     .chart-wrap { position: relative; height: 180px; }
     @media (min-width: 640px) { .chart-wrap { height: 200px; } }
     @media (min-width: 1024px) { .chart-wrap { height: 220px; } }
     @media (min-width: 1280px) { .chart-wrap { height: 240px; } }
+    .chart-wrap-wide { position: relative; height: 220px; }
+    @media (min-width: 1024px) { .chart-wrap-wide { height: 280px; } }
+    @media (min-width: 1280px) { .chart-wrap-wide { height: 300px; } }
     .chart-container { width: 100% !important; height: 100% !important; display: block; }
     .forecast-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     .glass-hover { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, background-color 0.2s ease; }
@@ -41,15 +55,16 @@
     .skeleton::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(148,163,184,0.12), transparent); animation: skeleton-shimmer 1.35s infinite linear; pointer-events: none; }
     @keyframes skeleton-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
     .skeleton-text { background: rgba(148,163,184,0.18); border-radius: 4px; display: inline-block; }
-    .sparkline { display: block; opacity: 0.9; }
+    .sparkline { display: block; opacity: 0.9; width: 100%; max-width: 110px; height: 20px; }
     .sparkline line { stroke: #64748b; stroke-opacity: 0.3; }
     .metric-value { font-variant-numeric: tabular-nums; }
     .section-header { font-size: 0.875rem; font-weight: 500; letter-spacing: 0.5px; color: #cbd5e1; }
-    .glass-metric { display: flex; align-items: flex-start; gap: 1rem; min-height: 138px; }
-    .glass-metric .content { flex: 1; min-width: 0; text-align: left; }
+    .glass-metric { display: flex; align-items: flex-start; gap: 1rem; min-height: 148px; }
+    .glass-metric .content { flex: 1; min-width: 0; text-align: left; display: flex; flex-direction: column; }
     .glass-metric .value { font-size: 2.25rem; line-height: 1.05; }
     .glass-metric .label { letter-spacing: 1.5px; font-weight: 500; }
     .glass-metric .subtext { font-size: 0.75rem; line-height: 1.25; color: rgb(148 163 184); }
+    .glass-metric .accessory { min-height: 44px; margin-top: auto; padding-top: 0.5rem; }
     @media (prefers-reduced-motion: reduce) {
       .glass-hover, .compass, .forecast-card { transition: none !important; }
       .spin, .skeleton::after { animation: none !important; }
@@ -69,22 +84,22 @@
         </div>
       </div>
       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-        <button id="refresh-btn" type="button" class="text-xs px-3 py-2 bg-white/8 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 rounded-2xl border border-white/10 flex items-center justify-center gap-x-2 transition" aria-label="Refresh all live data now">
+        <button id="refresh-btn" type="button" class="nav-chip bg-white/8 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition" aria-label="Refresh all live data now">
           <i id="refresh-icon" class="fa-solid fa-rotate-right"></i>
           <span id="refresh-label">Refresh</span>
         </button>
-        <button id="last-updated" type="button" class="text-sm text-white/70 flex items-center gap-x-2 px-3 py-2 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition" aria-live="polite" aria-label="Last updated time from station. Click to copy.">
+        <button id="last-updated" type="button" class="nav-chip text-white/70 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition" aria-live="polite" aria-label="Last updated time from station. Click to copy.">
           <i class="fa-solid fa-clock" aria-hidden="true"></i>
           <span>Last updated: —</span>
         </button>
-        <div id="data-source-badge" class="hidden text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10">source: —</div>
-        <div class="hidden sm:flex items-center gap-x-2 text-[11px] text-emerald-300/80 px-2 py-1 rounded-xl border border-emerald-300/20 bg-emerald-400/10" aria-label="Live data connection">
+        <div id="data-source-badge" class="nav-chip hidden text-emerald-300/80 border-emerald-300/20 bg-emerald-400/10">source: —</div>
+        <div class="hidden sm:inline-flex nav-chip text-emerald-300/80 border-emerald-300/20 bg-emerald-400/10" aria-label="Live data connection">
           <span class="h-2 w-2 rounded-full bg-emerald-400"></span><span>Live</span>
         </div>
-        <div id="freshness" class="hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border border-white/10 bg-white/5 text-white/70" aria-live="polite">
+        <div id="freshness" class="hidden sm:inline-flex nav-chip text-white/70 bg-white/5" aria-live="polite">
           <i class="fa-solid fa-sync fa-sm"></i><span id="freshness-text">—</span>
         </div>
-        <a href="http://www.mudiefamily.org/weather/" target="_blank" rel="noopener noreferrer" class="text-xs px-4 py-2 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center gap-x-2 transition" aria-label="Visit original Mudie Family weather station page">
+        <a href="http://www.mudiefamily.org/weather/" target="_blank" rel="noopener noreferrer" class="nav-chip bg-white/10 hover:bg-white/20 transition" aria-label="Visit original Mudie Family weather station page">
           <i class="fa-solid fa-chart-line"></i> <span>Original Station</span>
         </a>
       </div>
@@ -105,6 +120,7 @@
               <div class="flex flex-col justify-center flex-1 gap-3.5 text-center">
                 <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">RISE</div><div id="sunrise-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div></div>
                 <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">SET</div><div id="sunset-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div></div>
+                <div><div class="text-white/60 text-[10px] font-medium tracking-[2px] mb-0.5">DAY</div><div id="day-length-hero" class="text-[1.9rem] font-light tabular-nums leading-none">—</div></div>
               </div>
             </div>
             <div class="flex flex-col h-full items-center">
@@ -129,37 +145,38 @@
             <div id="current-temp" class="text-[3.8rem] sm:text-[4.75rem] md:text-[5.25rem] lg:text-[5.75rem] xl:text-[6rem] leading-none font-light tabular-nums" aria-label="Current temperature in Celsius">—</div>
             <div class="text-5xl sm:text-6xl lg:text-7xl font-light">°C</div>
           </div>
-          <div id="condition" class="mt-2 text-3xl font-semibold uppercase tracking-[4px] opacity-95">—</div>
+          <div id="condition" class="mt-2 text-xl sm:text-3xl font-semibold uppercase tracking-[2px] sm:tracking-[4px] opacity-95">—</div>
           <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-x-10 mt-6 text-base sm:text-lg">
             <div>Feels like <span id="feels-like" class="font-medium">—°C</span></div>
             <div>Heat index <span id="heat-index" class="font-medium">—°C</span></div>
           </div>
           <div class="mt-8 text-xs opacity-60 tracking-wide">Berowra, NSW • −33.62° • 151.15°</div>
         </div>
-        <div class="glass glass-hover rounded-3xl p-5 sm:p-6 flex flex-col border border-white/10" aria-labelledby="forecast-heading">
+        <div class="glass glass-hover rounded-3xl p-6 sm:p-7 flex flex-col border border-white/10" aria-labelledby="forecast-heading">
           <h3 id="forecast-heading" class="text-xs font-semibold tracking-[2px] text-white/70 mb-3">6-DAY FORECAST • OPEN-METEO</h3>
           <div id="forecast-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center flex-1"></div>
         </div>
       </div>
     </div>
-    <div class="absolute bottom-6 right-6 text-6xl opacity-10" aria-hidden="true">🌿</div>
+    <div class="absolute bottom-6 left-6 text-6xl opacity-10 pointer-events-none" aria-hidden="true">🌿</div>
+    <div class="absolute bottom-6 right-6 text-6xl opacity-10 pointer-events-none" aria-hidden="true">🌿</div>
   </div>
 
   <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 -mt-7 relative z-10">
     <!-- METRICS TILES -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5" id="metrics-grid">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5" id="metrics-grid">
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind" aria-hidden="true"></i></div>
         <div class="content">
           <div class="label text-emerald-400 text-xs tracking-widest">WIND</div>
           <div id="wind-speed" class="value font-light tabular-nums metric-value">—</div>
           <div class="subtext"><span id="wind-dir">—</span> • Gust <span id="wind-gust">—</span></div>
-          <div class="mt-2 flex items-center gap-2">
+          <div class="accessory flex items-center gap-2">
             <svg width="40" height="40" viewBox="0 0 80 80" class="compass" aria-hidden="true">
               <circle cx="40" cy="40" r="36" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
               <path id="wind-arrow" d="M40 12 L48 40 L40 34 L32 40 Z" fill="#34d399" transform="rotate(0 40 40)"/>
             </svg>
-            <svg id="spark-wind" width="110" height="20" class="sparkline" aria-hidden="true"></svg>
+            <svg id="spark-wind" viewBox="0 0 110 20" preserveAspectRatio="none" class="sparkline" aria-hidden="true"></svg>
           </div>
         </div>
       </div>
@@ -168,9 +185,23 @@
         <div class="content">
           <div class="label text-sky-400 text-xs tracking-widest">HUMIDITY</div>
           <div id="humidity" class="value font-light tabular-nums metric-value">—</div>
-          <div class="subtext">Dew <span id="dewpoint">—</span></div>
-          <div class="mt-2 h-1.5 w-full rounded-full bg-white/10 overflow-hidden"><div id="humidity-bar" class="h-full bg-sky-400 rounded-full transition-all" style="width:0%"></div></div>
-          <div class="mt-1"><svg id="spark-humidity" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
+          <div class="subtext">Relative humidity</div>
+          <div class="accessory">
+            <div class="h-1.5 w-full rounded-full bg-white/10 overflow-hidden"><div id="humidity-bar" class="h-full bg-sky-400 rounded-full transition-all" style="width:0%"></div></div>
+            <svg id="spark-humidity" viewBox="0 0 110 20" preserveAspectRatio="none" class="sparkline mt-1" aria-hidden="true"></svg>
+          </div>
+        </div>
+      </div>
+      <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
+        <div class="icon-square bg-cyan-500/10 text-cyan-300 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-temperature-low" aria-hidden="true"></i></div>
+        <div class="content">
+          <div class="label text-cyan-300 text-xs tracking-widest">DEW POINT</div>
+          <div id="dewpoint" class="value font-light tabular-nums metric-value">—</div>
+          <div class="subtext">Spread <span id="dew-spread">—</span> from air</div>
+          <div class="accessory">
+            <div class="h-1.5 w-full rounded-full bg-white/10 overflow-hidden" aria-hidden="true"><div id="dew-bar" class="h-full bg-cyan-300 rounded-full transition-all" style="width:0%"></div></div>
+            <div class="flex justify-between text-[9px] text-white/40 mt-0.5 font-medium tracking-wider"><span>dry</span><span>near fog</span></div>
+          </div>
         </div>
       </div>
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
@@ -179,7 +210,7 @@
           <div class="label text-amber-400 text-xs tracking-widest">PRESSURE</div>
           <div id="pressure" class="value font-light tabular-nums metric-value">—</div>
           <div class="subtext" id="pressure-trend">—</div>
-          <div class="mt-2"><svg id="spark-baro" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
+          <div class="accessory"><svg id="spark-baro" viewBox="0 0 110 20" preserveAspectRatio="none" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
@@ -188,7 +219,7 @@
           <div class="label text-blue-400 text-xs tracking-widest">RAIN</div>
           <div id="rain-today" class="value font-light tabular-nums metric-value">—</div>
           <div class="subtext">mm today • Monthly <span id="rain-month">—</span> • YTD <span id="rain-ytd">—</span></div>
-          <div class="mt-2"><svg id="spark-rain" width="110" height="20" class="sparkline" aria-hidden="true"></svg></div>
+          <div class="accessory"><svg id="spark-rain" viewBox="0 0 110 20" preserveAspectRatio="none" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
       <div class="glass glass-hover rounded-3xl p-5 border border-white/10 glass-metric">
@@ -197,7 +228,7 @@
           <div class="label text-orange-400 text-xs tracking-widest">UV INDEX</div>
           <div id="uv" class="value font-light tabular-nums metric-value">—</div>
           <div class="subtext">Index (0–11+)</div>
-          <div class="mt-2.5">
+          <div class="accessory">
             <div class="h-1.5 w-full rounded-full bg-gradient-to-r from-emerald-400 via-yellow-400 via-orange-400 to-red-500" aria-hidden="true"></div>
             <div class="flex justify-between text-[9px] text-white/40 mt-0.5 font-medium tracking-wider"><span>0</span><span>3</span><span>6</span><span>8</span><span>11+</span></div>
           </div>
@@ -211,7 +242,7 @@
       <p class="text-[11px] text-white/55 mb-4">Recent station readings (≈ hourly outdoor samples). Labels relative to your device.</p>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="Recent temperature readings chart"></canvas></div></div>
-        <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-orange-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="Recent wind speed readings chart"></canvas></div></div>
+        <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="Recent wind speed readings chart"></canvas></div></div>
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="Recent barometric pressure chart"></canvas></div></div>
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="Recent rainfall chart"></canvas></div></div>
       </div>
@@ -222,23 +253,23 @@
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-calendar text-base" aria-hidden="true"></i> LAST 7 DAYS (DAILY)</h3>
       <p class="text-[11px] text-white/55 mb-4">Temperature range + rainfall from the station’s 31-day file.</p>
-      <div class="glass rounded-3xl p-3.5 border border-white/5"><div class="chart-wrap"><canvas id="last7Chart" class="chart-container" aria-label="Daily weather summary for recent days"></canvas></div></div>
+      <div class="chart-wrap-wide"><canvas id="last7Chart" class="chart-container" aria-label="Daily weather summary for recent days"></canvas></div>
     </div>
 
     <!-- RECORDS -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
-      <h3 class="section-header mb-3">ALL-TIME RECORDS</h3>
+      <h3 class="section-header flex items-center gap-x-2 mb-3"><i class="fa-solid fa-trophy text-base" aria-hidden="true"></i> ALL-TIME RECORDS</h3>
       <div id="records" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 text-sm"></div>
     </div>
 
-    <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm px-6 py-3 rounded-2xl items-center gap-2 shadow-2xl" role="alert" aria-live="assertive">
+    <div id="error-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm px-6 py-3 rounded-2xl items-center gap-2 shadow-2xl z-50" role="alert" aria-live="assertive">
       <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
       <span id="error-text"></span>
-      <button onclick="document.getElementById('error-toast').classList.add('hidden')" class="ml-3 text-white/80 hover:text-white" aria-label="Dismiss error">×</button>
+      <button type="button" id="error-dismiss" class="ml-3 text-white/80 hover:text-white" aria-label="Dismiss error">×</button>
     </div>
   </div>
 
-  <div class="mt-10 text-center text-[11px] text-white/50 max-w-screen-2xl mx-auto">
+  <div class="mt-10 text-center text-[11px] text-white/50 max-w-screen-2xl mx-auto px-4 sm:px-6">
     Live • 90s refresh • <span id="code-update-stamp">—</span>
   </div>
 
@@ -261,7 +292,7 @@
 
     const getCodeUpdateLabel = () => {
       const now = new Date();
-      return `${now.toISOString().split('T')[0]} ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false})} • Responsive sun/moon icons`;
+      return `${now.toISOString().split('T')[0]} ${now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false})} • 6-tile grid + colour/icon symmetry`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -300,7 +331,7 @@
 
     const CHART_DEFS = {
       temp24Chart: { key: 'hourlyTemps', type: 'line', label: 'Temp °C', color: '#10b981' },
-      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'Wind km/h', color: '#f59e0b', suggestedMax: 50 },
+      wind24Chart: { key: 'hourlyWind', type: 'line', label: 'Wind km/h', color: '#34d399', suggestedMax: 50 },
       baro24Chart: { key: 'hourlyBaro', type: 'line', label: 'hPa', color: '#fbbf24' },
       rain24Chart: { key: 'hourlyRain', type: 'bar', label: 'mm', color: '#38bdf8' }
     };
@@ -359,6 +390,33 @@
       return phases[Math.max(0,Math.min(phases.length-1,idx))];
     }
 
+    function formatDayLength(rise, set) {
+      const parse = (t) => {
+        const m = String(t || '').match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return null;
+        return Number(m[1]) * 60 + Number(m[2]);
+      };
+      const a = parse(rise), b = parse(set);
+      if (a == null || b == null || b <= a) return '—';
+      const mins = b - a;
+      return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, '0')}m`;
+    }
+
+    function hideErrorToast() {
+      const toast = document.getElementById('error-toast');
+      if (!toast) return;
+      toast.classList.add('hidden');
+      toast.classList.remove('flex');
+      toast.style.display = '';
+    }
+    function showErrorToast(message) {
+      const toast = document.getElementById('error-toast');
+      document.getElementById('error-text').textContent = message || 'Failed to load station data';
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      toast.style.display = '';
+    }
+
     function setRefreshingState(refreshing) {
       isRefreshing=refreshing;
       const button=document.getElementById('refresh-btn');
@@ -375,7 +433,7 @@
       const condEl=document.getElementById('condition');
       if (tempEl) tempEl.classList.toggle('skeleton',loading);
       if (condEl) condEl.classList.toggle('skeleton-text',loading);
-      ['wind-speed','humidity','pressure','rain-today','uv'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('skeleton-text',loading); });
+      ['wind-speed','humidity','dewpoint','pressure','rain-today','uv'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.toggle('skeleton-text',loading); });
       ['temp24Chart','wind24Chart','baro24Chart','rain24Chart'].forEach(id=>{ const c=document.getElementById(id); if(c&&c.parentElement) c.parentElement.classList.toggle('skeleton',loading); });
     }
 
@@ -611,7 +669,7 @@
       else if (ageMin<8) label=`${ageMin}m ago`;
       else { label=`${ageMin}m ago`; colorClass=ageMin>12?'text-orange-400 border-orange-400/30':'text-yellow-400 border-yellow-400/30'; }
       textEl.textContent=label;
-      el.className=`hidden sm:flex items-center gap-x-1.5 text-[11px] px-2.5 py-1 rounded-xl border bg-white/5 ${colorClass}`;
+      el.className = `hidden sm:inline-flex nav-chip bg-white/5 ${colorClass}`;
       el.classList.remove('hidden');
     }
     async function copyLastUpdated() {
@@ -632,6 +690,7 @@
       document.getElementById('day-low').textContent=fmtNum(parsed.dayLow,1,'°C');
       document.getElementById('sunrise-hero').textContent=parsed.sunrise||'—';
       document.getElementById('sunset-hero').textContent=parsed.sunset||'—';
+      document.getElementById('day-length-hero').textContent=formatDayLength(parsed.sunrise, parsed.sunset);
       document.getElementById('moon-phase-hero').textContent=fmtNum(parsed.moonIllum,0,'%');
       document.getElementById('moon-age-hero').textContent=fmtNum(parsed.moonAge);
       document.getElementById('moon-phase-name-hero').textContent=moonPhaseName(parsed.moonAge);
@@ -641,7 +700,10 @@
       document.getElementById('wind-gust').textContent=fmtNum(parsed.windGustKmh,1,' km/h');
       document.getElementById('wind-arrow').setAttribute('transform',`rotate(${Number.isFinite(parsed.windDirDeg)?parsed.windDirDeg:0} 40 40)`);
       document.getElementById('humidity').textContent=fmtNum(parsed.humidity,0);
-      document.getElementById('dewpoint').textContent=fmtNum(parsed.dewPoint,1,'°C');
+      document.getElementById('dewpoint').textContent=fmtNum(parsed.dewPoint,1);
+      const dewSpread=(Number.isFinite(parsed.temp)&&Number.isFinite(parsed.dewPoint))?(parsed.temp-parsed.dewPoint):null;
+      document.getElementById('dew-spread').textContent=fmtNum(dewSpread,1,'°C');
+      document.getElementById('dew-bar').style.width=`${clamp(Number.isFinite(dewSpread)?(100-dewSpread*12):0,0,100)}%`;
       document.getElementById('humidity-bar').style.width=`${clamp(Number.isFinite(parsed.humidity)?parsed.humidity:0,0,100)}%`;
       document.getElementById('pressure').textContent=fmtNum(parsed.baro,1);
       const pt=document.getElementById('pressure-trend');
@@ -739,12 +801,10 @@
         const {parsed,usedProxy}=await loadStationData();
         updateUI(parsed,usedProxy);
         setInitialLoadingState(false);
-        document.getElementById('error-toast').classList.add('hidden');
+        hideErrorToast();
       } catch(e) {
         setInitialLoadingState(false);
-        const toast=document.getElementById('error-toast');
-        document.getElementById('error-text').textContent=e.message||'Failed to load station data';
-        toast.style.display='flex';
+        showErrorToast(e.message||'Failed to load station data');
       }
       await loadForecast();
       setRefreshingState(false);
@@ -755,6 +815,7 @@
       const refreshBtn=document.getElementById('refresh-btn');
       refreshBtn.addEventListener('click',loadWeather);
       document.getElementById('last-updated').addEventListener('click',copyLastUpdated);
+      document.getElementById('error-dismiss').addEventListener('click', hideErrorToast);
       refreshBtn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();loadWeather();}});
       setInitialLoadingState(true);
       loadWeather();
