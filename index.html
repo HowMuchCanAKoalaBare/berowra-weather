@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Berowra Weather • Live (Mudie Family Station)</title>
-  <meta name="description" content="Live weather dashboard for the Mudie Family Station in Berowra, NSW. Real-time observations, charts and BOM forecast.">
+  <meta name="description" content="Live weather dashboard for the Mudie Family Station in Berowra, NSW. Real-time observations, charts and Open-Meteo forecast.">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -127,7 +127,7 @@
         </button>
         <button id="last-updated" type="button" class="nav-chip text-white/70 bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition" aria-live="polite" aria-label="Last updated time from station. Click to copy.">
           <i class="fa-solid fa-clock" aria-hidden="true"></i>
-          <span>Last updated: —</span>
+          <span id="last-updated-text">Last updated: —</span>
         </button>
         <div id="data-source-badge" class="nav-chip hidden text-emerald-300/80 border-emerald-300/20 bg-emerald-400/10">source: —</div>
         <div id="freshness" class="nav-chip text-emerald-300/80 border-emerald-300/20 bg-emerald-400/10" aria-live="polite" aria-label="Live data freshness">
@@ -255,7 +255,7 @@
         <div class="content">
           <div class="label text-blue-400 text-xs tracking-widest">RAIN</div>
           <div id="rain-today" class="value font-light tabular-nums metric-value">—</div>
-          <div class="subtext">mm today • Monthly <span id="rain-month">—</span> • YTD <span id="rain-ytd">—</span></div>
+          <div class="subtext">mm today • Monthly <span id="rain-month">—</span> • YTD <span id="rain-ytd">—</span><span id="rain-rate" class="hidden"></span></div>
           <div class="accessory"><svg id="spark-rain" viewBox="0 0 110 20" preserveAspectRatio="none" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
@@ -264,7 +264,7 @@
         <div class="content">
           <div class="label text-orange-400 text-xs tracking-widest">UV INDEX</div>
           <div id="uv" class="value font-light tabular-nums metric-value">—</div>
-          <div class="subtext">Index (0–11+)</div>
+          <div class="subtext">Index (0–11+) · <span id="uv-solar">—</span></div>
           <div class="accessory">
             <div class="bar-track h-1.5 w-full rounded-full bg-gradient-to-r from-emerald-400 via-yellow-400 via-orange-400 to-red-500" aria-hidden="true">
               <div id="uv-thumb" class="bar-thumb" style="left:0%"></div>
@@ -278,7 +278,7 @@
     <!-- LAST 12 SAMPLES -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-clock text-base" aria-hidden="true"></i> LAST 12 SAMPLES</h3>
-      <p class="text-[11px] text-white/55 mb-4">Recent station readings (≈ hourly outdoor samples). Labels relative to your device.</p>
+      <p class="text-[11px] text-white/55 mb-4">Last 12 minute samples from the hour file (temp, baro, rain). Wind often uses extra and may be estimated.</p>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">TEMPERATURE °C</p><div class="chart-wrap"><canvas id="temp24Chart" class="chart-container" aria-label="Recent temperature readings chart"></canvas></div></div>
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-emerald-400">WIND SPEED km/h</p><div class="chart-wrap"><canvas id="wind24Chart" class="chart-container" aria-label="Recent wind speed readings chart"></canvas></div></div>
@@ -330,7 +330,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-09-16 10:52 • Nav freshness merge, chart padding, UV thumb, forecast rain-if-wet`;
+      return `2026-09-16 11:16 • Minute chart labels, rain rate, solar on UV, last-updated ARIA`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -346,8 +346,8 @@
       timestampParts: [29,30,31],
       windKnotsAvg: 1, windKnotsGust: 2, windDirDeg: 3,
       temp: 4, humidity: 5, baro: 6,
-      rainToday: 7, rainMonth: 8, rainYTD: 9,
-      dewPoint: 72, uv: 79,
+      rainToday: 7, rainMonth: 8, rainYTD: 9, rainRate: 10,
+      dewPoint: 72, uv: 79, solar: 127,
       conditionRaw: 49, feelsLike: 130, heatIndex: 112,
       dayHigh: 46, dayLow: 47, baroTrend: 50,
       hourMaxGustKnots: 71,
@@ -511,12 +511,15 @@
       const rainToday=toNum(read(data,FIELD_MAP.rainToday));
       const rainMonth=toNum(read(data,FIELD_MAP.rainMonth));
       const rainYTD=toNum(read(data,FIELD_MAP.rainYTD));
+      const rainRate=toNum(read(data,FIELD_MAP.rainRate));
       const windKnotsAvg=toNum(read(data,FIELD_MAP.windKnotsAvg));
       const windKnotsGust=toNum(read(data,FIELD_MAP.windKnotsGust));
       const windKnotsHourMax=toNum(read(data,FIELD_MAP.hourMaxGustKnots));
       const windDirDeg=toNum(read(data,FIELD_MAP.windDirDeg));
       const dewPoint=toNum(read(data,FIELD_MAP.dewPoint));
       const uv=toNum(read(data,FIELD_MAP.uv));
+      const solarRaw=toNum(read(data,FIELD_MAP.solar));
+      const solar=(Number.isFinite(solarRaw)&&solarRaw>=0&&solarRaw<=1600)?solarRaw:null;
       const feelsLikeRaw=toNum(read(data,FIELD_MAP.feelsLike));
       const heatIndexRaw=toNum(read(data,FIELD_MAP.heatIndex));
       // Station field 130 is indoor temp on this export — reject when it diverges from outdoor
@@ -569,10 +572,10 @@
       }
 
       return {
-        diag,temp,humidity,baro,rainToday,rainMonth,rainYTD,
+        diag,temp,humidity,baro,rainToday,rainMonth,rainYTD,rainRate,
         windSpeedKmh:Number.isFinite(windKnotsAvg)?+(windKnotsAvg*1.852).toFixed(1):null,
         windGustKmh:Number.isFinite(windKnotsHourMax)?+(windKnotsHourMax*1.852).toFixed(1):(Number.isFinite(windKnotsGust)?+(windKnotsGust*1.852).toFixed(1):null),
-        windDirDeg,dewPoint,uv,
+        windDirDeg,dewPoint,uv,solar,
         feelsLike:Number.isFinite(feelsLike)?feelsLike:temp,
         heatIndex:Number.isFinite(heatIndex)?heatIndex:temp,
         condition,sunrise,sunset,moonIllum,moonAge,dayHigh,dayLow,baroTrend,
@@ -694,7 +697,7 @@
     }
 
     function updateAllCharts(parsed) {
-      const labels12=Array.from({length:12},(_,i)=>`-${11-i}h`);
+      const labels12=Array.from({length:12},(_,i)=>i===11?'now':`-${11-i}m`);
       Object.keys(CHART_DEFS).forEach(canvasId=>{
         const def=CHART_DEFS[canvasId];
         const s=parsed[def.key];
@@ -741,14 +744,15 @@
       if (dot) dot.className = stale ? 'h-2 w-2 rounded-full bg-amber-400' : 'h-2 w-2 rounded-full bg-emerald-400';
     }
     async function copyLastUpdated() {
-      const text=document.querySelector('#last-updated span').textContent;
+      const text=document.getElementById('last-updated-text')?.textContent||'';
       try{await navigator.clipboard.writeText(text);}catch(_){}
     }
 
     function updateUI(parsed, usedProxy) {
       const tsParts=parsed.data.slice(parsed.mapping.timestampParts[0],parsed.mapping.timestampParts[2]+1);
       const ts=tsParts.join(':')||'—';
-      document.getElementById('last-updated').innerHTML=`<i class="fa-solid fa-clock"></i> <span>Last updated: ${ts} (station)</span>`;
+      const lastUpdatedText=document.getElementById('last-updated-text');
+      if (lastUpdatedText) lastUpdatedText.textContent=`Last updated: ${ts} (station)`;
       updateSourceBadge(usedProxy);
       document.getElementById('current-temp').textContent=fmtNum(parsed.temp,1);
       const condEl=document.getElementById('condition');
@@ -788,7 +792,15 @@
       document.getElementById('rain-today').textContent=fmtNum(parsed.rainToday,1);
       document.getElementById('rain-month').textContent=fmtNum(parsed.rainMonth,1,' mm');
       document.getElementById('rain-ytd').textContent=fmtNum(parsed.rainYTD,1,' mm');
+      const rateEl=document.getElementById('rain-rate');
+      if (rateEl) {
+        const wet=Number.isFinite(parsed.rainRate)&&parsed.rainRate>0;
+        rateEl.classList.toggle('hidden',!wet);
+        rateEl.textContent=wet?` • Rate ${parsed.rainRate.toFixed(2)} mm/min`:'';
+      }
       document.getElementById('uv').textContent=fmtNum(parsed.uv,1);
+      const solarEl=document.getElementById('uv-solar');
+      if (solarEl) solarEl.textContent=Number.isFinite(parsed.solar)?`${Math.round(parsed.solar)} W/m²`:'—';
       const uvThumb=document.getElementById('uv-thumb');
       if (uvThumb) uvThumb.style.left=`${clamp(Number.isFinite(parsed.uv)?(parsed.uv/11)*100:0,0,100)}%`;
       const windSparkColor=parsed.windHistorySynthesized?'#fb923c':'#34d399';
