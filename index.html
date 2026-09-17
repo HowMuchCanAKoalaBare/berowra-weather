@@ -330,7 +330,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-09-16 11:16 • Minute chart labels, rain rate, solar on UV, last-updated ARIA`;
+      return `2026-09-17 23:10 • Harden Open-Meteo fetch timeout, ok-check, CORS fallback`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -455,6 +455,11 @@
       if (a == null || b == null || b <= a) return '—';
       const mins = b - a;
       return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, '0')}m`;
+    }
+    function parseIsoDateLocal(iso) {
+      const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (!m) return new Date(iso);
+      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     }
 
     function hideErrorToast() {
@@ -721,7 +726,7 @@
       const s=parsed.sanity||{};
       const synthW=parsed.windHistorySynthesized?'YES (orange/dashed)':'no';
       const synthT=parsed.tempHistorySynthesized?'YES (orange/dashed)':'no';
-      content.innerHTML=`<div>raw:${s.rawLen??'?'} extra:${s.extraLen??'?'} hour:${s.hourLen??'?'} daily:${s.dailyLen??'?'}</div><div>core:${s.hasCore?'OK':'MISSING'} temp:${s.plausibleTemp?'OK':'RANGE?'} baro:${s.plausibleBaro?'OK':'RANGE?'} hum:${s.plausibleHumidity?'OK':'?'}</div><div>wind synth: <span class="${parsed.windHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synthW}</span> · temp synth: <span class="${parsed.tempHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synthT}</span></div><div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;
+      content.innerHTML=`<div>raw:${s.rawLen??'?'} extra:${s.extraLen??'?'} hour:${s.hourLen??'?'} daily:${s.dailyLen??'?'}</div><div>core:${s.hasCore?'OK':'MISSING'} temp:${s.plausibleTemp?'OK':'RANGE?'} baro:${s.plausibleBaro?'OK':'RANGE?'} hum:${s.plausibleHumidity?'OK':'?'}</div><div>wind synth: <span class="${parsed.windHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synthW}</span> · temp synth: <span class="${parsed.tempHistorySynthesized?'text-orange-400':'text-emerald-400'}">${synthT}</span></div><div>forecast: ${window.lastForecastStatus||'pending'}</div><div class="text-white/40 mt-1">last fetch: ${new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;
     }
     function updateFreshnessUI() {
       const el=document.getElementById('freshness');
@@ -863,25 +868,62 @@
     async function loadForecast() {
       const container=document.getElementById('forecast-container');
       container.innerHTML='<div class="col-span-3 text-center py-6 text-white/60 text-sm">Loading forecast…</div>';
-      try {
-        const url='https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney';
-        const res=await fetch(url,{cache:'no-store'});
-        const j=await res.json();
-        container.innerHTML='';
-        for (let i=0;i<6;i++) {
-          const code=j.daily.weather_code[i];
-          const hi=Math.round(j.daily.temperature_2m_max[i]);
-          const lo=Math.round(j.daily.temperature_2m_min[i]);
-          const rain=j.daily.precipitation_sum[i]||0;
-          const date=new Date(j.daily.time[i]);
-          const day=date.toLocaleDateString('en-AU',{weekday:'short'});
-          const el=document.createElement('div');
-          el.className='forecast-card glass rounded-2xl p-3 flex flex-col items-center border border-white/10'+(i===0?' ring-1 ring-white/15':'');
-          const rainLine=rain>0?`<div class="text-xs text-sky-300 mt-0.5">${rain.toFixed(1)} mm</div>`:`<div class="text-xs text-white/40 mt-0.5">dry</div>`;
-          el.innerHTML=`<div class="text-xs font-medium opacity-75">${day}${i===0?' · today':''}</div><i class="fa-solid ${getWeatherIcon(code)} text-2xl sm:text-3xl my-2 text-slate-300" aria-hidden="true"></i><div class="text-[11px] text-white/70 uppercase tracking-wide">${getWeatherLabel(code)}</div><div class="text-lg font-light">${hi}° <span class="text-white/60">/</span> ${lo}°</div>${rainLine}`;
-          container.appendChild(el);
+      const url='https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney&forecast_days=6';
+      const tryList=[{href:url,label:'open-meteo'}];
+      PROXIES.forEach(p=>{
+        const sep=p.includes('?')?'&':'?';
+        tryList.push({href:`${p}${encodeURIComponent(url)}${sep}cb=${Date.now()}`,label:'cors-proxy'});
+      });
+      let j=null, used='none', lastErr='unavailable';
+      for (const entry of tryList) {
+        try {
+          const res=await timeoutFetch(entry.href);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const ct=res.headers.get('content-type')||'';
+          if (ct.includes('text/html')) throw new Error('HTML instead of data');
+          const parsed=await res.json();
+          const daily=parsed && parsed.daily;
+          if (!daily || !Array.isArray(daily.time) || daily.time.length<1 || !Array.isArray(daily.weather_code)) throw new Error('bad payload');
+          j=parsed; used=entry.label; lastErr='';
+          break;
+        } catch(e) {
+          lastErr=e.message||'failed';
+          if (WEATHER_DEBUG) console.warn('[Weather] forecast via', entry.label, lastErr);
         }
-      } catch(e){ container.innerHTML='<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>'; }
+      }
+      window.lastForecastStatus=j?`OK (${used})`:`FAIL ${lastErr}`;
+      if (WEATHER_DEBUG) {
+        const content=document.getElementById('debug-content');
+        if (content) {
+          const line=content.querySelector('[data-forecast-debug]')||document.createElement('div');
+          line.setAttribute('data-forecast-debug','1');
+          line.textContent=`forecast: ${window.lastForecastStatus}`;
+          if (!line.parentNode) content.appendChild(line);
+        }
+      }
+      if (!j) {
+        container.innerHTML='<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>';
+        return;
+      }
+      container.innerHTML='';
+      const n=Math.min(6, j.daily.time.length);
+      for (let i=0;i<n;i++) {
+        const hi=Math.round(j.daily.temperature_2m_max[i]);
+        const lo=Math.round(j.daily.temperature_2m_min[i]);
+        if (!Number.isFinite(hi) || !Number.isFinite(lo)) continue;
+        const code=j.daily.weather_code[i];
+        const rain=Number(j.daily.precipitation_sum[i])||0;
+        const date=parseIsoDateLocal(j.daily.time[i]);
+        const day=date.toLocaleDateString('en-AU',{weekday:'short'});
+        const el=document.createElement('div');
+        el.className='forecast-card glass rounded-2xl p-3 flex flex-col items-center border border-white/10'+(i===0?' ring-1 ring-white/15':'');
+        const rainLine=rain>0?`<div class="text-xs text-sky-300 mt-0.5">${rain.toFixed(1)} mm</div>`:`<div class="text-xs text-white/40 mt-0.5">dry</div>`;
+        el.innerHTML=`<div class="text-xs font-medium opacity-75">${day}${i===0?' · today':''}</div><i class="fa-solid ${getWeatherIcon(code)} text-2xl sm:text-3xl my-2 text-slate-300" aria-hidden="true"></i><div class="text-[11px] text-white/70 uppercase tracking-wide">${getWeatherLabel(code)}</div><div class="text-lg font-light">${hi}° <span class="text-white/60">/</span> ${lo}°</div>${rainLine}`;
+        container.appendChild(el);
+      }
+      if (!container.childElementCount) {
+        container.innerHTML='<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>';
+      }
     }
 
     async function loadWeather() {
