@@ -275,6 +275,26 @@
       </div>
     </div>
 
+    <!-- TIDES (Cottage Point / Cowan Creek) -->
+    <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10" aria-labelledby="tides-heading">
+      <h3 id="tides-heading" class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-water text-base" aria-hidden="true"></i> TIDES • COTTAGE POINT</h3>
+      <p class="text-[11px] text-white/55 mb-4">Astronomical prediction for Cowan Creek (Patonga harmonics). Indicative only — not for navigation.</p>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="glass rounded-2xl p-4 border border-white/10 flex flex-col justify-center" role="status" aria-live="polite">
+          <div class="text-[10px] font-medium tracking-[2px] text-sky-300/90 mb-1">NOW</div>
+          <div id="tide-now-height" class="text-[2rem] font-light tabular-nums leading-none">—</div>
+          <div id="tide-now-state" class="text-sm text-white/70 mt-2">—</div>
+          <div id="tide-next" class="text-sm text-white/80 mt-3">—</div>
+        </div>
+        <div class="lg:col-span-2">
+          <div class="text-[10px] font-medium tracking-[2px] text-white/55 mb-2">TODAY</div>
+          <div id="tide-today" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+        </div>
+      </div>
+      <div id="tide-week" class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-2 mt-4"></div>
+      <p class="text-[10px] text-white/40 mt-3">Chart datum ≈ LAT. Source: TICON-4 / BOM Patonga (CC BY 4.0). Compare with <a class="underline decoration-white/30 hover:text-white/70" href="https://tides.willyweather.com.au/nsw/sydney/cottage-point.html" target="_blank" rel="noopener noreferrer">WillyWeather Cottage Point</a>.</p>
+    </div>
+
     <!-- LAST 12 SAMPLES -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10">
       <h3 class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-clock text-base" aria-hidden="true"></i> LAST 12 SAMPLES</h3>
@@ -330,7 +350,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-09-17 23:10 • Harden Open-Meteo fetch timeout, ok-check, CORS fallback`;
+      return `2026-09-18 11:05 • Cottage Point tides from Patonga harmonics`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -460,6 +480,143 @@
       const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
       if (!m) return new Date(iso);
       return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    }
+
+    // Cottage Point via Patonga TICON-4 harmonics (CC BY 4.0). Astronomical only.
+    const TIDE = {
+      name: 'Cottage Point',
+      z0: 0.918, // MSL − LAT at Patonga
+      shiftMin: -28, // align extrema toward WillyWeather Cottage Point
+      constituents: [
+        {n:'M2',A:0.50845,G:309.466},{n:'S2',A:0.12477,G:323.259},{n:'N2',A:0.11342,G:301.426},
+        {n:'K1',A:0.14754,G:328.348},{n:'O1',A:0.09395,G:301.162},{n:'P1',A:0.04349,G:324.931},
+        {n:'K2',A:0.03753,G:312.141},{n:'Q1',A:0.02236,G:280.044},{n:'SA',A:0.04496,G:50.791},
+        {n:'SSA',A:0.02047,G:127.739},{n:'MU2',A:0.02046,G:296.747},{n:'NU2',A:0.02069,G:300.593},
+        {n:'2N2',A:0.02051,G:283.413},{n:'L2',A:0.01468,G:308.827},{n:'T2',A:0.00764,G:347.362},
+        {n:'J1',A:0.00900,G:348.410},{n:'M4',A:0.00305,G:282.963}
+      ]
+    };
+    function tideAstro(utcMs) {
+      const j2000 = Date.UTC(2000,0,1,12);
+      const d = (utcMs - j2000) / 86400000;
+      const T = d / 36525;
+      const wrap = (x) => ((x % 360) + 360) % 360;
+      const s = wrap(218.3164477 + 481267.88123421 * T);
+      const h = wrap(280.46646 + 36000.76983 * T);
+      const p = wrap(83.3532465 + 4069.0137287 * T);
+      const N = wrap(125.04452 - 1934.136261 * T);
+      const pp = wrap(282.937347 + 1.719533 * T);
+      const dt = new Date(utcMs);
+      const hour = dt.getUTCHours() + dt.getUTCMinutes()/60 + dt.getUTCSeconds()/3600;
+      const tau = wrap(15 * hour + h - s);
+      const Nr = N * Math.PI / 180;
+      const f = {
+        M2: 1.000 - 0.037 * Math.cos(Nr), S2: 1, N2: 1.000 - 0.037 * Math.cos(Nr),
+        K2: 1.024 + 0.286 * Math.cos(Nr), K1: 1.006 + 0.115 * Math.cos(Nr),
+        O1: 1.009 + 0.187 * Math.cos(Nr), P1: 1, Q1: 1.009 + 0.187 * Math.cos(Nr),
+        J1: 1.006 + 0.115 * Math.cos(Nr), SA: 1, SSA: 1, MU2: 1, NU2: 1, '2N2': 1, L2: 1, T2: 1, M4: 1
+      };
+      const u = {
+        M2: -2.14 * Math.sin(Nr), S2: 0, N2: -2.14 * Math.sin(Nr),
+        K2: -17.74 * Math.sin(Nr), K1: -8.86 * Math.sin(Nr),
+        O1: 10.80 * Math.sin(Nr), P1: 0, Q1: 10.80 * Math.sin(Nr),
+        J1: -8.86 * Math.sin(Nr)
+      };
+      const V = {
+        M2: 2*tau, S2: 2*tau + 2*s - 2*h, N2: 2*tau - p, K2: 2*tau + 2*s,
+        K1: tau + s + 90, O1: tau - s - 90, P1: tau + s - 2*h + 90, Q1: tau - s - p - 90,
+        SA: h, SSA: 2*h, MU2: 2*tau - 2*s + 2*h, NU2: 2*tau + s - 2*h + p,
+        '2N2': 2*tau - 2*p, L2: 2*tau + p + 180, T2: 2*tau + 2*s - 3*h + pp,
+        J1: tau + s + p + 90, M4: 4*tau
+      };
+      return {V, f, u};
+    }
+    function tideHeightAt(utcMs) {
+      const {V, f, u} = tideAstro(utcMs);
+      let h = TIDE.z0;
+      for (const c of TIDE.constituents) {
+        const v = V[c.n];
+        if (v == null) continue;
+        const ff = f[c.n] ?? 1;
+        const uu = u[c.n] ?? 0;
+        h += ff * c.A * Math.cos((v + uu - c.G) * Math.PI / 180);
+      }
+      return h;
+    }
+    function tideLocalParts(ms) {
+      const shifted = ms + TIDE.shiftMin * 60000;
+      const d = new Date(shifted);
+      const parts = new Intl.DateTimeFormat('en-AU', {timeZone:'Australia/Sydney', weekday:'short', hour:'numeric', minute:'2-digit', hour12:true, day:'numeric', month:'short'}).formatToParts(d);
+      const get = (t) => (parts.find(p=>p.type===t)||{}).value || '';
+      return {date:d, weekday:get('weekday'), day:get('day'), month:get('month'), time:`${get('hour')}:${get('minute')} ${get('dayPeriod')}`.replace(/\s+/g,' ').trim()};
+    }
+    function ymdSydney(ms) {
+      const shifted = ms + TIDE.shiftMin * 60000;
+      return new Intl.DateTimeFormat('en-CA', {timeZone:'Australia/Sydney', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date(shifted));
+    }
+    function computeTideExtremes(days=7) {
+      const now = Date.now();
+      const start = now - 6 * 3600000;
+      const step = 10 * 60000;
+      const n = Math.ceil((days * 86400000 + 12 * 3600000) / step);
+      const samples = [];
+      for (let i=0;i<n;i++) {
+        const t = start + i * step;
+        samples.push({t, h: tideHeightAt(t)});
+      }
+      const ext = [];
+      for (let i=2;i<samples.length-2;i++) {
+        const a=samples[i-1].h, b=samples[i].h, c=samples[i+1].h;
+        if ((b>a && b>=c) || (b<a && b<=c)) {
+          ext.push({t:samples[i].t, h:samples[i].h, type: b>=a ? 'high' : 'low'});
+        }
+      }
+      return {nowH: tideHeightAt(now), ext, now};
+    }
+    function renderTides() {
+      const todayEl=document.getElementById('tide-today');
+      const weekEl=document.getElementById('tide-week');
+      const nowHEl=document.getElementById('tide-now-height');
+      const stateEl=document.getElementById('tide-now-state');
+      const nextEl=document.getElementById('tide-next');
+      if (!todayEl||!weekEl) return;
+      const {nowH, ext, now} = computeTideExtremes(7);
+      nowHEl.textContent = `${nowH.toFixed(2)} m`;
+      const upcoming = ext.filter(e => e.t + TIDE.shiftMin*60000 > now);
+      const next = upcoming[0];
+      const prev = [...ext].reverse().find(e => e.t + TIDE.shiftMin*60000 <= now);
+      const rising = next ? next.type==='high' : true;
+      stateEl.textContent = rising ? 'Rising' : 'Falling';
+      if (next) {
+        const p = tideLocalParts(next.t);
+        const mins = Math.max(0, Math.round(((next.t + TIDE.shiftMin*60000) - now)/60000));
+        const inH = Math.floor(mins/60), inM = mins%60;
+        const when = inH>0 ? `in ${inH}h ${String(inM).padStart(2,'0')}m` : `in ${inM}m`;
+        nextEl.textContent = `Next ${next.type}: ${p.time} · ${next.h.toFixed(2)} m (${when})`;
+      } else nextEl.textContent = 'Next tide: —';
+      const todayKey = ymdSydney(now);
+      const todayExt = ext.filter(e => ymdSydney(e.t)===todayKey);
+      todayEl.innerHTML = todayExt.map(e=>{
+        const p=tideLocalParts(e.t);
+        const col = e.type==='high'?'text-sky-300':'text-amber-300/90';
+        return `<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3"><div class="text-[10px] tracking-widest ${col}">${e.type.toUpperCase()}</div><div class="text-lg font-light tabular-nums mt-1">${p.time}</div><div class="text-sm text-white/70">${e.h.toFixed(2)} m</div></div>`;
+      }).join('') || '<div class="text-white/50 text-sm">No extrema yet</div>';
+      const byDay = {};
+      ext.forEach(e=>{
+        const k=ymdSydney(e.t);
+        (byDay[k]||(byDay[k]=[])).push(e);
+      });
+      const keys=Object.keys(byDay).sort().slice(0,7);
+      weekEl.innerHTML = keys.map((k,i)=>{
+        const p0=tideLocalParts(byDay[k][0].t);
+        const label = i===0 ? `${p0.weekday} · today` : p0.weekday;
+        const rows=byDay[k].map(e=>{
+          const p=tideLocalParts(e.t);
+          const mark=e.type==='high'?'H':'L';
+          return `<div class="flex justify-between gap-2 text-[11px] tabular-nums"><span class="${e.type==='high'?'text-sky-300':'text-white/50'}">${mark} ${p.time.replace(' ','\u00a0')}</span><span>${e.h.toFixed(2)}m</span></div>`;
+        }).join('');
+        return `<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3 ${i===0?'ring-1 ring-white/15':''}"><div class="text-xs font-medium opacity-75 mb-2">${label}</div>${rows}</div>`;
+      }).join('');
     }
 
     function hideErrorToast() {
@@ -939,6 +1096,7 @@
         showErrorToast(e.message||'Failed to load station data');
       }
       await loadForecast();
+      renderTides();
       setRefreshingState(false);
     }
 
@@ -950,6 +1108,7 @@
       document.getElementById('error-dismiss').addEventListener('click', hideErrorToast);
       refreshBtn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();loadWeather();}});
       setInitialLoadingState(true);
+      renderTides();
       loadWeather();
       setTimeout(updateFreshnessUI,120);
       setInterval(()=>{if(!document.hidden)updateFreshnessUI();},30000);
