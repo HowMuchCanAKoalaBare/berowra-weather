@@ -101,7 +101,10 @@
     .glass-metric .value { font-size: 2.25rem; line-height: 1.05; }
     .glass-metric .label { letter-spacing: 1.5px; font-weight: 500; }
     .glass-metric .subtext { font-size: 0.75rem; line-height: 1.25; color: rgb(148 163 184); }
-    .glass-metric .accessory { min-height: 44px; margin-top: auto; padding-top: 0.5rem; }
+    .tide-chart-wrap { height: 210px; }
+    @media (min-width: 768px) { .tide-chart-wrap { height: 250px; } }
+    @media (min-width: 1280px) { .tide-chart-wrap { height: 280px; } }
+    .tide-chart-wrap svg { width: 100%; height: 100%; display: block; }
     @media (prefers-reduced-motion: reduce) {
       .glass-hover, .compass, .forecast-card { transition: none !important; }
       .spin, .skeleton::after { animation: none !important; }
@@ -278,7 +281,7 @@
     <!-- TIDES (Cottage Point / Cowan Creek) -->
     <div class="mt-7 glass glass-hover rounded-3xl p-5 border border-white/10" aria-labelledby="tides-heading">
       <h3 id="tides-heading" class="section-header flex items-center gap-x-2 mb-1"><i class="fa-solid fa-water text-base" aria-hidden="true"></i> TIDES • COTTAGE POINT</h3>
-      <p class="text-[11px] text-white/55 mb-4">Astronomical prediction for Cowan Creek (Patonga harmonics). Indicative only — not for navigation.</p>
+      <p class="text-[11px] text-white/55 mb-4">3-day astronomical outlook for Cowan Creek (Patonga harmonics). Indicative only — not for navigation.</p>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div class="glass rounded-2xl p-4 border border-white/10 flex flex-col justify-center" role="status" aria-live="polite">
           <div class="text-[10px] font-medium tracking-[2px] text-sky-300/90 mb-1">NOW</div>
@@ -291,7 +294,10 @@
           <div id="tide-today" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
         </div>
       </div>
-      <div id="tide-week" class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-2 mt-4"></div>
+      <div class="tide-chart-wrap mt-4 rounded-2xl border border-white/10 bg-slate-950/40 overflow-hidden">
+        <svg id="tide-chart" viewBox="0 0 900 280" role="img" aria-label="Three-day Cottage Point tide graph"></svg>
+      </div>
+      <div id="tide-week" class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3"></div>
       <p class="text-[10px] text-white/40 mt-3">Chart datum ≈ LAT. Source: TICON-4 / BOM Patonga (CC BY 4.0). Compare with <a class="underline decoration-white/30 hover:text-white/70" href="https://tides.willyweather.com.au/nsw/sydney/cottage-point.html" target="_blank" rel="noopener noreferrer">WillyWeather Cottage Point</a>.</p>
     </div>
 
@@ -350,7 +356,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-09-18 11:05 • Cottage Point tides from Patonga harmonics`;
+      return `2026-09-18 11:15 • 3-day Cottage Point tide graph`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -554,16 +560,25 @@
       const shifted = ms + TIDE.shiftMin * 60000;
       return new Intl.DateTimeFormat('en-CA', {timeZone:'Australia/Sydney', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date(shifted));
     }
-    function computeTideExtremes(days=7) {
+    function startOfSydneyDay(ms=Date.now()) {
+      const p = new Intl.DateTimeFormat('en-GB', {timeZone:'Australia/Sydney', hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'}).formatToParts(new Date(ms));
+      const g = (t) => Number((p.find(x=>x.type===t)||{}).value||0);
+      const mins = g('hour')*60 + g('minute');
+      const sec = g('second');
+      return ms - mins*60000 - sec*1000 - (ms % 1000);
+    }
+    function parseHmToHours(raw, fallback) {
+      const m = String(raw||'').match(/^(\d{1,2}):(\d{2})/);
+      if (!m) return fallback;
+      return Number(m[1]) + Number(m[2])/60;
+    }
+    function computeTideExtremes(days=3) {
       const now = Date.now();
-      const start = now - 6 * 3600000;
+      const t0 = startOfSydneyDay(now);
+      const t1 = t0 + days * 86400000;
       const step = 10 * 60000;
-      const n = Math.ceil((days * 86400000 + 12 * 3600000) / step);
       const samples = [];
-      for (let i=0;i<n;i++) {
-        const t = start + i * step;
-        samples.push({t, h: tideHeightAt(t)});
-      }
+      for (let t = t0; t <= t1; t += step) samples.push({t, h: tideHeightAt(t)});
       const ext = [];
       for (let i=2;i<samples.length-2;i++) {
         const a=samples[i-1].h, b=samples[i].h, c=samples[i+1].h;
@@ -571,7 +586,65 @@
           ext.push({t:samples[i].t, h:samples[i].h, type: b>=a ? 'high' : 'low'});
         }
       }
-      return {nowH: tideHeightAt(now), ext, now};
+      return {nowH: tideHeightAt(now), ext, now, samples, t0, t1};
+    }
+    function renderTideChart(pack) {
+      const svg = document.getElementById('tide-chart');
+      if (!svg || !pack.samples.length) return;
+      const W=900, H=280, L=56, R=16, T=36, B=18;
+      const pw=W-L-R, ph=H-T-B;
+      const {samples, now, t0, t1} = pack;
+      const yMax = 2;
+      const xOf = (t) => L + ((t - t0) / (t1 - t0)) * pw;
+      const yOf = (h) => T + (1 - Math.max(0, Math.min(yMax, h)) / yMax) * ph;
+      const riseH = parseHmToHours(document.getElementById('sunrise-hero')?.textContent, 6.15);
+      const setH = parseHmToHours(document.getElementById('sunset-hero')?.textContent, 17.85);
+      let bands = '';
+      for (let d=0; d<3; d++) {
+        const x = L + (d/3)*pw;
+        const w = pw/3;
+        const today = d===0;
+        bands += `<rect x="${x}" y="${T}" width="${w}" height="${ph}" fill="${today?'rgba(59,130,246,0.10)':'rgba(148,163,184,0.04)'}"/>`;
+        const nightW1 = (riseH/24)*w;
+        const nightX2 = x + (setH/24)*w;
+        const nightW2 = x+w - nightX2;
+        bands += `<rect x="${x}" y="${T}" width="${nightW1}" height="${ph}" fill="rgba(15,23,42,0.35)"/>`;
+        bands += `<rect x="${nightX2}" y="${T}" width="${nightW2}" height="${ph}" fill="rgba(15,23,42,0.35)"/>`;
+        if (d>0) bands += `<line x1="${x}" y1="${T}" x2="${x}" y2="${T+ph}" stroke="rgba(255,255,255,0.08)"/>`;
+        const labelMs = t0 + d*86400000 + 12*3600000;
+        const p = tideLocalParts(labelMs);
+        const lab = `${p.weekday} ${p.day} ${p.month}`;
+        bands += `<text x="${x+w/2}" y="22" text-anchor="middle" fill="${today?'#e2e8f0':'#94a3b8'}" font-size="13" font-family="Inter,system-ui,sans-serif">${lab}</text>`;
+      }
+      const grid = [1,2].map(m => {
+        const y = yOf(m);
+        const dash = m===2 ? ' stroke-dasharray="6 6"' : '';
+        const label = m===2 ? '2m' : '1m';
+        return `<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="rgba(148,163,184,0.28)" stroke-width="1"${dash}/>
+          <rect x="8" y="${y-9}" width="36" height="18" rx="9" fill="rgba(15,23,42,0.85)" stroke="rgba(148,163,184,0.25)"/>
+          <text x="26" y="${y+4}" text-anchor="middle" fill="#cbd5e1" font-size="11" font-family="Inter,system-ui,sans-serif">${label}</text>`;
+      }).join('');
+      const maxH = Math.max(...samples.map(s=>s.h));
+      const maxY = yOf(maxH);
+      const maxLine = `<line x1="${L}" y1="${maxY}" x2="${W-R}" y2="${maxY}" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.7"/>
+        <rect x="${W-R-122}" y="${maxY-12}" width="110" height="22" rx="11" fill="#0ea5e9"/>
+        <text x="${W-R-67}" y="${maxY+4}" text-anchor="middle" fill="#fff" font-size="11" font-family="Inter,system-ui,sans-serif">Max tide ${maxH.toFixed(2)}m</text>`;
+      const pts = samples.map(s => `${xOf(s.t).toFixed(1)},${yOf(s.h).toFixed(1)}`);
+      const line = pts.join(' ');
+      const area = `${L.toFixed(1)},${(T+ph).toFixed(1)} ${line} ${(L+pw).toFixed(1)},${(T+ph).toFixed(1)}`;
+      let nowMark = '';
+      if (now>=t0 && now<=t1) {
+        const nx = xOf(now);
+        const ny = yOf(pack.nowH);
+        nowMark = `<line x1="${nx}" y1="${T-4}" x2="${nx}" y2="${T+ph}" stroke="#60a5fa" stroke-width="2"/>
+          <circle cx="${nx}" cy="${T-4}" r="5" fill="none" stroke="#60a5fa" stroke-width="2"/>
+          <circle cx="${nx}" cy="${ny}" r="4" fill="#fff" stroke="#0ea5e9" stroke-width="2"/>`;
+      }
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.innerHTML = `<rect width="${W}" height="${H}" fill="rgba(15,23,42,0.35)"/>${bands}${grid}${maxLine}
+        <polygon points="${area}" fill="rgba(56,189,248,0.28)"/>
+        <polyline points="${line}" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        ${nowMark}`;
     }
     function renderTides() {
       const todayEl=document.getElementById('tide-today');
@@ -580,11 +653,11 @@
       const stateEl=document.getElementById('tide-now-state');
       const nextEl=document.getElementById('tide-next');
       if (!todayEl||!weekEl) return;
-      const {nowH, ext, now} = computeTideExtremes(7);
+      const pack = computeTideExtremes(3);
+      const {nowH, ext, now} = pack;
       nowHEl.textContent = `${nowH.toFixed(2)} m`;
       const upcoming = ext.filter(e => e.t + TIDE.shiftMin*60000 > now);
       const next = upcoming[0];
-      const prev = [...ext].reverse().find(e => e.t + TIDE.shiftMin*60000 <= now);
       const rising = next ? next.type==='high' : true;
       stateEl.textContent = rising ? 'Rising' : 'Falling';
       if (next) {
@@ -606,7 +679,7 @@
         const k=ymdSydney(e.t);
         (byDay[k]||(byDay[k]=[])).push(e);
       });
-      const keys=Object.keys(byDay).sort().slice(0,7);
+      const keys=Object.keys(byDay).sort().slice(0,3);
       weekEl.innerHTML = keys.map((k,i)=>{
         const p0=tideLocalParts(byDay[k][0].t);
         const label = i===0 ? `${p0.weekday} · today` : p0.weekday;
@@ -617,6 +690,9 @@
         }).join('');
         return `<div class="rounded-2xl border border-white/10 bg-white/[0.02] p-3 ${i===0?'ring-1 ring-white/15':''}"><div class="text-xs font-medium opacity-75 mb-2">${label}</div>${rows}</div>`;
       }).join('');
+      renderTideChart(pack);
+      const svg=document.getElementById('tide-chart');
+      if (svg && next) svg.setAttribute('aria-label', `Three-day Cottage Point tide graph. Next ${next.type} ${tideLocalParts(next.t).time}, ${next.h.toFixed(2)} metres.`);
     }
 
     function hideErrorToast() {
