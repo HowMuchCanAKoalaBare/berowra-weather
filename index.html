@@ -17,9 +17,9 @@
     .icon-square { width: 46px; height: 46px; }
     /* Hero sun/moon: scale with viewport and stay matched to each other */
     .astro-icon {
-      width: clamp(1.35rem, 3.2vw, 1.85rem);
-      height: clamp(1.35rem, 3.2vw, 1.85rem);
-      font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+      width: clamp(2.6rem, 5.8vw, 3.6rem);
+      height: clamp(2.6rem, 5.8vw, 3.6rem);
+      font-size: clamp(2.6rem, 5.8vw, 3.6rem);
       line-height: 1;
       display: inline-flex;
       align-items: center;
@@ -153,7 +153,7 @@
         <div class="glass glass-hover rounded-3xl p-6 sm:p-7 flex flex-col border border-white/10" aria-labelledby="sun-moon-heading">
           <div class="grid grid-cols-2 gap-x-5 sm:gap-x-6 pb-4 border-b border-white/10 flex-1">
             <div class="flex flex-col h-full items-center">
-              <div class="flex items-center gap-x-2.5 mb-3" id="sun-moon-heading">
+              <div class="flex flex-col items-center gap-y-1.5 mb-4" id="sun-moon-heading">
                 <i class="fa-solid fa-sun astro-icon text-amber-400" aria-hidden="true"></i>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">SUN</span>
               </div>
@@ -164,7 +164,7 @@
               </div>
             </div>
             <div class="flex flex-col h-full items-center">
-              <div class="flex items-center gap-x-2.5 mb-3">
+              <div class="flex flex-col items-center gap-y-1.5 mb-4">
                 <span id="moon-icon-hero" class="astro-icon" aria-label="Current moon phase visual"></span>
                 <span class="font-semibold tracking-[1.5px] text-xs text-white/80">MOON</span>
               </div>
@@ -356,7 +356,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-09-18 11:15 • 3-day Cottage Point tide graph`;
+      return `2026-09-21 12:50 • Larger sun and moon header icons`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -1011,7 +1011,7 @@
       document.getElementById('moon-phase-hero').textContent=fmtNum(parsed.moonIllum,0,'%');
       document.getElementById('moon-age-hero').textContent=fmtNum(parsed.moonAge);
       document.getElementById('moon-phase-name-hero').textContent=moonPhaseName(parsed.moonAge);
-      document.getElementById('moon-icon-hero').innerHTML=moonIcon(parsed.moonIllum,parsed.moonAge,36);
+      document.getElementById('moon-icon-hero').innerHTML=moonIcon(parsed.moonIllum,parsed.moonAge,56);
       document.getElementById('wind-speed').textContent=fmtNum(parsed.windSpeedKmh,1);
       document.getElementById('wind-dir').textContent=Number.isFinite(parsed.windDirDeg)?cardinal(parsed.windDirDeg):'—';
       document.getElementById('wind-gust').textContent=fmtNum(parsed.windGustKmh,1,' km/h');
