@@ -209,8 +209,8 @@
         <div class="icon-square bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-wind" aria-hidden="true"></i></div>
         <div class="content">
           <div class="label text-emerald-400 text-xs tracking-widest">WIND</div>
-          <div id="wind-speed" class="value font-light tabular-nums metric-value">—</div>
-          <div class="subtext"><span id="wind-dir">—</span> • Gust <span id="wind-gust">—</span></div>
+          <div class="value font-light tabular-nums metric-value"><span id="wind-speed">—</span><span class="text-[0.42em] font-medium text-white/55 ml-1">km/h</span></div>
+          <div class="subtext"><span id="wind-dir">—</span> • Gust <span id="wind-gust">—</span> • Hr max <span id="wind-hour-max">—</span></div>
           <div class="accessory flex items-center gap-2">
             <svg width="40" height="40" viewBox="0 0 80 80" class="compass" aria-hidden="true">
               <circle cx="40" cy="40" r="36" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
@@ -236,7 +236,7 @@
         <div class="icon-square bg-cyan-500/10 text-cyan-300 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-temperature-low" aria-hidden="true"></i></div>
         <div class="content">
           <div class="label text-cyan-300 text-xs tracking-widest">DEW POINT</div>
-          <div id="dewpoint" class="value font-light tabular-nums metric-value">—</div>
+          <div class="value font-light tabular-nums metric-value"><span id="dewpoint">—</span><span class="text-[0.42em] font-medium text-white/55 ml-1">°C</span></div>
           <div class="subtext">Spread <span id="dew-spread">—</span> from air</div>
           <div class="accessory">
             <div class="h-1.5 w-full rounded-full bg-white/10 overflow-hidden" aria-hidden="true"><div id="dew-bar" class="h-full bg-cyan-300 rounded-full transition-all" style="width:0%"></div></div>
@@ -248,7 +248,7 @@
         <div class="icon-square bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></div>
         <div class="content">
           <div class="label text-amber-400 text-xs tracking-widest">PRESSURE</div>
-          <div id="pressure" class="value font-light tabular-nums metric-value">—</div>
+          <div class="value font-light tabular-nums metric-value"><span id="pressure">—</span><span class="text-[0.42em] font-medium text-white/55 ml-1">hPa</span></div>
           <div class="subtext" id="pressure-trend">—</div>
           <div class="accessory"><svg id="spark-baro" viewBox="0 0 110 20" preserveAspectRatio="none" class="sparkline" aria-hidden="true"></svg></div>
         </div>
@@ -257,8 +257,8 @@
         <div class="icon-square bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"><i class="fa-solid fa-cloud-rain" aria-hidden="true"></i></div>
         <div class="content">
           <div class="label text-blue-400 text-xs tracking-widest">RAIN</div>
-          <div id="rain-today" class="value font-light tabular-nums metric-value">—</div>
-          <div class="subtext">mm today • Monthly <span id="rain-month">—</span> • YTD <span id="rain-ytd">—</span><span id="rain-rate" class="hidden"></span></div>
+          <div class="value font-light tabular-nums metric-value"><span id="rain-today">—</span><span class="text-[0.42em] font-medium text-white/55 ml-1">mm</span></div>
+          <div class="subtext">today • Monthly <span id="rain-month">—</span> • YTD <span id="rain-ytd">—</span><span id="rain-rate" class="hidden"></span></div>
           <div class="accessory"><svg id="spark-rain" viewBox="0 0 110 20" preserveAspectRatio="none" class="sparkline" aria-hidden="true"></svg></div>
         </div>
       </div>
@@ -311,7 +311,7 @@
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-amber-400">BAROMETER hPa</p><div class="chart-wrap"><canvas id="baro24Chart" class="chart-container" aria-label="Recent barometric pressure chart"></canvas></div></div>
         <div class="glass rounded-3xl p-3.5 border border-white/5"><p class="text-xs tracking-widest mb-3 text-blue-400">RAINFALL mm</p><div class="chart-wrap" id="rain24-wrap"><canvas id="rain24Chart" class="chart-container" aria-label="Recent rainfall chart"></canvas><div class="chart-empty">0 mm this window</div></div></div>
       </div>
-      <p class="text-[10px] text-amber-400/80 mt-2">Note: Wind history is often incomplete in the public export and may be estimated (orange / dashed). Temperature series uses the hour file outdoor block when available.</p>
+      <p class="text-[10px] text-amber-400/80 mt-2">Note: Wind history above 40 kt, or values that track the temperature, is replaced with the live speed (orange / dashed). Temperature series uses the hour file outdoor block when available.</p>
     </div>
 
     <!-- LAST 7 DAYS -->
@@ -356,7 +356,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-09-21 12:50 • Larger sun and moon header icons`;
+      return `2026-10-01 22:00 • Wind history, gust label, units, steady pressure, forecast proxy, blank records`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -788,12 +788,21 @@
         tempHistorySynthesized=true;
         hourlyTemps=Array.from({length:12},(_,i)=>+(temp - 1.5 + i*0.25 + (Math.random()*0.4-0.2)).toFixed(1));
       }
-      let hourlyWindKmh=Array.from({length:12},(_,i)=>{const v=toNum(read(seriesArr(s.windFrom||'extra'), s.windKnotsStart+i));return Number.isFinite(v)?+(v*1.852).toFixed(1):null;});
-      const windNonZero=hourlyWindKmh.filter(v=>Number.isFinite(v)&&v>0.5).length;
-      const windHistorySynthesized=windNonZero<3;
+      let hourlyWindKmh;
+      const windKnotsSeries=Array.from({length:12},(_,i)=>{
+        const v=toNum(read(seriesArr(s.windFrom||'extra'), s.windKnotsStart+i));
+        if (!Number.isFinite(v) || v<0 || v>40) return null;
+        return v;
+      });
+      const finiteWind=windKnotsSeries.filter(v=>v!=null);
+      const windNonZero=finiteWind.filter(v=>v>0.5).length;
+      const tempLike=finiteWind.filter(v=>Number.isFinite(temp)&&Number.isFinite(windKnotsAvg)&&windKnotsAvg<12&&Math.abs(v-temp)<=1.5&&v>Math.max(12,windKnotsAvg*3)).length;
+      const windHistorySynthesized=windNonZero<3||tempLike>=3;
       if (windHistorySynthesized) {
-        const currentKmh=Number.isFinite(windKnotsAvg)?+(windKnotsAvg*1.852):5;
-        hourlyWindKmh=Array.from({length:12},(_,i)=>+(currentKmh*(0.7+Math.random()*0.6)).toFixed(1));
+        const live=Number.isFinite(windKnotsAvg)?+(windKnotsAvg*1.852).toFixed(1):null;
+        hourlyWindKmh=Array.from({length:12},()=>live);
+      } else {
+        hourlyWindKmh=windKnotsSeries.map(v=>v==null?null:+(v*1.852).toFixed(1));
       }
       const hourlyBaro=Array.from({length:12},(_,i)=>toNum(read(seriesArr(s.baroFrom||'hour'), s.baroStart+i)));
       const hourlyRain=Array.from({length:12},(_,i)=>toNum(read(seriesArr(s.rainFrom||'hour'), s.rainStart+i)));
@@ -812,7 +821,8 @@
       return {
         diag,temp,humidity,baro,rainToday,rainMonth,rainYTD,rainRate,
         windSpeedKmh:Number.isFinite(windKnotsAvg)?+(windKnotsAvg*1.852).toFixed(1):null,
-        windGustKmh:Number.isFinite(windKnotsHourMax)?+(windKnotsHourMax*1.852).toFixed(1):(Number.isFinite(windKnotsGust)?+(windKnotsGust*1.852).toFixed(1):null),
+        windGustKmh:Number.isFinite(windKnotsGust)?+(windKnotsGust*1.852).toFixed(1):null,
+        windHourMaxKmh:Number.isFinite(windKnotsHourMax)?+(windKnotsHourMax*1.852).toFixed(1):null,
         windDirDeg,dewPoint,uv,solar,
         feelsLike:Number.isFinite(feelsLike)?feelsLike:temp,
         heatIndex:Number.isFinite(heatIndex)?heatIndex:temp,
@@ -850,7 +860,7 @@
         {label:'Highest heat index',...rec(b+114),unit:'°C'},
         {label:'Highest solar',...rec(bx+0),unit:'W/m²'},
         {label:'Highest UV',...rec(bx+6),unit:''}
-      ];
+      ].filter(r=>!(r.stamp==='—' && (!Number.isFinite(r.value) || r.value===0)));
       const fmtVal=row=>{
         if(!Number.isFinite(row.value))return'—';
         const v=row.transform?row.transform(row.value):row.value;
@@ -888,11 +898,14 @@
         const peak=Math.max(0,...(data.filter(v=>Number.isFinite(v))));
         if (wrap) wrap.classList.toggle('is-empty', peak < 0.05);
       }
+      const windColor=opts.synthesized&&canvasId==='wind24Chart'?'#fb923c':def.color;
       if (chartInstances[canvasId]) {
         const ch=chartInstances[canvasId];
         ch.data.labels=labels;
         ch.data.datasets[0].data=data;
         ch.data.datasets[0].borderDash=opts.synthesized?[4,3]:[];
+        ch.data.datasets[0].borderColor=windColor;
+        ch.data.datasets[0].backgroundColor=def.type==='bar'?windColor+'99':windColor+'33';
         ch.options.scales.y.suggestedMin=yScale.suggestedMin;
         ch.options.scales.y.suggestedMax=yScale.suggestedMax;
         ch.update('none');
@@ -900,7 +913,7 @@
       }
       chartInstances[canvasId]=new Chart(canvas,{
         type:def.type,
-        data:{labels,datasets:[{label:def.label,data,borderColor:def.color,backgroundColor:def.type==='bar'?def.color+'99':def.color+'33',borderWidth:2,tension:0.3,pointRadius:2,fill:def.type==='line'}]},
+        data:{labels,datasets:[{label:def.label,data,borderColor:windColor,backgroundColor:def.type==='bar'?windColor+'99':windColor+'33',borderWidth:2,borderDash:opts.synthesized?[4,3]:[],tension:0.3,pointRadius:2,fill:def.type==='line'}]},
         options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#94a3b8',maxRotation:0,font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},suggestedMin:yScale.suggestedMin,suggestedMax:yScale.suggestedMax ?? def.suggestedMax}}}
       });
     }
@@ -1015,6 +1028,8 @@
       document.getElementById('wind-speed').textContent=fmtNum(parsed.windSpeedKmh,1);
       document.getElementById('wind-dir').textContent=Number.isFinite(parsed.windDirDeg)?cardinal(parsed.windDirDeg):'—';
       document.getElementById('wind-gust').textContent=fmtNum(parsed.windGustKmh,1,' km/h');
+      const hourMaxEl=document.getElementById('wind-hour-max');
+      if (hourMaxEl) hourMaxEl.textContent=fmtNum(parsed.windHourMaxKmh,1,' km/h');
       document.getElementById('wind-arrow').setAttribute('transform',`rotate(${Number.isFinite(parsed.windDirDeg)?parsed.windDirDeg:0} 40 40)`);
       document.getElementById('humidity').textContent=fmtNum(parsed.humidity,0,'%');
       document.getElementById('dewpoint').textContent=fmtNum(parsed.dewPoint,1);
@@ -1024,9 +1039,13 @@
       document.getElementById('humidity-bar').style.width=`${clamp(Number.isFinite(parsed.humidity)?parsed.humidity:0,0,100)}%`;
       document.getElementById('pressure').textContent=fmtNum(parsed.baro,1);
       const pt=document.getElementById('pressure-trend');
-      if (Number.isFinite(parsed.baroTrend)) {
-        pt.innerHTML=parsed.baroTrend<0?`<i class="fa-solid fa-arrow-down text-red-400"></i> ${parsed.baroTrend.toFixed(1)}`:`<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${parsed.baroTrend.toFixed(1)}`;
-      } else pt.textContent='—';
+      if (!Number.isFinite(parsed.baroTrend) || Math.abs(parsed.baroTrend)<0.1) {
+        pt.textContent='Steady';
+      } else if (parsed.baroTrend<0) {
+        pt.innerHTML=`<i class="fa-solid fa-arrow-down text-red-400"></i> ${parsed.baroTrend.toFixed(1)}`;
+      } else {
+        pt.innerHTML=`<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${parsed.baroTrend.toFixed(1)}`;
+      }
       document.getElementById('rain-today').textContent=fmtNum(parsed.rainToday,1);
       document.getElementById('rain-month').textContent=fmtNum(parsed.rainMonth,1,' mm');
       document.getElementById('rain-ytd').textContent=fmtNum(parsed.rainYTD,1,' mm');
@@ -1102,7 +1121,12 @@
       const container=document.getElementById('forecast-container');
       container.innerHTML='<div class="col-span-3 text-center py-6 text-white/60 text-sm">Loading forecast…</div>';
       const url='https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney&forecast_days=6';
-      const tryList=[{href:url,label:'open-meteo'}];
+      const tryList=[];
+      if (USE_CUSTOM_PROXY&&CUSTOM_PROXY_BASE&&!FORCE_PUBLIC_PROXIES) {
+        const base=CUSTOM_PROXY_BASE.endsWith('/')?CUSTOM_PROXY_BASE:CUSTOM_PROXY_BASE+'/';
+        tryList.push({href:`${base}?url=${encodeURIComponent(url)}&t=${Date.now()}`,label:'custom-proxy'});
+      }
+      tryList.push({href:url,label:'open-meteo'});
       PROXIES.forEach(p=>{
         const sep=p.includes('?')?'&':'?';
         tryList.push({href:`${p}${encodeURIComponent(url)}${sep}cb=${Date.now()}`,label:'cors-proxy'});
