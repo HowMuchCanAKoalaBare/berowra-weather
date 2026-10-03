@@ -295,7 +295,7 @@
         </div>
       </div>
       <div class="tide-chart-wrap mt-4 rounded-2xl border border-white/10 bg-slate-950/40 overflow-hidden">
-        <svg id="tide-chart" viewBox="0 0 900 280" role="img" aria-label="Three-day Cottage Point tide graph"></svg>
+        <svg id="tide-chart" viewBox="0 0 900 280" preserveAspectRatio="none" role="img" aria-label="Three-day Cottage Point tide graph"></svg>
       </div>
       <div id="tide-week" class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3"></div>
       <p class="text-[10px] text-white/40 mt-3">Chart datum ≈ LAT. Source: TICON-4 / BOM Patonga (CC BY 4.0). Compare with <a class="underline decoration-white/30 hover:text-white/70" href="https://tides.willyweather.com.au/nsw/sydney/cottage-point.html" target="_blank" rel="noopener noreferrer">WillyWeather Cottage Point</a>.</p>
@@ -356,7 +356,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-10-01 22:00 • Wind history, gust label, units, steady pressure, forecast proxy, blank records`;
+      return `2026-10-04 03:05 • Tide chart fills the tile width`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -591,7 +591,10 @@
     function renderTideChart(pack) {
       const svg = document.getElementById('tide-chart');
       if (!svg || !pack.samples.length) return;
-      const W=900, H=280, L=56, R=16, T=36, B=18;
+      const wrap = svg.parentElement;
+      const W = Math.max(320, Math.round(wrap?.clientWidth || svg.clientWidth || 900));
+      const H = Math.max(160, Math.round(wrap?.clientHeight || svg.clientHeight || 280));
+      const L=52, R=10, T=36, B=18;
       const pw=W-L-R, ph=H-T-B;
       const {samples, now, t0, t1} = pack;
       const yMax = 2;
@@ -641,6 +644,7 @@
           <circle cx="${nx}" cy="${ny}" r="4" fill="#fff" stroke="#0ea5e9" stroke-width="2"/>`;
       }
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.setAttribute('preserveAspectRatio', 'none');
       svg.innerHTML = `<rect width="${W}" height="${H}" fill="rgba(15,23,42,0.35)"/>${bands}${grid}${maxLine}
         <polygon points="${area}" fill="rgba(56,189,248,0.28)"/>
         <polyline points="${line}" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
@@ -1214,6 +1218,11 @@
       setInterval(()=>{if(!document.hidden)updateFreshnessUI();},30000);
       setInterval(()=>{if(!document.hidden)loadWeather();},REFRESH_INTERVAL_MS);
       document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!isRefreshing)setTimeout(loadWeather,800);});
+      let tideResizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(tideResizeTimer);
+        tideResizeTimer = setTimeout(() => { if (!document.hidden) renderTides(); }, 120);
+      });
     }
     window.onload=init;
   </script>
