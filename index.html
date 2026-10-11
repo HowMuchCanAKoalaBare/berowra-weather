@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Berowra Weather • Live (Mudie Family Station)</title>
-  <meta name="description" content="Live weather dashboard for the Mudie Family Station in Berowra, NSW. Real-time observations, charts and Open-Meteo forecast.">
+  <meta name="description" content="Live weather dashboard for the Mudie Family Station in Berowra, NSW. Real-time observations, charts and the Ridge forecast.">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -193,7 +193,7 @@
           <div class="mt-8 text-xs opacity-60 tracking-wide">Berowra, NSW • −33.62° • 151.15°</div>
         </div>
         <div class="glass glass-hover rounded-3xl p-6 sm:p-7 flex flex-col border border-white/10" aria-labelledby="forecast-heading">
-          <h3 id="forecast-heading" class="text-xs font-semibold tracking-[2px] text-white/70 mb-3">6-DAY FORECAST • OPEN-METEO</h3>
+          <h3 id="forecast-heading" class="text-xs font-semibold tracking-[2px] text-white/70 mb-3">6-DAY FORECAST • RIDGE</h3>
           <div id="forecast-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center flex-1"></div>
         </div>
       </div>
@@ -356,7 +356,7 @@
     const FORCE_PUBLIC_PROXIES = false;
 
     const getCodeUpdateLabel = () => {
-      return `2026-10-04 03:05 • Tide chart fills the tile width`;
+      return `2026-10-11 17:25 • Forecast reads the Ridge median`;
     };
 
     const BASE = 'http://www.mudiefamily.org/weather/';
@@ -1121,69 +1121,126 @@
       return {parsed,usedProxy};
     }
 
-    async function loadForecast() {
-      const container=document.getElementById('forecast-container');
-      container.innerHTML='<div class="col-span-3 text-center py-6 text-white/60 text-sm">Loading forecast…</div>';
-      const url='https://api.open-meteo.com/v1/forecast?latitude=-33.62&longitude=151.15&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney&forecast_days=6';
-      const tryList=[];
-      if (USE_CUSTOM_PROXY&&CUSTOM_PROXY_BASE&&!FORCE_PUBLIC_PROXIES) {
-        const base=CUSTOM_PROXY_BASE.endsWith('/')?CUSTOM_PROXY_BASE:CUSTOM_PROXY_BASE+'/';
-        tryList.push({href:`${base}?url=${encodeURIComponent(url)}&t=${Date.now()}`,label:'custom-proxy'});
-      }
-      tryList.push({href:url,label:'open-meteo'});
-      PROXIES.forEach(p=>{
-        const sep=p.includes('?')?'&':'?';
-        tryList.push({href:`${p}${encodeURIComponent(url)}${sep}cb=${Date.now()}`,label:'cors-proxy'});
+    const RIDGE_OUTLOOK = 'https://ridge-pi.vercel.app/outlook';
+
+    function setForecastHeading(text) {
+      const heading = document.getElementById('forecast-heading');
+      if (heading) heading.textContent = text;
+    }
+
+    function renderForecastDays(rows) {
+      const container = document.getElementById('forecast-container');
+      container.innerHTML = '';
+      rows.slice(0, 6).forEach((row, i) => {
+        const hi = Math.round(row.hi);
+        const lo = Math.round(row.lo);
+        if (!Number.isFinite(hi) || !Number.isFinite(lo)) return;
+        const code = row.code;
+        const rain = Number(row.rain) || 0;
+        const pop = row.pop == null || !Number.isFinite(Number(row.pop)) ? null : Math.round(Number(row.pop) * 100);
+        const date = parseIsoDateLocal(row.date);
+        const day = date.toLocaleDateString('en-AU', { weekday: 'short' });
+        let rainText = 'dry';
+        if (rain >= 0.05) rainText = `${rain.toFixed(1)} mm${pop == null ? '' : ` · ${pop}%`}`;
+        else if (pop != null && pop >= 20) rainText = `${pop}% chance`;
+        const rainClass = rainText === 'dry' ? 'text-white/40' : 'text-sky-300';
+        const el = document.createElement('div');
+        el.className = 'forecast-card glass rounded-2xl p-3 flex flex-col items-center border border-white/10' + (i === 0 ? ' ring-1 ring-white/15' : '');
+        el.innerHTML = `<div class="text-xs font-medium opacity-75">${day}${i === 0 ? ' · today' : ''}</div><i class="fa-solid ${getWeatherIcon(code)} text-2xl sm:text-3xl my-2 text-slate-300" aria-hidden="true"></i><div class="text-[11px] text-white/70 uppercase tracking-wide">${getWeatherLabel(code)}</div><div class="text-lg font-light">${hi}° <span class="text-white/60">/</span> ${lo}°</div><div class="text-xs ${rainClass} mt-0.5">${rainText}</div>`;
+        container.appendChild(el);
       });
-      let j=null, used='none', lastErr='unavailable';
+      return container.childElementCount;
+    }
+
+    async function loadRidgeOutlook() {
+      const res = await timeoutFetch(RIDGE_OUTLOOK);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const body = await res.json();
+      if (!body || body.ok !== true || !Array.isArray(body.days) || !body.days.length) throw new Error('bad payload');
+      const rows = body.days.map((day) => ({
+        date: day.date,
+        code: day.code,
+        hi: day.tMax,
+        lo: day.tMin,
+        rain: day.rain,
+        pop: day.pop
+      }));
+      return rows;
+    }
+
+    async function loadOpenMeteoDays() {
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=-33.61211&longitude=151.13754&elevation=218&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Australia/Sydney&forecast_days=6';
+      const tryList = [];
+      if (USE_CUSTOM_PROXY && CUSTOM_PROXY_BASE && !FORCE_PUBLIC_PROXIES) {
+        const base = CUSTOM_PROXY_BASE.endsWith('/') ? CUSTOM_PROXY_BASE : CUSTOM_PROXY_BASE + '/';
+        tryList.push({ href: `${base}?url=${encodeURIComponent(url)}&t=${Date.now()}`, label: 'custom-proxy' });
+      }
+      tryList.push({ href: url, label: 'open-meteo' });
+      PROXIES.forEach((p) => {
+        const sep = p.includes('?') ? '&' : '?';
+        tryList.push({ href: `${p}${encodeURIComponent(url)}${sep}cb=${Date.now()}`, label: 'cors-proxy' });
+      });
+      let lastErr = 'unavailable';
       for (const entry of tryList) {
         try {
-          const res=await timeoutFetch(entry.href);
+          const res = await timeoutFetch(entry.href);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const ct=res.headers.get('content-type')||'';
+          const ct = res.headers.get('content-type') || '';
           if (ct.includes('text/html')) throw new Error('HTML instead of data');
-          const parsed=await res.json();
-          const daily=parsed && parsed.daily;
-          if (!daily || !Array.isArray(daily.time) || daily.time.length<1 || !Array.isArray(daily.weather_code)) throw new Error('bad payload');
-          j=parsed; used=entry.label; lastErr='';
-          break;
-        } catch(e) {
-          lastErr=e.message||'failed';
+          const parsed = await res.json();
+          const daily = parsed && parsed.daily;
+          if (!daily || !Array.isArray(daily.time) || daily.time.length < 1 || !Array.isArray(daily.weather_code)) throw new Error('bad payload');
+          return {
+            label: entry.label,
+            rows: daily.time.map((date, i) => ({
+              date,
+              code: daily.weather_code[i],
+              hi: daily.temperature_2m_max[i],
+              lo: daily.temperature_2m_min[i],
+              rain: daily.precipitation_sum[i],
+              pop: null
+            }))
+          };
+        } catch (e) {
+          lastErr = e.message || 'failed';
           if (WEATHER_DEBUG) console.warn('[Weather] forecast via', entry.label, lastErr);
         }
       }
-      window.lastForecastStatus=j?`OK (${used})`:`FAIL ${lastErr}`;
+      throw new Error(lastErr);
+    }
+
+    async function loadForecast() {
+      const container = document.getElementById('forecast-container');
+      container.innerHTML = '<div class="col-span-3 text-center py-6 text-white/60 text-sm">Loading forecast…</div>';
+      try {
+        const rows = await loadRidgeOutlook();
+        const painted = renderForecastDays(rows);
+        if (!painted) throw new Error('empty');
+        window.lastForecastStatus = 'OK (ridge)';
+        setForecastHeading('6-DAY FORECAST • RIDGE');
+        return;
+      } catch (e) {
+        window.lastForecastStatus = `ridge ${e.message || 'failed'}`;
+        if (WEATHER_DEBUG) console.warn('[Weather] ridge outlook', e);
+      }
+      try {
+        const fallback = await loadOpenMeteoDays();
+        const painted = renderForecastDays(fallback.rows);
+        if (!painted) throw new Error('empty');
+        window.lastForecastStatus = `OK (${fallback.label}, ridge down)`;
+        setForecastHeading('6-DAY FORECAST • OPEN-METEO');
+      } catch (e) {
+        window.lastForecastStatus = `FAIL ${e.message || 'unavailable'}`;
+        container.innerHTML = '<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable</div>';
+      }
       if (WEATHER_DEBUG) {
-        const content=document.getElementById('debug-content');
+        const content = document.getElementById('debug-content');
         if (content) {
-          const line=content.querySelector('[data-forecast-debug]')||document.createElement('div');
-          line.setAttribute('data-forecast-debug','1');
-          line.textContent=`forecast: ${window.lastForecastStatus}`;
+          const line = content.querySelector('[data-forecast-debug]') || document.createElement('div');
+          line.setAttribute('data-forecast-debug', '1');
+          line.textContent = `forecast: ${window.lastForecastStatus}`;
           if (!line.parentNode) content.appendChild(line);
         }
-      }
-      if (!j) {
-        container.innerHTML='<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>';
-        return;
-      }
-      container.innerHTML='';
-      const n=Math.min(6, j.daily.time.length);
-      for (let i=0;i<n;i++) {
-        const hi=Math.round(j.daily.temperature_2m_max[i]);
-        const lo=Math.round(j.daily.temperature_2m_min[i]);
-        if (!Number.isFinite(hi) || !Number.isFinite(lo)) continue;
-        const code=j.daily.weather_code[i];
-        const rain=Number(j.daily.precipitation_sum[i])||0;
-        const date=parseIsoDateLocal(j.daily.time[i]);
-        const day=date.toLocaleDateString('en-AU',{weekday:'short'});
-        const el=document.createElement('div');
-        el.className='forecast-card glass rounded-2xl p-3 flex flex-col items-center border border-white/10'+(i===0?' ring-1 ring-white/15':'');
-        const rainLine=rain>0?`<div class="text-xs text-sky-300 mt-0.5">${rain.toFixed(1)} mm</div>`:`<div class="text-xs text-white/40 mt-0.5">dry</div>`;
-        el.innerHTML=`<div class="text-xs font-medium opacity-75">${day}${i===0?' · today':''}</div><i class="fa-solid ${getWeatherIcon(code)} text-2xl sm:text-3xl my-2 text-slate-300" aria-hidden="true"></i><div class="text-[11px] text-white/70 uppercase tracking-wide">${getWeatherLabel(code)}</div><div class="text-lg font-light">${hi}° <span class="text-white/60">/</span> ${lo}°</div>${rainLine}`;
-        container.appendChild(el);
-      }
-      if (!container.childElementCount) {
-        container.innerHTML='<div class="col-span-3 text-center py-6 text-orange-400 text-sm">Forecast unavailable (Open-Meteo)</div>';
       }
     }
 
